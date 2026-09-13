@@ -2,8 +2,8 @@ package com.group.xlibris.report.dto;
 
 import com.group.xlibris.report.enums.ReportStatus;
 import com.group.xlibris.report.enums.ReportType;
-import com.group.xlibris.report.validation.OnCreate;
-import com.group.xlibris.report.validation.OnUpdate;
+import com.group.xlibris.common.validation.OnCreate;
+import com.group.xlibris.common.validation.OnUpdate;
 import jakarta.validation.constraints.*;
 
 import java.net.URI;
