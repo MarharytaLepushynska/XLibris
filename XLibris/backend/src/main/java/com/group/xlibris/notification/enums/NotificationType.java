@@ -1,0 +1,10 @@
+package com.group.xlibris.notification.enums;
+
+public enum NotificationType {
+    BOOK_REQUEST_CREATED,
+    BOOK_REQUEST_STATUS_CHANGED,
+    WAITLIST_POSITION_CHANGED,
+    LOAN_DEADLINE_APPROACHING,
+    LOAN_STATUS_CHANGED,
+    REPORT_STATUS_CHANGED
+}
