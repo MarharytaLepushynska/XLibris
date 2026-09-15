@@ -1,5 +1,7 @@
 package com.group.xlibris.common.exception;
 
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -98,14 +101,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+    public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException ex) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, ex.getMessage());
 
         pd.setTitle("Business rule error");
-        pd.setType(URI.create("https://xlibris.group.com/errors/illegal-argument-error"));
-        pd.setProperty("timestamp", Instant.now());
-        return pd;
+
+        return ResponseEntity.badRequest().body(pd);
     }
 
 }

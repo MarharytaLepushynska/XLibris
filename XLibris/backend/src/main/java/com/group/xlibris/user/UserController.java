@@ -192,4 +192,12 @@ public class UserController {
                 request.overdueReturnsCount()
         );
     }
+
+    public void clearMap() {
+        users.clear();
+    }
+
+    public void fillMap(UserEntity entity) {
+        users.put(entity.getId(), entity);
+    }
 }
