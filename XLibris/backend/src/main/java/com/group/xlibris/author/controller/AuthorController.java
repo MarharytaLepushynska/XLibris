@@ -34,7 +34,7 @@ public class AuthorController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AuthorResponse> getAuthorById(
-            @PathVariable UUID id
+            @PathVariable("id") UUID id
     ) {
 
         Author author = authors.get(id);
@@ -67,7 +67,7 @@ public class AuthorController {
 
     @PutMapping("/{id}")
     public ResponseEntity<AuthorResponse> updateAuthor(
-            @PathVariable UUID id,
+            @PathVariable("id") UUID id,
             @Validated(OnUpdate.class) @RequestBody AuthorRequest request
     ) {
 
@@ -87,7 +87,7 @@ public class AuthorController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAuthor(
-            @PathVariable UUID id
+            @PathVariable("id") UUID id
     ) {
 
         if (!authors.containsKey(id)) {
