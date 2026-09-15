@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="XLibris" external.linked.project.path="$MODULE_DIR$/../../XLibris/backend" external.root.project.path="$MODULE_DIR$/../../XLibris/backend" external.system.id="GRADLE" external.system.module.group="com.group" external.system.module.version="0.0.1-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_X" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../XLibris/backend">
+      <excludeFolder url="file://$MODULE_DIR$/../../XLibris/backend/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../XLibris/backend/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

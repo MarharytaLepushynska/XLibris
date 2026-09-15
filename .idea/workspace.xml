@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="029d5ea9-0e5b-41f0-b801-d49365b6f32f" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JUnit.LoanControllerTest.executor": "Run",
+    "JUnit.LoanControllerTest.shouldFilterLoansByStatus.executor": "Run",
+    "JUnit.LoanControllerTest.shouldGetAllLoans.executor": "Run",
+    "JUnit.LoanControllerTest.shouldReturnUnreadableProblemDetail.executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "Spring Boot.XLibrisApplication.executor": "Run",
+    "git-widget-placeholder": "main",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="RunManager" selected="JUnit.LoanControllerTest">
+    <configuration name="LoanControllerTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="com.group.XLibris.test" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.group.xlibris.loan.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.group.xlibris.loan.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.group.xlibris.loan.controller.LoanControllerTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LoanControllerTest.shouldFilterLoansByStatus" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="com.group.XLibris.test" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.group.xlibris.loan.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.group.xlibris.loan.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.group.xlibris.loan.controller.LoanControllerTest" />
+      <option name="METHOD_NAME" value="shouldFilterLoansByStatus" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LoanControllerTest.shouldGetAllLoans" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="com.group.XLibris.test" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.group.xlibris.loan.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.group.xlibris.loan.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.group.xlibris.loan.controller.LoanControllerTest" />
+      <option name="METHOD_NAME" value="shouldGetAllLoans" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LoanControllerTest.shouldReturnUnreadableProblemDetail" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="com.group.XLibris.test" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.group.xlibris.loan.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.group.xlibris.loan.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.group.xlibris.loan.controller.LoanControllerTest" />
+      <option name="METHOD_NAME" value="shouldReturnUnreadableProblemDetail" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.LoanControllerTest" />
+        <item itemvalue="JUnit.LoanControllerTest.shouldReturnUnreadableProblemDetail" />
+        <item itemvalue="JUnit.LoanControllerTest.shouldFilterLoansByStatus" />
+        <item itemvalue="JUnit.LoanControllerTest.shouldGetAllLoans" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="TaskManager">
+    <servers />
+  </component>
+</project>

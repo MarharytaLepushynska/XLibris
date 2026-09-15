@@ -27,7 +27,7 @@ public class LoanController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LoanResponse> getById(@PathVariable UUID id) {
+    public ResponseEntity<LoanResponse> getById(@PathVariable("id") UUID id) {
         Loan loan = findLoanById(id);
         LoanResponse loanResponse = LoanResponse.from(loan);
         return ResponseEntity.ok(loanResponse);
@@ -35,9 +35,9 @@ public class LoanController {
 
     @GetMapping
     public ResponseEntity<List<LoanResponse>> getAll(
-            @RequestParam(required = false) UUID ownerId,
-            @RequestParam(required = false) UUID renterId,
-            @RequestParam(required = false) LoanStatus loanStatus
+            @RequestParam(name = "ownerId", required = false) UUID ownerId,
+            @RequestParam(name = "renterId", required = false) UUID renterId,
+            @RequestParam(name = "loanStatus", required = false) LoanStatus loanStatus
     ) {
         List<LoanResponse> responseList = loans.values().stream()
                 .filter(loan -> ownerId == null || loan.getOwnerId().equals(ownerId))
@@ -82,18 +82,26 @@ public class LoanController {
     }
 
     @PatchMapping("/{id}/return")
-    public ResponseEntity<LoanResponse> assignToReturned(@PathVariable UUID id) {
+    public ResponseEntity<LoanResponse> assignToReturned(@PathVariable("id") UUID id) {
         Loan loan = findLoanById(id);
         loan.assignToReturned();
         return ResponseEntity.ok(LoanResponse.from(loan));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") UUID id) {
         if (loans.remove(id) == null) {
             throw new NotFoundException("Loan with id " + id + " not found");
         }
         return ResponseEntity.noContent().build();
+    }
+
+    public void clearMap() {
+        loans.clear();
+    }
+
+    public void fillMap(Loan loan) {
+        loans.put(loan.getId(), loan);
     }
 
     private Loan findLoanById(UUID id) {
