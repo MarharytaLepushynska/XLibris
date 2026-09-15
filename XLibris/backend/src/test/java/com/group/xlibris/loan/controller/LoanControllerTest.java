@@ -31,25 +31,24 @@ public class LoanControllerTest {
     @Autowired
     private LoanController loanController;
 
+    private final UUID activeLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
+    private final UUID overdueLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
+
+    private final UUID bookId = UUID.fromString("550e8400-e29b-41d4-a716-446655445000");
+    private final UUID bookId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655445001");
+
+    private final UUID ownerId = UUID.fromString("550e8400-e29b-41d4-a716-446655446000");
+    private final UUID ownerId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655446001");
+
+    private final UUID renterId = UUID.fromString("550e8400-e29b-41d4-a716-446655447000");
+    private final UUID renterId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655447001");
+
     @BeforeEach
     void resetMap() {
         loanController.clearMap();
 
-        UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
-        UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
-
-        UUID bookId = UUID.fromString("550e8400-e29b-41d4-a716-446655445000");
-        UUID bookId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655445001");
-
-        UUID ownerId = UUID.fromString("550e8400-e29b-41d4-a716-446655446000");
-        UUID ownerId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655446001");
-
-        UUID renterId = UUID.fromString("550e8400-e29b-41d4-a716-446655447000");
-        UUID renterId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655447001");
-
-
-        Loan loan = new Loan(id, bookId, ownerId, renterId, Instant.now(), Instant.now().plusSeconds(86400 * 14), null, LoanStatus.ACTIVE);
-        Loan loan2 = new Loan(id2, bookId2, ownerId2, renterId2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null, LoanStatus.OVERDUE);
+        Loan loan = new Loan(activeLoanId, bookId, ownerId, renterId, Instant.now(), Instant.now().plusSeconds(86400 * 14), null, LoanStatus.ACTIVE);
+        Loan loan2 = new Loan(overdueLoanId, bookId2, ownerId2, renterId2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null, LoanStatus.OVERDUE);
 
         loanController.fillMap(loan);
         loanController.fillMap(loan2);
@@ -75,8 +74,7 @@ public class LoanControllerTest {
 
     @Test
     void shouldGetLoanById() throws Exception {
-        UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
-        mvc.perform(get("/api/loans/{id}", id))
+        mvc.perform(get("/api/loans/{id}", activeLoanId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ownerId").value("550e8400-e29b-41d4-a716-446655446000"))
                 .andExpect(jsonPath("$.renterId").value("550e8400-e29b-41d4-a716-446655447000"));
@@ -110,39 +108,35 @@ public class LoanControllerTest {
     @Test
     void shouldFilterLoansByOwnerId() throws Exception {
         mvc.perform(get("/api/loans")
-                        .param("ownerId", "550e8400-e29b-41d4-a716-446655446000"))
+                        .param("ownerId", ownerId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].ownerId").value("550e8400-e29b-41d4-a716-446655446000"));
+                .andExpect(jsonPath("$[0].ownerId").value(ownerId.toString()));
     }
 
     @Test
     void shouldFilterLoansByRenterId() throws Exception {
         mvc.perform(get("/api/loans")
-                        .param("renterId", "550e8400-e29b-41d4-a716-446655447000"))
+                        .param("renterId", renterId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].renterId").value("550e8400-e29b-41d4-a716-446655447000"));
+                .andExpect(jsonPath("$[0].renterId").value(renterId.toString()));
     }
 
     @Test
     void shouldAssignToReturned() throws Exception {
-        UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
-
-        mvc.perform(patch("/api/loans/{id}/return", id))
+        mvc.perform(patch("/api/loans/{id}/return", activeLoanId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.id").value(activeLoanId.toString()))
                 .andExpect(jsonPath("$.status").value("RETURNED"))
                 .andExpect(jsonPath("$.actualReturnDate").exists());
     }
 
     @Test
     void shouldDeleteLoan() throws Exception {
-        UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
-
-        mvc.perform(delete("/api/loans/{id}", id))
+        mvc.perform(delete("/api/loans/{id}", overdueLoanId))
                 .andExpect(status().isNoContent());
     }
 
@@ -160,8 +154,8 @@ public class LoanControllerTest {
         LoanRequest invalidRequest = new LoanRequest(
                 null,
                 null,
-                UUID.fromString("550e8400-e29b-41d4-a716-446655446002"),
-                UUID.fromString("550e8400-e29b-41d4-a716-446655447002"),
+                renterId,
+                ownerId,
                 Instant.now().minusSeconds(86400),
                 null
         );
@@ -194,8 +188,6 @@ public class LoanControllerTest {
 
     @Test
     void shouldReturnConflictWhenAssigningNonActiveLoanToReturned() throws Exception {
-        UUID overdueLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
-
         mvc.perform(patch("/api/loans/{id}/return", overdueLoanId))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.title").value("Business rule violation"))

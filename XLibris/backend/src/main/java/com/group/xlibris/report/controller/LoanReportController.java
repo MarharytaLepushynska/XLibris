@@ -57,4 +57,17 @@ public class LoanReportController {
 
         return ResponseEntity.created(location).body(reportResponse);
     }
+
+    public void clearMaps() {
+        reports.clear();
+        loans.clear();
+    }
+
+    public void fillLoan(Loan loan) {
+        loans.put(loan.getId(), loan);
+    }
+
+    public void fillReport(Report report) {
+        reports.put(report.getId(), report);
+    }
 }
