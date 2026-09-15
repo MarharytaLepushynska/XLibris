@@ -115,4 +115,13 @@ public class FeedbackController {
                 .created(location)
                 .body(response);
     }
+
+    public void clearMap() {
+        feedbacks.clear();
+    }
+
+    public void fillMap(Feedback feedback) {
+        feedbacks.put(feedback.id(), feedback);
+    }
+
 }
