@@ -34,7 +34,7 @@ public class GenreController {
 
     @GetMapping("/{id}")
     public ResponseEntity<GenreResponse> getGenreById(
-            @PathVariable("id") UUID id
+            @PathVariable UUID id
     ) {
 
         Genre genre = genres.get(id);
@@ -67,7 +67,7 @@ public class GenreController {
 
     @PutMapping("/{id}")
     public ResponseEntity<GenreResponse> updateGenre(
-            @PathVariable("id") UUID id,
+            @PathVariable UUID id,
             @Validated(OnUpdate.class) @RequestBody GenreRequest request
     ) {
 
@@ -87,7 +87,7 @@ public class GenreController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGenre(
-            @PathVariable("id") UUID id
+            @PathVariable UUID id
     ) {
 
         if (!genres.containsKey(id)) {
