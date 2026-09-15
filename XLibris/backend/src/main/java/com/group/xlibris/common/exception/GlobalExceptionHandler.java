@@ -8,6 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.net.URI;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -93,6 +95,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(problem);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, ex.getMessage());
+
+        pd.setTitle("Business rule error");
+        pd.setType(URI.create("https://xlibris.group.com/errors/illegal-argument-error"));
+        pd.setProperty("timestamp", Instant.now());
+        return pd;
     }
 
 }
