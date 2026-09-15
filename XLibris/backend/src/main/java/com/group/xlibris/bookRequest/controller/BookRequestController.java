@@ -124,4 +124,12 @@ public class BookRequestController {
              entity.getRespondedAt()
         );
     }
+
+    public void clearMap() {
+        requests.clear();
+    }
+
+    public void fillMap(BookRequestEntity entity) {
+        requests.put(entity.getId(), entity);
+    }
 }

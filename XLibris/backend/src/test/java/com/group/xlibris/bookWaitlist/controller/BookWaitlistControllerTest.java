@@ -148,4 +148,13 @@ class BookWaitlistControllerTest {
                 .andExpect(jsonPath("$.title").value("Resource not found"));
     }
 
+    @Test
+    void shouldReturnInvalidBodyProblemDetail() throws Exception {
+        mvc.perform(post("/api/books/{bookId}/waitlist", bookId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{ abrcadabra }"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid request body"));
+
+    }
 }
