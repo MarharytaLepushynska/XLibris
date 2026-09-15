@@ -32,8 +32,6 @@ class UserControllerTest {
 
     @Autowired
     private UserController userController;
-    @Autowired
-    private JsonMapper jsonMapper;
 
     @BeforeEach
     void resetMap() {

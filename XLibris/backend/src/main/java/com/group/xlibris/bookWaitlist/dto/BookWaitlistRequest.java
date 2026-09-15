@@ -6,8 +6,5 @@ import java.util.UUID;
 
 public record BookWaitlistRequest(
         @NotNull
-        UUID bookId,
-
-        @NotNull
         UUID userId
 ) {}

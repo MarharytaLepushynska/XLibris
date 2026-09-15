@@ -1,6 +1,5 @@
 package com.group.xlibris.bookWaitlist.controller;
 
-import com.group.xlibris.bookRequest.entity.BookRequestEntity;
 import com.group.xlibris.bookWaitlist.dto.BookWaitlistRequest;
 import com.group.xlibris.bookWaitlist.dto.BookWaitlistResponse;
 import com.group.xlibris.bookWaitlist.dto.BookWaitlistStatusUpdate;
@@ -42,9 +41,6 @@ public class BookWaitlistController {
     @PostMapping("/books/{bookId}/waitlist")
     public ResponseEntity<BookWaitlistResponse> create(@PathVariable UUID bookId,
                                                        @Valid @RequestBody BookWaitlistRequest request) {
-      if(!bookId.equals(request.bookId())) {
-          throw new IdMismatch("Id mismatch");
-      }
 
       int position = (int) (waitlist.values().stream()
                     .filter(w -> w.getBookId().equals(bookId) && w.getStatus() == BookWaitlistStatus.WAITING)
@@ -67,7 +63,7 @@ public class BookWaitlistController {
         return ResponseEntity.created(location).body(response);
     }
 
-    @PatchMapping("/book-waitlist/{id}")
+    @PatchMapping("/book-waitlists/{id}")
     public ResponseEntity<BookWaitlistResponse> updateStatus(@PathVariable UUID id,
                                                              @RequestBody BookWaitlistStatusUpdate request) {
         if(!waitlist.containsKey(id)) {
@@ -75,14 +71,14 @@ public class BookWaitlistController {
         }
 
         BookWaitlistEntity existing = waitlist.get(id);
-        existing.setStatus(request.staus());
+        existing.setStatus(request.status());
         waitlist.put(id, existing);
 
         BookWaitlistResponse response = toResponse(existing);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/book-waitlist/{id}")
+    @DeleteMapping("/book-waitlists/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         if(!waitlist.containsKey(id)) {
             throw new NotFoundException("No request with id " + id + " not found");
@@ -104,4 +100,13 @@ public class BookWaitlistController {
                 entity.getResponseDeadline()
         );
     }
+
+    public void clearMap() {
+        waitlist.clear();
+    }
+
+    public void fillMap(BookWaitlistEntity entity) {
+        waitlist.put(entity.getId(), entity);
+    }
+
 }
