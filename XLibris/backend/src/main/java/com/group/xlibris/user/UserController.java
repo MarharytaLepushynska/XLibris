@@ -91,6 +91,8 @@ public class UserController {
         UserEntity existing = users.get(id);
         UserEntity updated = updateUser(existing, request);
 
+        users.put(id, updated);
+
         UserResponse response = toResponse(updated);
         return ResponseEntity.ok(response);
     }
@@ -107,6 +109,8 @@ public class UserController {
 
         UserEntity existing = users.get(id);
         UserEntity updated = updateUserByAdmin(existing, request);
+
+        users.put(id, updated);
 
         UserResponse response = toResponse(updated);
         return ResponseEntity.ok(response);
