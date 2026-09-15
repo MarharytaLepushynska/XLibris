@@ -1,9 +1,10 @@
 package com.group.xlibris.user;
 
+import com.group.xlibris.user.controller.UserController;
 import com.group.xlibris.user.dto.AdminUserUpdateRequest;
 import com.group.xlibris.user.dto.UserRequest;
-import com.group.xlibris.user.internal.Role;
-import com.group.xlibris.user.internal.UserEntity;
+import com.group.xlibris.user.enums.Role;
+import com.group.xlibris.user.entity.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.http.MediaType;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.UUID;

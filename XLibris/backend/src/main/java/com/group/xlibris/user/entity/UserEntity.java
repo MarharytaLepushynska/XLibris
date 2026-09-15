@@ -1,5 +1,6 @@
-package com.group.xlibris.user.internal;
+package com.group.xlibris.user.entity;
 
+import com.group.xlibris.user.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

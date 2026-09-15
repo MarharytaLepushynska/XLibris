@@ -1,4 +1,4 @@
-package com.group.xlibris.user;
+package com.group.xlibris.user.controller;
 
 import com.group.xlibris.common.exception.IdMismatch;
 import com.group.xlibris.common.exception.NotFoundException;
@@ -8,8 +8,8 @@ import com.group.xlibris.user.dto.AdminUserUpdateRequest;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserRequest;
 import com.group.xlibris.user.dto.UserResponse;
-import com.group.xlibris.user.internal.Role;
-import com.group.xlibris.user.internal.UserEntity;
+import com.group.xlibris.user.enums.Role;
+import com.group.xlibris.user.entity.UserEntity;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
