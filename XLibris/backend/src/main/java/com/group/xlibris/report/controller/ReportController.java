@@ -123,4 +123,12 @@ public class ReportController {
         }
         return report;
     }
+
+    public void clearMap() {
+        reports.clear();
+    }
+
+    public void fillMap(Report report) {
+        reports.put(report.getId(), report);
+    }
 }
