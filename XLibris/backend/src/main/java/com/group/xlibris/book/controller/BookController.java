@@ -49,10 +49,8 @@ public class BookController {
     }
 
     @PostMapping
-    @Validated(OnCreate.class)
     public ResponseEntity<BookResponse> createBook(
-            @RequestBody @Valid BookRequest request
-    ) {
+            @Validated(OnCreate.class) @RequestBody BookRequest request) {
 
         UUID id = UUID.randomUUID();
 
@@ -75,11 +73,9 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    @Validated(OnUpdate.class)
     public ResponseEntity<BookResponse> updateBook(
             @PathVariable UUID id,
-            @RequestBody @Valid BookRequest request
-    ) {
+            @Validated(OnUpdate.class) @RequestBody BookRequest request) {
 
         if (!books.containsKey(id)) {
             return ResponseEntity.notFound().build();
