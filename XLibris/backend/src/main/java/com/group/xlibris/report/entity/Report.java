@@ -4,15 +4,15 @@ import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.report.enums.ReportAction;
 import com.group.xlibris.report.enums.ReportStatus;
 import com.group.xlibris.report.enums.ReportType;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-@Setter
+@AllArgsConstructor
 @Getter
 public class Report {
     private UUID id;
@@ -31,32 +31,6 @@ public class Report {
     public Report() {
     }
 
-    public Report(UUID id,
-                  String title,
-                  ReportType type,
-                  String description,
-                  URI evidenceUrl,
-                  Instant createdAt,
-                  UUID loanId,
-                  UUID reporterId,
-                  UUID targetUserId,
-                  ReportStatus status,
-                  String moderatorComment,
-                  ReportAction moderatorVerdict) {
-        this.id = id;
-        this.title = title;
-        this.type = type;
-        this.description = description;
-        this.evidenceUrl = evidenceUrl;
-        this.createdAt = createdAt;
-        this.loanId = loanId;
-        this.reporterId = reporterId;
-        this.targetUserId = targetUserId;
-        this.status = status;
-        this.moderatorComment = moderatorComment;
-        this.moderatorVerdict = moderatorVerdict;
-    }
-
     public static Report forLoan(Loan loan,
                                  UUID reporterId,
                                  String title,
@@ -72,7 +46,7 @@ public class Report {
                 description,
                 evidenceUrl,
                 Instant.now(),
-                loan.id(),
+                loan.getId(),
                 reporterId,
                 targetUserId,
                 ReportStatus.PENDING,
@@ -106,14 +80,14 @@ public class Report {
     }
 
     private static UUID resolveOpponent(Loan loan, UUID reporterId) {
-        if (Objects.equals(reporterId, loan.ownerId())) {
-            return loan.renterId();
+        if (Objects.equals(reporterId, loan.getOwnerId())) {
+            return loan.getRenterId();
         }
-        if (Objects.equals(reporterId, loan.renterId())) {
-            return loan.ownerId();
+        if (Objects.equals(reporterId, loan.getRenterId())) {
+            return loan.getOwnerId();
         }
         throw new IllegalArgumentException(
-                "User " + reporterId + " is not a participant of loan " + loan.id());
+                "User " + reporterId + " is not a participant of loan " + loan.getId());
     }
 
     public void updateDetails(String title, ReportType type, String description, URI evidenceUrl) {

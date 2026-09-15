@@ -1,15 +1,12 @@
 package com.group.xlibris.loan.controller;
 
-import com.group.xlibris.common.exception.IdMismatch;
 import com.group.xlibris.common.exception.NotFoundException;
-import com.group.xlibris.common.validation.OnCreate;
-import com.group.xlibris.common.validation.OnUpdate;
 import com.group.xlibris.loan.dto.LoanRequest;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.loan.enums.LoanStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -31,28 +28,50 @@ public class LoanController {
 
     @GetMapping("/{id}")
     public ResponseEntity<LoanResponse> getById(@PathVariable UUID id) {
-        Loan loan = loans.get(id);
-        if (loan == null) {
-            throw new NotFoundException("Loan with id " + id + " not found");
-        }
-        LoanResponse loanResponse = toResponse(loan);
+        Loan loan = findLoanById(id);
+        LoanResponse loanResponse = LoanResponse.from(loan);
         return ResponseEntity.ok(loanResponse);
     }
 
     @GetMapping
-    public ResponseEntity<List<LoanResponse>> getAll() {
+    public ResponseEntity<List<LoanResponse>> getAll(
+            @RequestParam(required = false) UUID ownerId,
+            @RequestParam(required = false) UUID renterId,
+            @RequestParam(required = false) LoanStatus loanStatus
+    ) {
         List<LoanResponse> responseList = loans.values().stream()
-                .map(this::toResponse)
+                .filter(loan -> ownerId == null || loan.getOwnerId().equals(ownerId))
+                .filter(loan -> renterId == null || loan.getRenterId().equals(renterId))
+                .filter(loan -> loanStatus == null || loan.getStatus().equals(loanStatus))
+                .map(LoanResponse::from)
+                .toList();
+        return ResponseEntity.ok(responseList);
+    }
+
+    @GetMapping("/overdue")
+    public ResponseEntity<List<LoanResponse>> getOverdue() {
+        List<LoanResponse> responseList = loans.values().stream()
+                .filter(loan -> loan.getStatus() == LoanStatus.OVERDUE)
+                .map(LoanResponse::from)
                 .toList();
         return ResponseEntity.ok(responseList);
     }
 
     @PostMapping(produces = "application/json")
-    public ResponseEntity<LoanResponse> create(@Validated(OnCreate.class) @RequestBody LoanRequest loanRequest) {
-        Loan loan = createLoan(loanRequest);
-        loans.put(loan.id(), loan);
+    public ResponseEntity<LoanResponse> create(@Valid @RequestBody LoanRequest loanRequest) {
+        Loan loan = new Loan(
+                UUID.randomUUID(),
+                loanRequest.bookId(),
+                loanRequest.ownerId(),
+                loanRequest.renterId(),
+                Instant.now(),
+                loanRequest.expectedReturnDate(),
+                null,
+                LoanStatus.ACTIVE
+        );
+        loans.put(loan.getId(), loan);
 
-        LoanResponse loanResponse = toResponse(loan);
+        LoanResponse loanResponse = LoanResponse.from(loan);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -62,67 +81,26 @@ public class LoanController {
         return ResponseEntity.created(location).body(loanResponse);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<LoanResponse> update(@PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody LoanRequest loanRequest) {
-        if (!id.equals(loanRequest.id())) {
-            throw new IdMismatch("Id mismatch");
-        }
-
-        if (!loans.containsKey(loanRequest.id())) {
-            throw new NotFoundException("Loan with id " + id + " not found");
-        }
-
-        Loan oldLoan = loans.get(id);
-        LoanStatus newStatus = (loanRequest.actualReturnDate() != null)
-                ? LoanStatus.RETURNED
-                : oldLoan.status();
-
-        Loan updatedLoan = new Loan(
-                id,
-                loanRequest.bookId(),
-                loanRequest.ownerId(),
-                loanRequest.renterId(),
-                oldLoan.startDate(),
-                loanRequest.expectedReturnDate(),
-                loanRequest.actualReturnDate(),
-                newStatus
-        );
-        loans.put(id, updatedLoan);
-
-        LoanResponse loanResponse = toResponse(updatedLoan);
-        return ResponseEntity.ok(loanResponse);
+    @PatchMapping("/{id}/return")
+    public ResponseEntity<LoanResponse> assignToReturned(@PathVariable UUID id) {
+        Loan loan = findLoanById(id);
+        loan.assignToReturned();
+        return ResponseEntity.ok(LoanResponse.from(loan));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (!loans.containsKey(id)) {
+        if (loans.remove(id) == null) {
             throw new NotFoundException("Loan with id " + id + " not found");
         }
-        loans.remove(id);
         return ResponseEntity.noContent().build();
     }
 
-    private LoanResponse toResponse(Loan loan) {
-        return new LoanResponse(
-                loan.id(),
-                loan.bookId(),
-                loan.ownerId(),
-                loan.renterId(),
-                loan.startDate(),
-                loan.expectedReturnDate(),
-                loan.actualReturnDate(),
-                loan.status());
-    }
-
-    private Loan createLoan(LoanRequest loanRequest) {
-        UUID loanId = UUID.randomUUID();
-        return new Loan(loanId,
-                loanRequest.bookId(),
-                loanRequest.ownerId(),
-                loanRequest.renterId(),
-                Instant.now(),
-                loanRequest.expectedReturnDate(),
-                null,
-                LoanStatus.ACTIVE);
+    private Loan findLoanById(UUID id) {
+        Loan loan = loans.get(id);
+        if (loan == null) {
+            throw new NotFoundException("Loan with id " + id + " not found");
+        }
+        return loan;
     }
 }

@@ -1,7 +1,5 @@
 package com.group.xlibris.loan.dto;
 
-import com.group.xlibris.common.validation.OnCreate;
-import com.group.xlibris.common.validation.OnUpdate;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
@@ -10,24 +8,23 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record LoanRequest(
-        @Null(groups = OnCreate.class)
-        @NotNull(groups = OnUpdate.class)
+        @Null
         UUID id,
 
-        @NotNull(groups = OnCreate.class)
+        @NotNull
         UUID bookId,
 
-        @NotNull(groups = OnCreate.class)
+        @NotNull
         UUID ownerId,
 
-        @NotNull(groups = OnCreate.class)
+        @NotNull
         UUID renterId,
 
-        @NotNull(groups = OnCreate.class)
-        @Future(groups = OnCreate.class)
+        @NotNull
+        @Future
         Instant expectedReturnDate,
 
-        @Null(groups = OnCreate.class)
+        @Null
         Instant actualReturnDate
 ) {
 }
