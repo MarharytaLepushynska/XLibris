@@ -99,4 +99,13 @@ public class NotificationController {
 
         return notification;
     }
+
+    public void clearMap() {
+        notifications.clear();
+    }
+
+    public void fillMap(Notification notification) {
+        notifications.put(notification.id(), notification);
+    }
+
 }
