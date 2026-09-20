@@ -22,6 +22,12 @@ public class LoanRepositoryImpl implements LoanRepository {
     }
 
     @Override
+    public List<Loan> findAll() {
+        return List.copyOf(loans.values());
+    }
+
+
+    @Override
     public List<Loan> findByOwnerAndRenter(UUID ownerId, UUID renterId) {
         return loans.values().stream()
                 .filter(loan -> ownerId == null || loan.getOwnerId().equals(ownerId))
