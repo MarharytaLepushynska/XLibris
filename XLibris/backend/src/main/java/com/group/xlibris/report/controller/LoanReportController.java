@@ -1,10 +1,8 @@
 package com.group.xlibris.report.controller;
 
-import com.group.xlibris.common.exception.NotFoundException;
-import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.report.dto.LoanReportRequest;
 import com.group.xlibris.report.dto.ReportResponse;
-import com.group.xlibris.report.entity.Report;
+import com.group.xlibris.report.service.ReportService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,58 +14,26 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/loans/{loanId}/reports")
 public class LoanReportController {
-    private final Map<UUID, Report> reports;
-    private final Map<UUID, Loan> loans;
+    private final ReportService reportService;
 
-    public LoanReportController() {
-        reports = new HashMap<>();
-        loans = new HashMap<>();
+    public LoanReportController(ReportService reportService) {
+        this.reportService = reportService;
     }
 
     @GetMapping
     public ResponseEntity<List<ReportResponse>> getAllForLoan(@PathVariable UUID loanId) {
-        if (!loans.containsKey(loanId)) {
-            throw new NotFoundException("Loan with id " + loanId + " not found");
-        }
-
-        List<ReportResponse> responseList = reports.values().stream()
-                .filter(report -> Objects.equals(report.getLoanId(), loanId))
-                .map(ReportResponse::from)
-                .toList();
-        return ResponseEntity.ok(responseList);
+        return ResponseEntity.ok(reportService.getAllReportsForLoan(loanId));
     }
 
     @PostMapping
     public ResponseEntity<ReportResponse> createReportForLoan(@PathVariable UUID loanId, @Valid @RequestBody LoanReportRequest request) {
-        Loan loan = loans.get(loanId);
-
-        if (loan == null) {
-            throw new NotFoundException("Loan with id " + loanId + " not found");
-        }
-
-        Report report = Report.forLoan(loan, request.reporterId(), request.title(),
-                request.type(), request.description(), request.evidenceUrl());
-        reports.put(report.getId(), report);
-        ReportResponse reportResponse = ReportResponse.from(report);
+        ReportResponse response = reportService.createReportForLoan(loanId, request.toCommand());
 
         URI location = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/reports/{id}")
-                .buildAndExpand(report.getId())
+                .buildAndExpand(response.id())
                 .toUri();
 
-        return ResponseEntity.created(location).body(reportResponse);
-    }
-
-    public void clearMaps() {
-        reports.clear();
-        loans.clear();
-    }
-
-    public void fillLoan(Loan loan) {
-        loans.put(loan.getId(), loan);
-    }
-
-    public void fillReport(Report report) {
-        reports.put(report.getId(), report);
+        return ResponseEntity.created(location).body(response);
     }
 }

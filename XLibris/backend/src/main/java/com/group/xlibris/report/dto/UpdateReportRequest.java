@@ -1,15 +1,14 @@
 package com.group.xlibris.report.dto;
 
-import com.group.xlibris.report.command.CreateLoanReportCommand;
+import com.group.xlibris.report.command.UpdateReportCommand;
 import com.group.xlibris.report.enums.ReportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.net.URI;
-import java.util.UUID;
 
-public record LoanReportRequest(
+public record UpdateReportRequest(
         @NotBlank
         @Size(max = 255)
         String title,
@@ -22,12 +21,9 @@ public record LoanReportRequest(
         String description,
 
         @NotNull
-        URI evidenceUrl,
-
-        @NotNull
-        UUID reporterId
+        URI evidenceUrl
 ) {
-    public CreateLoanReportCommand toCommand() {
-        return new CreateLoanReportCommand(title, type, description, evidenceUrl, reporterId);
+    public UpdateReportCommand toCommand() {
+        return new UpdateReportCommand(title, type, description, evidenceUrl);
     }
 }

@@ -1,9 +1,13 @@
 package com.group.xlibris.report.entity;
 
-import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.report.enums.ReportAction;
 import com.group.xlibris.report.enums.ReportStatus;
 import com.group.xlibris.report.enums.ReportType;
+import com.group.xlibris.report.exception.InvalidReportResolutionException;
+import com.group.xlibris.report.exception.InvalidReportStateException;
+import com.group.xlibris.report.exception.NotLoanParticipantException;
+import com.group.xlibris.report.exception.SelfReportException;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -12,7 +16,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class Report {
     private UUID id;
@@ -28,71 +32,45 @@ public class Report {
     private String moderatorComment;
     private ReportAction moderatorVerdict;
 
-    public Report() {
-    }
-
-    public static Report forLoan(Loan loan,
-                                 UUID reporterId,
-                                 String title,
-                                 ReportType type,
-                                 String description,
-                                 URI evidenceUrl) {
-        UUID targetUserId = resolveOpponent(loan, reporterId);
-
+    public static Report forLoan(UUID loanId, UUID ownerId,
+                                 UUID renterId, UUID reporterId,
+                                 String title, ReportType type,
+                                 String description, URI evidenceUrl) {
+        UUID targetUserId = resolveOpponent(loanId, ownerId, renterId, reporterId);
         return new Report(
-                UUID.randomUUID(),
-                title,
-                type,
-                description,
-                evidenceUrl,
-                Instant.now(),
-                loan.getId(),
-                reporterId,
-                targetUserId,
-                ReportStatus.PENDING,
-                null,
-                null);
+                UUID.randomUUID(), title, type,
+                description, evidenceUrl, Instant.now(),
+                loanId, reporterId, targetUserId,
+                ReportStatus.PENDING, null, null);
     }
 
-    public static Report standalone(String title,
-                                    ReportType type,
-                                    String description,
-                                    URI evidenceUrl,
-                                    UUID reporterId,
-                                    UUID targetUserId) {
+    public static Report standalone(String title, ReportType type,
+                                    String description, URI evidenceUrl,
+                                    UUID reporterId, UUID targetUserId) {
         if (Objects.equals(reporterId, targetUserId)) {
-            throw new IllegalArgumentException("User cannot report themselves");
+            throw new SelfReportException("User cannot report themselves");
         }
 
         return new Report(
-                UUID.randomUUID(),
-                title,
-                type,
-                description,
-                evidenceUrl,
-                Instant.now(),
-                null,
-                reporterId,
-                targetUserId,
-                ReportStatus.PENDING,
-                null,
-                null);
+                UUID.randomUUID(), title, type,
+                description, evidenceUrl, Instant.now(),
+                null, reporterId, targetUserId,
+                ReportStatus.PENDING, null, null);
     }
 
-    private static UUID resolveOpponent(Loan loan, UUID reporterId) {
-        if (Objects.equals(reporterId, loan.getOwnerId())) {
-            return loan.getRenterId();
+    private static UUID resolveOpponent(UUID loanId, UUID ownerId, UUID renterId, UUID reporterId) {
+        if (Objects.equals(reporterId, ownerId)) {
+            return renterId;
         }
-        if (Objects.equals(reporterId, loan.getRenterId())) {
-            return loan.getOwnerId();
+        if (Objects.equals(reporterId, renterId)) {
+            return ownerId;
         }
-        throw new IllegalArgumentException(
-                "User " + reporterId + " is not a participant of loan " + loan.getId());
+        throw new NotLoanParticipantException("User " + reporterId + " is not a participant of loan " + loanId);
     }
 
     public void updateDetails(String title, ReportType type, String description, URI evidenceUrl) {
         if (this.status != ReportStatus.PENDING) {
-            throw new IllegalStateException("Only reports in PENDING status can be changed");
+            throw new InvalidReportStateException("Only reports in PENDING status can be changed");
         }
         this.title = title;
         this.type = type;
@@ -101,40 +79,30 @@ public class Report {
     }
 
     public void assignToReview() {
-        if (this.status != ReportStatus.PENDING) {
-            throw new IllegalStateException("Only reports in PENDING status can be taken into review");
-        }
-        this.status = ReportStatus.IN_REVIEW;
+        transitionTo(ReportStatus.IN_REVIEW);
     }
 
     public void resolve(ReportStatus resolution, String comment, ReportAction verdict) {
-        if (this.status != ReportStatus.IN_REVIEW) {
-            throw new IllegalStateException("Only reports in IN REVIEW status can be taken into resolution");
-        }
-        if (resolution != ReportStatus.REJECTED && resolution != ReportStatus.RESOLVED) {
-            throw new IllegalArgumentException("Resolution must be either REJECTED or RESOLVED");
-        }
-        if (resolution == ReportStatus.REJECTED && verdict != ReportAction.NONE) {
-            throw new IllegalArgumentException("Rejected report must have action NONE");
-        }
-        if (resolution == ReportStatus.RESOLVED && verdict == ReportAction.NONE) {
-            throw new IllegalArgumentException("Resolved report must have an actionable verdict");
-        }
-
-        this.status = resolution;
+        validateVerdict(resolution, verdict);
+        transitionTo(resolution);
         this.moderatorComment = comment;
         this.moderatorVerdict = verdict;
     }
 
-    @Override
-    public boolean equals(Object that) {
-        if (this == that) return true;
-        if (!(that instanceof Report report)) return false;
-        return Objects.equals(id, report.id);
+    private void transitionTo(ReportStatus target) {
+        if (!this.status.canChangeStatus(target)) {
+            throw new InvalidReportStateException(
+                    "Cannot transition report from " + this.status + " to " + target);
+        }
+        this.status = target;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
+    private void validateVerdict(ReportStatus resolution, ReportAction verdict) {
+        if (resolution == ReportStatus.REJECTED && verdict != ReportAction.NONE) {
+            throw new InvalidReportResolutionException("Rejected report must have action NONE");
+        }
+        if (resolution == ReportStatus.RESOLVED && verdict == ReportAction.NONE) {
+            throw new InvalidReportResolutionException("Resolved report must have an actionable verdict");
+        }
     }
 }

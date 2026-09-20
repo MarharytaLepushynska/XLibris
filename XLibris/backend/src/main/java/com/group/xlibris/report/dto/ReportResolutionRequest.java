@@ -1,5 +1,6 @@
 package com.group.xlibris.report.dto;
 
+import com.group.xlibris.report.command.ResolveReportCommand;
 import com.group.xlibris.report.enums.ReportAction;
 import com.group.xlibris.report.enums.ReportStatus;
 import jakarta.validation.constraints.NotBlank;
@@ -17,4 +18,10 @@ public record ReportResolutionRequest(
         @NotNull
         ReportAction moderatorVerdict
 ) {
+    public ResolveReportCommand toCommand() {
+        return new ResolveReportCommand(
+                this.resolution(),
+                this.moderatorComment(),
+                this.moderatorVerdict());
+    }
 }
