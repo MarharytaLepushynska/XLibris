@@ -1,16 +1,13 @@
 package com.group.xlibris.loan.dto;
 
+import com.group.xlibris.loan.command.CreateLoanCommand;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 
 import java.time.Instant;
 import java.util.UUID;
 
 public record LoanRequest(
-        @Null
-        UUID id,
-
         @NotNull
         UUID bookId,
 
@@ -22,9 +19,14 @@ public record LoanRequest(
 
         @NotNull
         @Future
-        Instant expectedReturnDate,
-
-        @Null
-        Instant actualReturnDate
+        Instant expectedReturnDate
 ) {
+    public CreateLoanCommand toCommand() {
+        return new CreateLoanCommand(
+                this.bookId,
+                this.ownerId,
+                this.renterId,
+                this.expectedReturnDate
+        );
+    }
 }
