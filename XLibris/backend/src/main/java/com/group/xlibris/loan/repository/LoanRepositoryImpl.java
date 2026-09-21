@@ -44,4 +44,8 @@ public class LoanRepositoryImpl implements LoanRepository {
     public void deleteById(UUID id) {
         loans.remove(id);
     }
+
+    public void deleteAll() {
+        loans.clear();
+    }
 }

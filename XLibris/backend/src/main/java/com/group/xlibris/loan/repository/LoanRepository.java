@@ -13,4 +13,5 @@ public interface LoanRepository {
     List<Loan> findByOwnerAndRenter(UUID ownerId, UUID renterId);
     boolean existsById(UUID id);
     void deleteById(UUID id);
+    void deleteAll();
 }

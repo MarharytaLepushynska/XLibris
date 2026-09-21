@@ -1,10 +1,12 @@
 package com.group.xlibris.user;
 
-import com.group.xlibris.user.controller.UserController;
+import com.group.xlibris.loan.entity.Loan;
+import com.group.xlibris.loan.repository.LoanRepository;
 import com.group.xlibris.user.dto.AdminUserUpdateRequest;
 import com.group.xlibris.user.dto.UserRequest;
 import com.group.xlibris.user.enums.Role;
-import com.group.xlibris.user.entity.UserEntity;
+import com.group.xlibris.user.entity.User;
+import com.group.xlibris.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.http.MediaType;
 import org.junit.jupiter.api.Test;
@@ -31,24 +33,36 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserController userController;
+    private UserRepository userRepository;
+
+    @Autowired
+    private LoanRepository loanRepository;
 
     @BeforeEach
     void resetMap() {
-        userController.clearMap();
+        userRepository.deleteAll();
+        loanRepository.deleteAll();
 
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
-        UserEntity entity = new UserEntity(id, "Artem", "Lviv", null, "a@gmail.com",
+        UUID adminId = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
+        User entity = new User(id, "Artem", "Lviv", null, "a@gmail.com",
                 "+380998876445", Instant.now(), Role.USER,
                 1.0, 0.9, 0, 0, 0);
 
-        UserEntity entity2 = new UserEntity(id2, "Marta", "Kyiv", null, "m@gmail.com",
+        User entity2 = new User(id2, "Marta", "Kyiv", null, "m@gmail.com",
                 "+380998876446", Instant.now(), Role.USER,
                 2.0, 1.9, 4, 5, 1);
 
-        userController.fillMap(entity2);
-        userController.fillMap(entity);
+        User admin = new User(adminId, "Admin", "Kyiv", null, "a@gmail.com",
+                "+380998876446", Instant.now(), Role.ADMIN,
+                null, null, 0, 0, 0);
+
+        userRepository.save(entity);
+        userRepository.save(entity2);
+        userRepository.save(admin);
+
+        loanRepository.save(Loan.create(UUID.randomUUID(), id, id2, Instant.now().plusSeconds(1_209_600)));
     }
 
     @Test
@@ -77,14 +91,17 @@ class UserControllerTest {
     void shouldGetAllUsers() throws Exception {
         mvc.perform(get("/api/users"))
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(3));
 
     }
 
     @Test
     void shouldGetUserContactInfoById() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        mvc.perform(get("/api/users/{id}/contact", id))
+        UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
+
+        mvc.perform(get("/api/users/{id}/contact", id).param("viewerId", id2.toString()))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("a@gmail.com"))
                 .andExpect(jsonPath("$.phone").value("+380998876445"));
     }
@@ -106,12 +123,14 @@ class UserControllerTest {
     @Test
     void shouldUpdateUserByAdmin() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+        UUID adminId = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
         AdminUserUpdateRequest request = new AdminUserUpdateRequest(id,
                 "Ivan", "Toronto",null, "i@gmail.com",
                 "+380997765338", Role.USER,
                 1.3, 4.5, 4, 3, 2);
 
         mvc.perform(put("/api/users/{id}/admin", id)
+                        .param("callerId", adminId.toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

@@ -1,5 +1,7 @@
 package com.group.xlibris.common.exception;
 
+import com.group.xlibris.user.exception.AccessDeniedException;
+import com.group.xlibris.user.exception.ContactAccessDeniedException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -124,6 +126,34 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(ContactAccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleContactAccessDenied(ContactAccessDeniedException exception) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Access to contact information denied");
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(problem);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException exception) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.FORBIDDEN,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Access to denied");
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
                 .body(problem);
     }
 
