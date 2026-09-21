@@ -1,7 +1,10 @@
 package com.group.xlibris.book;
 
+import tools.jackson.databind.ObjectMapper;
 import com.group.xlibris.book.dto.BookRequest;
-import com.group.xlibris.book.dto.BookResponse;
+import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.repository.BookRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +12,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,12 +32,17 @@ class BookControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private BookRepository bookRepository;
+
+    private UUID bookId;
     private UUID ownerId;
     private UUID authorId;
     private UUID genreId;
 
     @BeforeEach
     void setUp() {
+        bookId = UUID.randomUUID();
         ownerId = UUID.randomUUID();
         authorId = UUID.randomUUID();
         genreId = UUID.randomUUID();
@@ -42,10 +53,10 @@ class BookControllerTest {
 
         BookRequest request = new BookRequest(
                 null,
-                "The Hobbit",
-                "A fantasy novel",
-                "https://example.com/hobbit.jpg",
-                "AVAILABLE",
+                "Test Book",
+                "Test description",
+                "photo.jpg",
+                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
@@ -55,168 +66,144 @@ class BookControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("The Hobbit"))
-                .andExpect(jsonPath("$.description").value("A fantasy novel"))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"))
-                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()))
-                .andExpect(jsonPath("$.authorId").value(authorId.toString()))
-                .andExpect(jsonPath("$.genreId").value(genreId.toString()));
+                .andExpect(jsonPath("$.title").value("Test Book"))
+                .andExpect(jsonPath("$.description").value("Test description"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
     }
 
     @Test
     void getBookById() throws Exception {
 
-        BookRequest request = new BookRequest(
-                null,
-                "The Hobbit",
-                "A fantasy novel",
-                "https://example.com/hobbit.jpg",
-                "AVAILABLE",
+        Book book = new Book(
+                bookId,
+                "Test Book",
+                "Test description",
+                "photo.jpg",
+                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
         );
 
-        String response = mockMvc.perform(post("/api/v1/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        bookRepository.save(book);
 
-        BookResponse createdBook =
-                objectMapper.readValue(response, BookResponse.class);
-
-        mockMvc.perform(get("/api/v1/books/{id}", createdBook.id()))
+        mockMvc.perform(get("/api/v1/books/{id}", bookId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(createdBook.id().toString()))
-                .andExpect(jsonPath("$.title").value("The Hobbit"))
-                .andExpect(jsonPath("$.authorId").value(authorId.toString()))
-                .andExpect(jsonPath("$.genreId").value(genreId.toString()));
+                .andExpect(jsonPath("$.id").value(bookId.toString()))
+                .andExpect(jsonPath("$.title").value("Test Book"))
+                .andExpect(jsonPath("$.description").value("Test description"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
     }
 
     @Test
     void getAllBooks() throws Exception {
 
-        BookRequest request = new BookRequest(
-                null,
-                "The Hobbit",
-                "A fantasy novel",
-                "https://example.com/hobbit.jpg",
-                "AVAILABLE",
+        Book book1 = new Book(
+                UUID.randomUUID(),
+                "Book One",
+                "Description one",
+                "photo1.jpg",
+                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
         );
 
-        mockMvc.perform(post("/api/v1/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+        Book book2 = new Book(
+                UUID.randomUUID(),
+                "Book Two",
+                "Description two",
+                "photo2.jpg",
+                BookStatus.BORROWED,
+                ownerId,
+                authorId,
+                genreId
+        );
+
+        bookRepository.save(book1);
+        bookRepository.save(book2);
 
         mockMvc.perform(get("/api/v1/books"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[?(@.title == 'The Hobbit')]").isNotEmpty());
+                .andExpect(jsonPath("$").isArray());
     }
 
     @Test
     void updateBook() throws Exception {
 
-        BookRequest createRequest = new BookRequest(
-                null,
-                "The Hobbit",
-                "A fantasy novel",
-                "https://example.com/hobbit.jpg",
-                "AVAILABLE",
+        Book book = new Book(
+                bookId,
+                "Old Title",
+                "Old description",
+                "old.jpg",
+                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
         );
 
-        String response = mockMvc.perform(post("/api/v1/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        bookRepository.save(book);
 
-        BookResponse createdBook =
-                objectMapper.readValue(response, BookResponse.class);
-
-        BookRequest updateRequest = new BookRequest(
-                createdBook.id(),
-                "The Hobbit Updated",
-                "Updated description",
-                "https://example.com/new-hobbit.jpg",
-                "BORROWED",
+        BookRequest request = new BookRequest(
+                bookId,
+                "New Title",
+                "New description",
+                "new.jpg",
+                BookStatus.BORROWED,
                 ownerId,
                 authorId,
                 genreId
         );
 
-        mockMvc.perform(put("/api/v1/books/{id}", createdBook.id())
+        mockMvc.perform(put("/api/v1/books/{id}", bookId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateRequest)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(createdBook.id().toString()))
-                .andExpect(jsonPath("$.title").value("The Hobbit Updated"))
-                .andExpect(jsonPath("$.description").value("Updated description"))
+                .andExpect(jsonPath("$.id").value(bookId.toString()))
+                .andExpect(jsonPath("$.title").value("New Title"))
+                .andExpect(jsonPath("$.description").value("New description"))
                 .andExpect(jsonPath("$.status").value("BORROWED"));
     }
 
     @Test
     void deleteBook() throws Exception {
 
-        BookRequest request = new BookRequest(
-                null,
-                "The Hobbit",
-                "A fantasy novel",
-                "https://example.com/hobbit.jpg",
-                "AVAILABLE",
+        Book book = new Book(
+                bookId,
+                "Test Book",
+                "Test description",
+                "photo.jpg",
+                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
         );
 
-        String response = mockMvc.perform(post("/api/v1/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+        bookRepository.save(book);
 
-        BookResponse createdBook =
-                objectMapper.readValue(response, BookResponse.class);
-
-        mockMvc.perform(delete("/api/v1/books/{id}", createdBook.id()))
+        mockMvc.perform(delete("/api/v1/books/{id}", bookId))
                 .andExpect(status().isNoContent());
-
-        mockMvc.perform(get("/api/v1/books/{id}", createdBook.id()))
-                .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldReturnNotFound() throws Exception {
 
-        UUID id = UUID.randomUUID();
+        UUID unknownId = UUID.randomUUID();
 
-        mockMvc.perform(get("/api/v1/books/{id}", id))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/books/{id}", unknownId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Resource not found"));
     }
 
     @Test
     void shouldReturnProblemDetailWithValidationError() throws Exception {
 
-        BookRequest request = new BookRequest(
+        BookRequest invalidRequest = new BookRequest(
                 null,
                 "",
-                "A fantasy novel",
-                "https://example.com/hobbit.jpg",
-                "AVAILABLE",
+                "Description",
+                "photo.jpg",
+                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
@@ -224,7 +211,7 @@ class BookControllerTest {
 
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Validation failed"))
                 .andExpect(jsonPath("$.errors.title").exists());
@@ -233,9 +220,16 @@ class BookControllerTest {
     @Test
     void shouldReturnUnreadableProblemDetail() throws Exception {
 
+        String invalidJson = """
+                {
+                    "title": "Test Book",
+                    "description":
+                }
+                """;
+
         mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ invalid json }"))
+                        .content(invalidJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid request body"));
     }

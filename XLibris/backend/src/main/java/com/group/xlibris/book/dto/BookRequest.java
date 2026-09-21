@@ -25,7 +25,7 @@ public record BookRequest(
 
         String photoURL,
 
-        @NotBlank(groups = {OnCreate.class, OnUpdate.class})
+        @NotNull(groups = {OnCreate.class, OnUpdate.class})
         BookStatus status,
 
         @NotNull(groups = {OnCreate.class, OnUpdate.class})
