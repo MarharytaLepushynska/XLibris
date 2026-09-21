@@ -1,5 +1,6 @@
 package com.group.xlibris.book.dto;
 
+import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.common.validation.OnCreate;
 import com.group.xlibris.common.validation.OnUpdate;
 import jakarta.validation.constraints.NotBlank;
@@ -25,7 +26,7 @@ public record BookRequest(
         String photoURL,
 
         @NotBlank(groups = {OnCreate.class, OnUpdate.class})
-        String status,
+        BookStatus status,
 
         @NotNull(groups = {OnCreate.class, OnUpdate.class})
         UUID ownerId,

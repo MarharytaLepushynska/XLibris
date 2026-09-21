@@ -1,5 +1,6 @@
 package com.group.xlibris.book.entity;
 
+import com.group.xlibris.book.enums.BookStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +16,7 @@ public class Book {
     private String title;
     private String description;
     private String photoURL;
-    private String status;
+    private BookStatus status;
     private UUID ownerId;
     private UUID authorId;
     private UUID genreId;

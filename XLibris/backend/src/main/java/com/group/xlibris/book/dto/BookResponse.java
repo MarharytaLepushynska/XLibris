@@ -1,5 +1,7 @@
 package com.group.xlibris.book.dto;
 
+import com.group.xlibris.book.enums.BookStatus;
+
 import java.util.UUID;
 
 public record BookResponse(
@@ -7,7 +9,7 @@ public record BookResponse(
         String title,
         String description,
         String photoURL,
-        String status,
+        BookStatus status,
         UUID ownerId,
         UUID authorId,
         UUID genreId
