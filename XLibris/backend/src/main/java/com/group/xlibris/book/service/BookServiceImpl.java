@@ -70,7 +70,7 @@ public class BookServiceImpl implements BookService {
                 request.title(),
                 request.description(),
                 request.photoURL(),
-                request.status(),
+                existingBook.getStatus(),
                 request.ownerId(),
                 request.authorId(),
                 request.genreId()
