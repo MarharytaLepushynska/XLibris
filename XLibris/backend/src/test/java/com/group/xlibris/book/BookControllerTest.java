@@ -162,7 +162,7 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.id").value(bookId.toString()))
                 .andExpect(jsonPath("$.title").value("New Title"))
                 .andExpect(jsonPath("$.description").value("New description"))
-                .andExpect(jsonPath("$.status").value("BORROWED"));
+                .andExpect(jsonPath("$.status").value("AVAILABLE"));
     }
 
     @Test
