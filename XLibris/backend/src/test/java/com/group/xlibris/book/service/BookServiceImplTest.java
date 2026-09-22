@@ -7,6 +7,7 @@ import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
+import com.group.xlibris.bookRequest.enums.BookRequestStatus;
 import com.group.xlibris.common.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -253,5 +254,63 @@ class BookServiceImplTest {
 
         verify(strategy, never()).apply(any(Book.class));
         verify(bookRepository, never()).save(any(Book.class));
+    }
+
+    @Test
+    void recalculateAndSaveBookStatus_shouldSetBorrowed_whenRequestIsApproved() {
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        bookService.recalculateAndSaveBookStatus(
+                bookId,
+                BookRequestStatus.APPROVED
+        );
+
+        assertThat(book.getStatus())
+                .isEqualTo(BookStatus.BORROWED);
+
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
+    }
+
+    @Test
+    void recalculateAndSaveBookStatus_shouldSetAvailable_whenRequestIsRejected() {
+
+        book.setStatus(BookStatus.BORROWED);
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        bookService.recalculateAndSaveBookStatus(
+                bookId,
+                BookRequestStatus.REJECTED
+        );
+
+        assertThat(book.getStatus())
+                .isEqualTo(BookStatus.AVAILABLE);
+
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
+    }
+
+    @Test
+    void recalculateAndSaveBookStatus_shouldSetAvailable_whenRequestIsCancelled() {
+
+        book.setStatus(BookStatus.BORROWED);
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        bookService.recalculateAndSaveBookStatus(
+                bookId,
+                BookRequestStatus.CANCELLED
+        );
+
+        assertThat(book.getStatus())
+                .isEqualTo(BookStatus.AVAILABLE);
+
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
     }
 }
