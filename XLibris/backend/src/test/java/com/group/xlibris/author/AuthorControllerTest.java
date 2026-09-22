@@ -1,7 +1,6 @@
 package com.group.xlibris.author;
 
 import com.group.xlibris.author.dto.AuthorRequest;
-import com.group.xlibris.author.dto.AuthorResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,8 +11,12 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -29,7 +32,7 @@ class AuthorControllerTest {
     void createAuthor() throws Exception {
         AuthorRequest request = new AuthorRequest(
                 null,
-                "J.R.R. Tolkien"
+                "Test Author"
         );
 
         mockMvc.perform(post("/api/v1/authors")
@@ -37,14 +40,14 @@ class AuthorControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("J.R.R. Tolkien"));
+                .andExpect(jsonPath("$.name").value("Test Author"));
     }
 
     @Test
     void getAuthorById() throws Exception {
         AuthorRequest request = new AuthorRequest(
                 null,
-                "J.R.R. Tolkien"
+                "Test Author"
         );
 
         String response = mockMvc.perform(post("/api/v1/authors")
@@ -55,20 +58,21 @@ class AuthorControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        AuthorResponse createdAuthor =
-                objectMapper.readValue(response, AuthorResponse.class);
+        String id = objectMapper.readTree(response)
+                .get("id")
+                .asText();
 
-        mockMvc.perform(get("/api/v1/authors/{id}", createdAuthor.id()))
+        mockMvc.perform(get("/api/v1/authors/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(createdAuthor.id().toString()))
-                .andExpect(jsonPath("$.name").value("J.R.R. Tolkien"));
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.name").value("Test Author"));
     }
 
     @Test
     void getAllAuthors() throws Exception {
         AuthorRequest request = new AuthorRequest(
                 null,
-                "J.R.R. Tolkien"
+                "Test Author"
         );
 
         mockMvc.perform(post("/api/v1/authors")
@@ -79,14 +83,16 @@ class AuthorControllerTest {
         mockMvc.perform(get("/api/v1/authors"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[?(@.name == 'J.R.R. Tolkien')]").exists());
+                .andExpect(jsonPath("$[*].name").value(
+                        org.hamcrest.Matchers.hasItem("Test Author")
+                ));
     }
 
     @Test
     void updateAuthor() throws Exception {
         AuthorRequest createRequest = new AuthorRequest(
                 null,
-                "J.R.R. Tolkien"
+                "Test Author"
         );
 
         String response = mockMvc.perform(post("/api/v1/authors")
@@ -97,27 +103,28 @@ class AuthorControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        AuthorResponse createdAuthor =
-                objectMapper.readValue(response, AuthorResponse.class);
-
-        AuthorRequest updateRequest = new AuthorRequest(
-                createdAuthor.id(),
-                "John Tolkien"
+        UUID id = UUID.fromString(
+                objectMapper.readTree(response).get("id").asText()
         );
 
-        mockMvc.perform(put("/api/v1/authors/{id}", createdAuthor.id())
+        AuthorRequest updateRequest = new AuthorRequest(
+                id,
+                "Updated Test Author"
+        );
+
+        mockMvc.perform(put("/api/v1/authors/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(createdAuthor.id().toString()))
-                .andExpect(jsonPath("$.name").value("John Tolkien"));
+                .andExpect(jsonPath("$.id").value(id.toString()))
+                .andExpect(jsonPath("$.name").value("Updated Test Author"));
     }
 
     @Test
     void deleteAuthor() throws Exception {
         AuthorRequest request = new AuthorRequest(
                 null,
-                "J.R.R. Tolkien"
+                "Test Author"
         );
 
         String response = mockMvc.perform(post("/api/v1/authors")
@@ -128,22 +135,26 @@ class AuthorControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        AuthorResponse createdAuthor =
-                objectMapper.readValue(response, AuthorResponse.class);
+        String id = objectMapper.readTree(response)
+                .get("id")
+                .asText();
 
-        mockMvc.perform(delete("/api/v1/authors/{id}", createdAuthor.id()))
+        mockMvc.perform(delete("/api/v1/authors/{id}", id))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/authors/{id}", createdAuthor.id()))
+        mockMvc.perform(get("/api/v1/authors/{id}", id))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldReturnNotFound() throws Exception {
+    void shouldReturnNotFoundProblemDetail() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(get("/api/v1/authors/{id}", id))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Resource not found"))
+                .andExpect(jsonPath("$.detail")
+                        .value("Author with id " + id + " not found"));
     }
 
     @Test
@@ -165,7 +176,7 @@ class AuthorControllerTest {
     void shouldReturnUnreadableProblemDetail() throws Exception {
         mockMvc.perform(post("/api/v1/authors")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ invalid json }"))
+                        .content("{invalid json}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid request body"));
     }
