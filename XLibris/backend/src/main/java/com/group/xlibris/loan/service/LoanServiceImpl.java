@@ -1,5 +1,8 @@
 package com.group.xlibris.loan.service;
 
+import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.loan.command.CreateLoanCommand;
 import com.group.xlibris.loan.dto.LoanResponse;
@@ -14,9 +17,11 @@ import java.util.UUID;
 @Service
 public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
+    private final BookRepository bookRepository;
 
-    public LoanServiceImpl(LoanRepository loanRepository) {
+    public LoanServiceImpl(LoanRepository loanRepository, BookRepository bookRepository) {
         this.loanRepository = loanRepository;
+        this.bookRepository = bookRepository;
     }
 
     @Override
@@ -46,6 +51,10 @@ public class LoanServiceImpl implements LoanService {
     public LoanResponse returnLoan(UUID id) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Loan (id = " + id + ") was not found"));
+        Book book = bookRepository.findById(loan.getBookId())
+                .orElseThrow(() -> new NotFoundException("Book was not found"));
+        book.setStatus(BookStatus.AVAILABLE);
+        bookRepository.save(book);
         loan.assignToReturned();
         return LoanResponse.from(loanRepository.save(loan));
     }

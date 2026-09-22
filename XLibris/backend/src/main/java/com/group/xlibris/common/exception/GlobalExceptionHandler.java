@@ -1,5 +1,6 @@
 package com.group.xlibris.common.exception;
 
+import com.group.xlibris.bookRequest.exception.DuplicateBookRequestException;
 import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.feedback.exception.DuplicateFeedbackException;
@@ -220,6 +221,20 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(DuplicateBookRequestException.class)
+    public ResponseEntity<ProblemDetail> handleDuplicateBookRequestException(DuplicateBookRequestException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
+
+        problem.setTitle("Book request duplicate");
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(problem);
     }
 

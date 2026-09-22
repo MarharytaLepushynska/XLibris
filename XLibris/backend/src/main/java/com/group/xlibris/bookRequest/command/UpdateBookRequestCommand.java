@@ -6,5 +6,6 @@ import java.util.UUID;
 
 public record UpdateBookRequestCommand(
         UUID requestId,
+        UUID actorId,
         BookRequestStatus targetStatus
 ) {}

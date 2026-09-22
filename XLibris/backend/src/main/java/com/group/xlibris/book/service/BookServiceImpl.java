@@ -7,6 +7,8 @@ import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
+import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.bookRequest.service.BookRequestService;
 import com.group.xlibris.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +20,16 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final List<BookStateTransitionStrategy> strategies;
+    private final BookRequestService requestService;
 
     public BookServiceImpl(
             BookRepository bookRepository,
-            List<BookStateTransitionStrategy> strategies) {
+            List<BookStateTransitionStrategy> strategies,
+            BookRequestService requestService) {
 
         this.bookRepository = bookRepository;
         this.strategies = strategies;
+        this.requestService = requestService;
     }
 
     @Override
@@ -127,6 +132,10 @@ public class BookServiceImpl implements BookService {
         strategy.apply(book);
 
         bookRepository.save(book);
+
+        if (targetStatus == BookStatus.BLOCKED) {
+            requestService.cancelOpenRequests(id);
+        }
     }
 
     private Book getBook(UUID id) {

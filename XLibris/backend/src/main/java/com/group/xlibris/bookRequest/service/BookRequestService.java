@@ -14,4 +14,5 @@ public interface BookRequestService {
     List<BookRequestResponse> getAll(UUID bookId, UUID requesterId, BookRequestStatus status, int page, int size);
     BookRequestResponse updateStatus(UpdateBookRequestCommand command);
     void delete(UUID id);
+    void cancelOpenRequests(UUID bookId);
 }

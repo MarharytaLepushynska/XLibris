@@ -9,14 +9,19 @@ import com.group.xlibris.bookRequest.dto.BookRequestResponse;
 import com.group.xlibris.bookRequest.entity.BookRequestEntity;
 import com.group.xlibris.bookRequest.enums.BookRequestStatus;
 import com.group.xlibris.bookRequest.events.BookRequestStatusChangedEvent;
+import com.group.xlibris.bookRequest.exception.DuplicateBookRequestException;
 import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.bookRequest.repository.BookRequestRepository;
 import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.loan.command.CreateLoanCommand;
+import com.group.xlibris.loan.service.LoanService;
+import com.group.xlibris.user.exception.AccessDeniedException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,13 +30,16 @@ public class BookRequestServiceImpl implements BookRequestService {
     private final BookRequestRepository repository;
     private final BookRepository bookRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final LoanService loanService;
 
     public BookRequestServiceImpl(BookRequestRepository repository,
                                   BookRepository bookRepository,
-                                  ApplicationEventPublisher eventPublisher) {
+                                  ApplicationEventPublisher eventPublisher,
+                                  LoanService loanService) {
         this.repository = repository;
         this.bookRepository = bookRepository;
         this.eventPublisher = eventPublisher;
+        this.loanService = loanService;
     }
 
     @Override
@@ -42,8 +50,14 @@ public class BookRequestServiceImpl implements BookRequestService {
             throw new IllegalArgumentException("Cannot request to borrow your own book");
         }
 
-        if (book.getStatus() != BookStatus.AVAILABLE) {
-            throw new InvalidBookStateException("Book must be available to borrow");
+        if (book.getStatus() == BookStatus.BLOCKED) {
+            throw new InvalidBookStateException("Book is blocked");
+        }
+
+        boolean existsAlready = getOpenRequests(command.bookId()).stream()
+                .anyMatch(r -> r.getRequesterId().equals(command.requesterId()));
+        if (existsAlready) {
+            throw new DuplicateBookRequestException("Request for this book was already created");
         }
 
         BookRequestEntity entity = new BookRequestEntity(
@@ -80,21 +94,26 @@ public class BookRequestServiceImpl implements BookRequestService {
     public BookRequestResponse updateStatus(UpdateBookRequestCommand command) {
         BookRequestEntity existing = findOrThrow(command.requestId());
         BookRequestStatus previousStatus = existing.getStatus();
+        BookRequestStatus target = command.targetStatus();
 
-        if(!previousStatus.canTransitionTo(command.targetStatus())) {
+        if(!previousStatus.canTransitionTo(target)) {
             throw new InvalidBookRequestStateException(
                     "Cannot transition BookRequest " + command.requestId() +
                     " from " + existing.getStatus() + " to " + command.targetStatus());
         }
 
-        existing.setStatus(command.targetStatus());
-        existing.setRespondedAt(Instant.now());
-        BookRequestEntity saved = repository.save(existing);
+        Book book = bookRepository.findById(existing.getBookId())
+                .orElseThrow(() -> new NotFoundException("Book was not found"));
+        checkActor(existing, book, command.actorId(), target);
 
-        eventPublisher.publishEvent(new BookRequestStatusChangedEvent(
-                saved.getId(), saved.getBookId(), saved.getRequesterId(), saved.getOwnerId(),
-                saved.getDesiredDurationDays(), previousStatus, saved.getStatus()));
-        return BookRequestResponse.from(saved);
+        if (target == BookRequestStatus.APPROVED || target == BookRequestStatus.FULFILLED) {
+            if (book.getStatus() != BookStatus.AVAILABLE) {
+                throw new InvalidBookStateException("Book must be available");
+            }
+            checkFirstInQueue(existing);
+        }
+
+        return saveStatus(existing, target);
     }
 
     @Override
@@ -105,8 +124,56 @@ public class BookRequestServiceImpl implements BookRequestService {
         repository.deleteById(id);
     }
 
+    @Override
+    public void cancelOpenRequests(UUID bookId) {
+        for (BookRequestEntity request : getOpenRequests(bookId)) {
+            saveStatus(request, BookRequestStatus.CANCELLED);
+        }
+    }
+
+
     private BookRequestEntity findOrThrow(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Book request (id= " + id + ") was not found"));
+    }
+
+    private List<BookRequestEntity> getOpenRequests(UUID bookId) {
+        return repository.findAll().stream()
+                .filter(r -> r.getBookId().equals(bookId))
+                .filter(r -> r.getStatus().isOpen())
+                .sorted(Comparator.comparing(BookRequestEntity::getCreatedAt)
+                        .thenComparing(BookRequestEntity::getId))
+                .toList();
+    }
+
+    private void checkFirstInQueue(BookRequestEntity request) {
+        List<BookRequestEntity> queue = getOpenRequests(request.getBookId());
+        if (queue.isEmpty() || !queue.getFirst().getId().equals(request.getId())) {
+            throw new InvalidBookRequestStateException("Only the first request can be confirmed");
+        }
+    }
+
+    private void checkActor(BookRequestEntity request, Book book,
+                            UUID actorId, BookRequestStatus target) {
+        boolean allowed = switch (target) {
+            case APPROVED, REJECTED -> book.getOwnerId().equals(actorId);
+            case FULFILLED, CANCELLED -> request.getRequesterId().equals(actorId);
+            default -> false;
+        };
+        if (!allowed) {
+            throw new AccessDeniedException("You cannot perform this action");
+        }
+    }
+
+    private BookRequestResponse saveStatus(BookRequestEntity request, BookRequestStatus target) {
+        BookRequestStatus previous = request.getStatus();
+        request.setStatus(target);
+        request.setRespondedAt(Instant.now());
+        BookRequestEntity saved = repository.save(request);
+
+        eventPublisher.publishEvent(new BookRequestStatusChangedEvent(
+                saved.getId(), saved.getBookId(), saved.getRequesterId(), saved.getOwnerId(),
+                saved.getDesiredDurationDays(), previous, saved.getStatus()));
+        return BookRequestResponse.from(saved);
     }
 }

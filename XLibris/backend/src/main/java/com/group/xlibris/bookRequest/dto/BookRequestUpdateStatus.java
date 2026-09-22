@@ -8,12 +8,16 @@ import java.util.UUID;
 
 public record BookRequestUpdateStatus(
         @NotNull
+        UUID actorId,
+
+        @NotNull
         BookRequestStatus status
 ) {
         public UpdateBookRequestCommand toCommand(UUID requestId) {
                 return new UpdateBookRequestCommand(
                         requestId,
-                        this.status
+                        actorId,
+                        status
                 );
         }
 }
