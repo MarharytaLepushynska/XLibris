@@ -2,7 +2,7 @@ package com.group.xlibris.loan.controller;
 
 import com.group.xlibris.loan.dto.LoanRequest;
 import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.enums.LoanStatus;
+import com.group.xlibris.loan.repository.LoanRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class LoanControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private LoanController loanController;
+    private LoanRepository loanRepository;
 
     private final UUID activeLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
     private final UUID overdueLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
@@ -45,24 +45,22 @@ public class LoanControllerTest {
 
     @BeforeEach
     void resetMap() {
-        loanController.clearMap();
+        loanRepository.deleteAll();
 
-        Loan loan = new Loan(activeLoanId, bookId, ownerId, renterId, Instant.now(), Instant.now().plusSeconds(86400 * 14), null, LoanStatus.ACTIVE);
-        Loan loan2 = new Loan(overdueLoanId, bookId2, ownerId2, renterId2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null, LoanStatus.OVERDUE);
+        Loan loan = new Loan(activeLoanId, bookId, ownerId, renterId, Instant.now(), Instant.now().plusSeconds(86400 * 14), null);
+        Loan loan2 = new Loan(overdueLoanId, bookId2, ownerId2, renterId2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null);
 
-        loanController.fillMap(loan);
-        loanController.fillMap(loan2);
+        loanRepository.save(loan);
+        loanRepository.save(loan2);
     }
 
     @Test
     void shouldCreateLoan() throws Exception {
         LoanRequest request = new LoanRequest(
-                null,
                 UUID.fromString("550e8400-e29b-41d4-a716-446655445002"),
                 UUID.fromString("550e8400-e29b-41d4-a716-446655446002"),
                 UUID.fromString("550e8400-e29b-41d4-a716-446655447002"),
-                Instant.now().plusSeconds(86400 * 14),
-                null
+                Instant.now().plusSeconds(86400 * 14)
         );
 
         mvc.perform(post("/api/loans")
@@ -153,10 +151,8 @@ public class LoanControllerTest {
     void shouldReturnValidationProblemDetail() throws Exception {
         LoanRequest invalidRequest = new LoanRequest(
                 null,
-                null,
-                renterId,
                 ownerId,
-                Instant.now().minusSeconds(86400),
+                renterId,
                 null
         );
 
@@ -187,11 +183,15 @@ public class LoanControllerTest {
     }
 
     @Test
-    void shouldReturnConflictWhenAssigningNonActiveLoanToReturned() throws Exception {
-        mvc.perform(patch("/api/loans/{id}/return", overdueLoanId))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.title").value("Business rule violation"))
-                .andExpect(jsonPath("$.detail").value("Only loans in ACTIVE status can be returned"));
+    void shouldReturnConflictWhenAssigningAlreadyReturnedLoan() throws Exception {
+        mvc.perform(patch("/api/loans/{id}/return", activeLoanId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("RETURNED"));
+
+        mvc.perform(patch("/api/loans/{id}/return", activeLoanId))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.title").value("Invalid loan state"))
+                .andExpect(jsonPath("$.detail").value("Only not returned loans can be returned"));
     }
 
     @Test
