@@ -6,9 +6,10 @@ import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
-import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
+import com.group.xlibris.bookRequest.enums.BookRequestStatus;
 import com.group.xlibris.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
+import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,10 +20,7 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final List<BookStateTransitionStrategy> strategies;
 
-    public BookServiceImpl(
-            BookRepository bookRepository,
-            List<BookStateTransitionStrategy> strategies) {
-
+    public BookServiceImpl(BookRepository bookRepository, List<BookStateTransitionStrategy> strategies) {
         this.bookRepository = bookRepository;
         this.strategies = strategies;
     }
@@ -37,13 +35,15 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookResponse getBookById(UUID id) {
-        Book book = getBook(id);
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException("Book (id = " + id + ") was not found"));
+
         return toResponse(book);
     }
 
     @Override
     public BookResponse createBook(BookRequest request) {
-
         UUID id = UUID.randomUUID();
 
         Book book = new Book(
@@ -51,7 +51,7 @@ public class BookServiceImpl implements BookService {
                 request.title(),
                 request.description(),
                 request.photoURL(),
-                request.status(),
+                BookStatus.AVAILABLE,
                 request.ownerId(),
                 request.authorId(),
                 request.genreId()
@@ -62,15 +62,18 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookResponse updateBook(UUID id, BookRequest request) {
-
-        Book existingBook = getBook(id);
+        if (!bookRepository.existsById(id)) {
+            throw new NotFoundException(
+                    "Book (id = " + id + ") was not found"
+            );
+        }
 
         Book book = new Book(
-                existingBook.getId(),
+                id,
                 request.title(),
                 request.description(),
                 request.photoURL(),
-                existingBook.getStatus(),
+                BookStatus.AVAILABLE,
                 request.ownerId(),
                 request.authorId(),
                 request.genreId()
@@ -81,40 +84,63 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void deleteBook(UUID id) {
-
-        getBook(id);
+        if (!bookRepository.existsById(id)) {
+            throw new NotFoundException(
+                    "Book (id = " + id + ") was not found"
+            );
+        }
 
         bookRepository.deleteById(id);
     }
 
-    @Override
-    public void borrowBook(UUID id) {
-        changeStatus(id, BookStatus.BORROWED);
-    }
-
-    @Override
-    public void returnBook(UUID id) {
-        changeStatus(id, BookStatus.AVAILABLE);
+    private Book getBook(UUID id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(
+                                "Book (id = " + id + ") was not found"
+                        ));
     }
 
     @Override
     public void blockBook(UUID id) {
-        changeStatus(id, BookStatus.BLOCKED);
+        Book book = getBook(id);
+
+        if (book.getStatus() != BookStatus.AVAILABLE) {
+            throw new InvalidBookStateTransitionException(
+                    "Book cannot be blocked from status "
+                            + book.getStatus()
+            );
+        }
+
+        book.setStatus(BookStatus.BLOCKED);
+        bookRepository.save(book);
     }
 
     @Override
     public void unblockBook(UUID id) {
-        changeStatus(id, BookStatus.AVAILABLE);
+        Book book = getBook(id);
+
+        if (book.getStatus() != BookStatus.BLOCKED) {
+            throw new InvalidBookStateTransitionException(
+                    "Book cannot be unblocked from status "
+                            + book.getStatus()
+            );
+        }
+
+        book.setStatus(BookStatus.AVAILABLE);
+        bookRepository.save(book);
     }
 
     @Override
     public void changeStatus(UUID id, BookStatus targetStatus) {
-
-        Book book = getBook(id);
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(
+                                "Book (id = " + id + ") was not found"
+                        ));
 
         BookStateTransitionStrategy strategy = strategies.stream()
-                .filter(s ->
-                        s.supports(book.getStatus(), targetStatus))
+                .filter(s -> s.supports(book.getStatus(), targetStatus))
                 .findFirst()
                 .orElseThrow(() ->
                         new InvalidBookStateTransitionException(
@@ -125,21 +151,34 @@ public class BookServiceImpl implements BookService {
                         ));
 
         strategy.apply(book);
+        bookRepository.save(book);
+    }
+
+    @Override
+    public void recalculateAndSaveBookStatus(
+            UUID bookId,
+            BookRequestStatus requestStatus) {
+
+        Book book = getBook(bookId);
+
+        BookStatus targetStatus = mapRequestStatusToBookStatus(requestStatus);
+
+        book.setStatus(targetStatus);
 
         bookRepository.save(book);
     }
 
-    private Book getBook(UUID id) {
+    private BookStatus mapRequestStatusToBookStatus(
+            BookRequestStatus requestStatus) {
 
-        return bookRepository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException(
-                                "Book (id = " + id + ") was not found"
-                        ));
+        return switch (requestStatus) {
+            case PENDING -> BookStatus.AVAILABLE;
+            case APPROVED -> BookStatus.BORROWED;
+            case REJECTED, CANCELLED -> BookStatus.AVAILABLE;
+        };
     }
 
     private BookResponse toResponse(Book book) {
-
         return new BookResponse(
                 book.getId(),
                 book.getTitle(),
