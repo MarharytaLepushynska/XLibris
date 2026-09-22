@@ -139,11 +139,14 @@ class GenreControllerTest {
     }
 
     @Test
-    void shouldReturnNotFound() throws Exception {
+    void shouldReturnNotFoundProblemDetail() throws Exception {
         UUID id = UUID.randomUUID();
 
         mockMvc.perform(get("/api/v1/genres/{id}", id))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.title").value("Resource not found"))
+                .andExpect(jsonPath("$.detail")
+                        .value("Genre with id " + id + " not found"));
     }
 
     @Test
