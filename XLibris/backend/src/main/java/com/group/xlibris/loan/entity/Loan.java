@@ -4,14 +4,13 @@ import com.group.xlibris.loan.exception.InvalidLoanStateException;
 import com.group.xlibris.loan.enums.LoanStatus;
 import com.group.xlibris.loan.exception.InvalidReturnDateException;
 import com.group.xlibris.loan.exception.SameParticipantException;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Getter
 public class Loan {
     private UUID id;
