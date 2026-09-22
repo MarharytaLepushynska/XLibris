@@ -3,6 +3,7 @@ package com.group.xlibris.notification.controller;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.entity.Notification;
 import com.group.xlibris.notification.enums.NotificationType;
+import com.group.xlibris.notification.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,15 +30,15 @@ class NotificationControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private NotificationController notificationController;
+    private NotificationRepository notificationRepository;
 
     private UUID notificationId;
     private UUID userId;
 
     @BeforeEach
-    void resetMap() {
+    void resetRepository() {
 
-        notificationController.clearMap();
+        notificationRepository.deleteAll();
 
         notificationId =
                 UUID.fromString("550e8400-e29b-41d4-a716-446655440500");
@@ -67,8 +68,8 @@ class NotificationControllerTest {
                 Instant.now()
         );
 
-        notificationController.fillMap(notification1);
-        notificationController.fillMap(notification2);
+        notificationRepository.save(notification1);
+        notificationRepository.save(notification2);
     }
 
     @Test

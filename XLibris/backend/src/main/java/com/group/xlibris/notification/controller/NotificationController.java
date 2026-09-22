@@ -1,29 +1,27 @@
 package com.group.xlibris.notification.controller;
 
-import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
-import com.group.xlibris.notification.entity.Notification;
+import com.group.xlibris.notification.service.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-    private final Map<UUID, Notification> notifications;
+    private final NotificationService notificationService;
 
-    public NotificationController() {
-        notifications = new HashMap<>();
+    public NotificationController(
+            NotificationService notificationService
+    ) {
+        this.notificationService = notificationService;
     }
 
     @GetMapping("/{id}")
@@ -31,11 +29,10 @@ public class NotificationController {
             @PathVariable UUID id
     ) {
 
-        Notification notification = findNotificationById(id);
+        NotificationResponse response =
+                notificationService.getById(id);
 
-        return ResponseEntity.ok(
-                NotificationResponse.from(notification)
-        );
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
@@ -44,13 +41,7 @@ public class NotificationController {
     ) {
 
         List<NotificationResponse> responseList =
-                notifications.values()
-                        .stream()
-                        .filter(notification ->
-                                userId == null
-                                || notification.userId().equals(userId))
-                        .map(NotificationResponse::from)
-                        .toList();
+                notificationService.getAll(userId);
 
         return ResponseEntity.ok(responseList);
     }
@@ -60,52 +51,17 @@ public class NotificationController {
             @Valid @RequestBody NotificationRequest request
     ) {
 
-        Notification notification = new Notification(
-                UUID.randomUUID(),
-                request.userId(),
-                request.type(),
-                request.message(),
-                Instant.now()
-        );
-
-        notifications.put(
-                notification.id(),
-                notification
-        );
-
         NotificationResponse response =
-                NotificationResponse.from(notification);
+                notificationService.create(request);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(notification.id())
+                .buildAndExpand(response.id())
                 .toUri();
 
         return ResponseEntity
                 .created(location)
                 .body(response);
     }
-
-    private Notification findNotificationById(UUID id) {
-
-        Notification notification = notifications.get(id);
-
-        if (notification == null) {
-            throw new NotFoundException(
-                    "Notification with id " + id + " not found"
-            );
-        }
-
-        return notification;
-    }
-
-    public void clearMap() {
-        notifications.clear();
-    }
-
-    public void fillMap(Notification notification) {
-        notifications.put(notification.id(), notification);
-    }
-
 }
