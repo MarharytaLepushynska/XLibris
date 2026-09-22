@@ -2,6 +2,8 @@ package com.group.xlibris.common.exception;
 
 import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
+import com.group.xlibris.feedback.exception.DuplicateFeedbackException;
+import com.group.xlibris.feedback.exception.SelfFeedbackException;
 import com.group.xlibris.user.exception.AccessDeniedException;
 import com.group.xlibris.user.exception.ContactAccessDeniedException;
 import org.springframework.core.Ordered;
@@ -101,6 +103,40 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .badRequest()
+                .body(problem);
+    }
+
+    @ExceptionHandler(SelfFeedbackException.class)
+    public ResponseEntity<ProblemDetail> handleSelfFeedback(
+            SelfFeedbackException exception
+    ) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Business rule error");
+
+        return ResponseEntity
+                .badRequest()
+                .body(problem);
+    }
+
+    @ExceptionHandler(DuplicateFeedbackException.class)
+    public ResponseEntity<ProblemDetail> handleDuplicateFeedback(
+            DuplicateFeedbackException exception
+    ) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Business rule violation");
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(problem);
     }
 
