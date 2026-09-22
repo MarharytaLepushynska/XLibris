@@ -1,9 +1,13 @@
 package com.group.xlibris.bookRequest.controller;
 
+import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.bookRequest.dto.BookRequestCreate;
 import com.group.xlibris.bookRequest.dto.BookRequestUpdateStatus;
 import com.group.xlibris.bookRequest.entity.BookRequestEntity;
 import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.bookRequest.repository.BookRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +34,10 @@ class BookRequestControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private BookRequestController controller;
+    private BookRequestRepository repository;
+
+    @Autowired
+    private BookRepository bookRepository;
 
     private UUID requestId;
     private UUID requestId2;
@@ -45,7 +52,8 @@ class BookRequestControllerTest {
 
     @BeforeEach
     void resetMap() {
-        controller.clearMap();
+        repository.deleteAll();
+        bookRepository.deleteAll();
 
         requestId = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         requestId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
@@ -77,8 +85,20 @@ class BookRequestControllerTest {
                 null
         );
 
-        controller.fillMap(entity);
-        controller.fillMap(entity2);
+        Book book = new Book(
+                bookId,
+                "Test book",
+                "Test desc",
+                null,
+                BookStatus.AVAILABLE,
+                ownerId,
+                UUID.randomUUID(),
+                UUID.randomUUID()
+        );
+        bookRepository.save(book);
+
+        repository.save(entity);
+        repository.save(entity2);
     }
 
     @Test

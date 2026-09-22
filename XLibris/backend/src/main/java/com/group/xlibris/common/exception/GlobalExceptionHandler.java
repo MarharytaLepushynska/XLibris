@@ -1,5 +1,7 @@
 package com.group.xlibris.common.exception;
 
+import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
+import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.user.exception.AccessDeniedException;
 import com.group.xlibris.user.exception.ContactAccessDeniedException;
 import org.springframework.core.Ordered;
@@ -154,6 +156,34 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(problem);
+    }
+
+    @ExceptionHandler(InvalidBookRequestStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidBookRequestStateException(InvalidBookRequestStateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_CONTENT,
+                ex.getMessage()
+        );
+
+        problem.setTitle("Invalid staus for book request");
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(InvalidBookStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidBookStateException(InvalidBookStateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_CONTENT,
+                ex.getMessage()
+        );
+
+        problem.setTitle("Invalid staus for book to borrow");
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(problem);
     }
 

@@ -40,4 +40,9 @@ public class BookRepositoryImpl implements BookRepository {
         books.remove(id);
     }
 
+    @Override
+    public void deleteAll() {
+        books.clear();
+    }
+
 }

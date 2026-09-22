@@ -18,5 +18,5 @@ public interface BookRepository {
 
     void deleteById(UUID id);
 
-
+    void deleteAll();
 }

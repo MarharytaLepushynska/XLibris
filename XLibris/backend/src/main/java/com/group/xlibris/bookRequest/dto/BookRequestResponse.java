@@ -1,5 +1,6 @@
 package com.group.xlibris.bookRequest.dto;
 
+import com.group.xlibris.bookRequest.entity.BookRequestEntity;
 import com.group.xlibris.bookRequest.enums.BookRequestStatus;
 
 import java.time.Instant;
@@ -14,4 +15,17 @@ public record BookRequestResponse(
         BookRequestStatus status,
         Instant createdAt,
         Instant respondedAt
-) {}
+) {
+    public static BookRequestResponse from(BookRequestEntity entity) {
+        return new BookRequestResponse(
+                entity.getId(),
+                entity.getBookId(),
+                entity.getRequesterId(),
+                entity.getOwnerId(),
+                entity.getDesiredDurationDays(),
+                entity.getStatus(),
+                entity.getCreatedAt(),
+                entity.getRespondedAt()
+        );
+    }
+}
