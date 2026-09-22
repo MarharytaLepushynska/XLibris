@@ -1,10 +1,11 @@
 package com.group.xlibris.report.controller;
 
 import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.enums.LoanStatus;
+import com.group.xlibris.loan.repository.LoanRepository;
 import com.group.xlibris.report.dto.LoanReportRequest;
 import com.group.xlibris.report.entity.Report;
 import com.group.xlibris.report.enums.ReportType;
+import com.group.xlibris.report.repository.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,10 @@ public class LoanReportControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private LoanReportController loanReportController;
+    private LoanRepository loanRepository;
+
+    @Autowired
+    private ReportRepository reportRepository;
 
     private final UUID loanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
     private final UUID bookId = UUID.fromString("550e8400-e29b-41d4-a716-446655445000");
@@ -42,7 +46,7 @@ public class LoanReportControllerTest {
 
     @BeforeEach
     void resetMaps() {
-        loanReportController.clearMaps();
+        loanRepository.deleteAll();
 
         Loan loan = new Loan(
                 loanId,
@@ -51,20 +55,21 @@ public class LoanReportControllerTest {
                 renterId,
                 Instant.now(),
                 Instant.now().plusSeconds(86400 * 14),
-                null,
-                LoanStatus.ACTIVE
+                null
         );
-        loanReportController.fillLoan(loan);
+        loanRepository.save(loan);
 
         Report existingReport = Report.forLoan(
-                loan,
+                loan.getId(),
+                loan.getOwnerId(),
+                loan.getRenterId(),
                 ownerId,
                 "Book is damaged",
                 ReportType.DAMAGED_BOOK,
                 "Damaged pages by coffee",
                 URI.create("https://example.com/proof.jpg")
         );
-        loanReportController.fillReport(existingReport);
+        reportRepository.save(existingReport);
     }
 
     @Test
@@ -134,7 +139,8 @@ public class LoanReportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").value("Business rule error"));
+                .andExpect(jsonPath("$.title").value("Not a loan participant"))
+                .andExpect(jsonPath("$.detail").value("User " + thirdPartyUserId + " is not a participant of loan " + loanId));
     }
 
     @Test

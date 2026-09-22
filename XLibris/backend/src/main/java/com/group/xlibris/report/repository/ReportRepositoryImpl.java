@@ -41,4 +41,9 @@ public class ReportRepositoryImpl implements ReportRepository {
     public void deleteById(UUID id) {
         reports.remove(id);
     }
+
+    @Override
+    public void deleteAll() {
+        reports.clear();
+    }
 }
