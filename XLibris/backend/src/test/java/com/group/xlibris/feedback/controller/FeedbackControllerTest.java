@@ -2,6 +2,7 @@ package com.group.xlibris.feedback.controller;
 
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.entity.Feedback;
+import com.group.xlibris.feedback.repository.FeedbackRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ class FeedbackControllerTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FeedbackController feedbackController;
+    private FeedbackRepository feedbackRepository;
 
     private UUID feedbackId;
     private UUID loanId;
@@ -36,9 +37,9 @@ class FeedbackControllerTest {
     private UUID reviewedUserId;
 
     @BeforeEach
-    void resetMap() {
+    void resetRepository() {
 
-        feedbackController.clearMap();
+        feedbackRepository.deleteAll();
 
         feedbackId =
                 UUID.fromString("550e8400-e29b-41d4-a716-446655440100");
@@ -84,8 +85,8 @@ class FeedbackControllerTest {
                 Instant.now()
         );
 
-        feedbackController.fillMap(feedback1);
-        feedbackController.fillMap(feedback2);
+        feedbackRepository.save(feedback1);
+        feedbackRepository.save(feedback2);
     }
 
     @Test
