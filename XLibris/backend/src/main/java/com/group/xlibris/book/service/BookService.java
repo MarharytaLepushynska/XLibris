@@ -3,6 +3,7 @@ package com.group.xlibris.book.service;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.bookRequest.enums.BookRequestStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,13 +20,12 @@ public interface BookService {
 
     void deleteBook(UUID id);
 
-    void borrowBook(UUID id);
-
-    void returnBook(UUID id);
-
     void blockBook(UUID id);
 
     void unblockBook(UUID id);
 
     void changeStatus(UUID id, BookStatus targetStatus);
+
+    void recalculateAndSaveBookStatus(UUID bookId, BookRequestStatus requestStatus);
+
 }

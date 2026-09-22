@@ -13,4 +13,5 @@ public interface ReportRepository {
     List<Report> findAll(ReportStatus status, UUID loanId, UUID reporterId, UUID targetUserId);
     boolean existsById(UUID id);
     void deleteById(UUID id);
+    void deleteAll();
 }

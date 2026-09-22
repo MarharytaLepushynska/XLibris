@@ -56,7 +56,6 @@ class BookControllerTest {
                 "Test Book",
                 "Test description",
                 "photo.jpg",
-                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId
@@ -149,7 +148,6 @@ class BookControllerTest {
                 "New Title",
                 "New description",
                 "new.jpg",
-                BookStatus.BORROWED,
                 ownerId,
                 authorId,
                 genreId
@@ -203,7 +201,6 @@ class BookControllerTest {
                 "",
                 "Description",
                 "photo.jpg",
-                BookStatus.AVAILABLE,
                 ownerId,
                 authorId,
                 genreId

@@ -5,6 +5,13 @@ import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.feedback.exception.DuplicateFeedbackException;
 import com.group.xlibris.feedback.exception.SelfFeedbackException;
+import com.group.xlibris.loan.exception.InvalidLoanStateException;
+import com.group.xlibris.loan.exception.InvalidReturnDateException;
+import com.group.xlibris.loan.exception.SameParticipantException;
+import com.group.xlibris.report.exception.InvalidReportResolutionException;
+import com.group.xlibris.report.exception.InvalidReportStateException;
+import com.group.xlibris.report.exception.NotLoanParticipantException;
+import com.group.xlibris.report.exception.SelfReportException;
 import com.group.xlibris.user.exception.AccessDeniedException;
 import com.group.xlibris.user.exception.ContactAccessDeniedException;
 import org.springframework.core.Ordered;
@@ -17,8 +24,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.net.URI;
-import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -203,7 +208,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        problem.setTitle("Invalid staus for book request");
+        problem.setTitle("Invalid status for book request");
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_CONTENT)
@@ -217,7 +222,99 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
 
-        problem.setTitle("Invalid staus for book to borrow");
+        problem.setTitle("Invalid status for book to borrow");
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(problem);
+    }
+
+
+    @ExceptionHandler(InvalidLoanStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidLoanStateException(InvalidLoanStateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_CONTENT,
+                ex.getMessage()
+        );
+        problem.setTitle("Invalid loan state");
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(SameParticipantException.class)
+    public ResponseEntity<ProblemDetail> handleSameParticipantException(SameParticipantException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+        problem.setTitle("Same participant violation");
+
+        return ResponseEntity
+                .badRequest()
+                .body(problem);
+    }
+
+    @ExceptionHandler(InvalidReturnDateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidReturnDateException(InvalidReturnDateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+        problem.setTitle("Invalid return date");
+
+        return ResponseEntity
+                .badRequest()
+                .body(problem);
+    }
+
+    @ExceptionHandler(SelfReportException.class)
+    public ResponseEntity<ProblemDetail> handleSelfReportException(SelfReportException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+        problem.setTitle("Self report violation");
+
+        return ResponseEntity
+                .badRequest()
+                .body(problem);
+    }
+
+    @ExceptionHandler(NotLoanParticipantException.class)
+    public ResponseEntity<ProblemDetail> handleNotLoanParticipantException(NotLoanParticipantException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+        problem.setTitle("Not a loan participant");
+
+        return ResponseEntity
+                .badRequest()
+                .body(problem);
+    }
+
+    @ExceptionHandler(InvalidReportStateException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidReportStateException(InvalidReportStateException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_CONTENT,
+                ex.getMessage()
+        );
+        problem.setTitle("Invalid report state transition");
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(InvalidReportResolutionException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidReportResolutionException(InvalidReportResolutionException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_CONTENT,
+                ex.getMessage()
+        );
+        problem.setTitle("Invalid report resolution");
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_CONTENT)

@@ -7,7 +7,6 @@ import com.group.xlibris.report.exception.InvalidReportResolutionException;
 import com.group.xlibris.report.exception.InvalidReportStateException;
 import com.group.xlibris.report.exception.NotLoanParticipantException;
 import com.group.xlibris.report.exception.SelfReportException;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,7 +15,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Getter
 public class Report {
     private UUID id;
