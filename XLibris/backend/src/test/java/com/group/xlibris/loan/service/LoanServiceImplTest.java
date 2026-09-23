@@ -186,7 +186,7 @@ class LoanServiceImplTest {
 
         verify(loanRepository).findById(loanId);
         verify(loanRepository).save(loan);
-        verify(eventPublisher).publishEvent(new LoanReturnedEvent(loanId, loan.getBookId()));
+        verify(eventPublisher).publishEvent(new LoanReturnedEvent(loanId, loan.getBookId(), loan.getOwnerId(), loan.getRenterId(), loan.getActualReturnDate()));
     }
 
     @Test
