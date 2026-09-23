@@ -1,7 +1,8 @@
 package com.group.xlibris.book.strategy;
 
 import com.group.xlibris.book.entity.Book;
-import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.book.internal.strategy.BlockedToAvailableStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

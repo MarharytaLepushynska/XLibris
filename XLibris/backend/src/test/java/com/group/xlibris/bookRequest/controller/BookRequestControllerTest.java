@@ -1,8 +1,8 @@
 package com.group.xlibris.bookRequest.controller;
 
 import com.group.xlibris.book.entity.Book;
-import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.repository.BookRepository;
+import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.bookRequest.dto.BookRequestCreate;
 import com.group.xlibris.bookRequest.dto.BookRequestUpdateStatus;
 import com.group.xlibris.bookRequest.internal.BookRequestEntity;
