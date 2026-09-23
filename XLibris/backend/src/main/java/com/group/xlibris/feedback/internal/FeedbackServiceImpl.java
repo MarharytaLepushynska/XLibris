@@ -49,9 +49,9 @@ public class FeedbackServiceImpl implements FeedbackService {
                 Instant.now()
         );
 
-        return FeedbackResponse.from(
-                feedbackRepository.save(feedback)
-        );
+        Feedback savedFeedback = feedbackRepository.save(feedback);
+        System.out.println("Feedback with id " + savedFeedback.id() + " was created");
+        return FeedbackResponse.from(savedFeedback);
     }
 
     @Override

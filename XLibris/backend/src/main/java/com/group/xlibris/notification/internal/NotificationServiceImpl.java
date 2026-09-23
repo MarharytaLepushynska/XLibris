@@ -47,9 +47,8 @@ public class NotificationServiceImpl implements NotificationService {
                 Instant.now()
         );
 
-        Notification savedNotification =
-                notificationRepository.save(notification);
-
+        Notification savedNotification = notificationRepository.save(notification);
+        System.out.println("Notification with id " + savedNotification.id() + " was created");
         return NotificationResponse.from(savedNotification);
     }
 
