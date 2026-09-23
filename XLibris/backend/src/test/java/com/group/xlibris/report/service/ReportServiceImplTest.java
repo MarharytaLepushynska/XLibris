@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.net.URI;
 import java.time.Instant;
@@ -41,6 +42,9 @@ class ReportServiceImplTest {
     @Mock
     private LoanService loanService;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private ReportServiceImpl reportService;
 
     private UUID reportId;
@@ -53,7 +57,7 @@ class ReportServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        reportService = new ReportServiceImpl(reportRepository, loanService);
+        reportService = new ReportServiceImpl(reportRepository, loanService, eventPublisher);
 
         reportId = UUID.randomUUID();
         loanId = UUID.randomUUID();

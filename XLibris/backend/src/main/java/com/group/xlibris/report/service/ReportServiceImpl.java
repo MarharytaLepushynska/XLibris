@@ -7,9 +7,15 @@ import com.group.xlibris.report.command.*;
 import com.group.xlibris.report.dto.ReportFilterCriteria;
 import com.group.xlibris.report.dto.ReportResponse;
 import com.group.xlibris.report.entity.Report;
+import com.group.xlibris.report.enums.ReportStatus;
+import com.group.xlibris.report.events.ReportCreatedEvent;
+import com.group.xlibris.report.events.ReportRejectedEvent;
+import com.group.xlibris.report.events.ReportResolvedEvent;
 import com.group.xlibris.report.repository.ReportRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,10 +23,12 @@ import java.util.UUID;
 public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
     private final LoanService loanService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public ReportServiceImpl(ReportRepository reportRepository, LoanService loanService) {
+    public ReportServiceImpl(ReportRepository reportRepository, LoanService loanService, ApplicationEventPublisher eventPublisher) {
         this.reportRepository = reportRepository;
         this.loanService = loanService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -51,7 +59,18 @@ public class ReportServiceImpl implements ReportService {
                 loan.id(), loan.ownerId(), loan.renterId(),
                 command.reporterId(), command.title(), command.type(),
                 command.description(), command.evidenceUrl());
-        return ReportResponse.from(reportRepository.save(report));
+        Report savedReport = reportRepository.save(report);
+
+        eventPublisher.publishEvent(new ReportCreatedEvent(
+                savedReport.getId(),
+                savedReport.getReporterId(),
+                savedReport.getTargetUserId(),
+                savedReport.getLoanId(),
+                savedReport.getType(),
+                savedReport.getTitle(),
+                savedReport.getCreatedAt()
+        ));
+        return ReportResponse.from(savedReport);
     }
 
     @Override
@@ -59,7 +78,19 @@ public class ReportServiceImpl implements ReportService {
         Report report = Report.standalone(
                 command.title(), command.type(), command.description(),
                 command.evidenceUrl(), command.reporterId(), command.targetUserId());
-        return ReportResponse.from(reportRepository.save(report));
+        Report savedReport = reportRepository.save(report);
+
+        eventPublisher.publishEvent(new ReportCreatedEvent(
+                savedReport.getId(),
+                savedReport.getReporterId(),
+                savedReport.getTargetUserId(),
+                null,
+                savedReport.getType(),
+                savedReport.getTitle(),
+                savedReport.getCreatedAt()
+        ));
+
+        return ReportResponse.from(savedReport);
     }
 
     @Override
@@ -89,7 +120,28 @@ public class ReportServiceImpl implements ReportService {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Report (" + id + ") was not found"));
         report.resolve(command.resolution(), command.moderatorComment(), command.moderatorVerdict());
-        return ReportResponse.from(reportRepository.save(report));
+        Report savedReport = reportRepository.save(report);
+
+        if (savedReport.getStatus() == ReportStatus.REJECTED) {
+            eventPublisher.publishEvent(new ReportRejectedEvent(
+                    savedReport.getId(),
+                    savedReport.getReporterId(),
+                    savedReport.getTargetUserId(),
+                    savedReport.getModeratorComment(),
+                    Instant.now()
+            ));
+        } else if (savedReport.getStatus() == ReportStatus.RESOLVED) {
+            eventPublisher.publishEvent(new ReportResolvedEvent(
+                    savedReport.getId(),
+                    savedReport.getReporterId(),
+                    savedReport.getTargetUserId(),
+                    savedReport.getModeratorVerdict(),
+                    savedReport.getModeratorComment(),
+                    Instant.now()
+            ));
+        }
+
+        return ReportResponse.from(savedReport);
     }
 
     @Override
