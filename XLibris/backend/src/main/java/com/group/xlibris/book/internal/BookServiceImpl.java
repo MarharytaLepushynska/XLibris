@@ -65,7 +65,11 @@ public class BookServiceImpl implements BookService {
                 request.genreId()
         );
 
-        return toResponse(bookRepository.save(book));
+        Book savedBook = bookRepository.save(book);
+
+        System.out.println("Book with id " + savedBook.getId() + " was created");
+
+        return toResponse(savedBook);
     }
 
     @Override
@@ -87,7 +91,12 @@ public class BookServiceImpl implements BookService {
                 request.genreId()
         );
 
-        return toResponse(bookRepository.save(book));
+        Book updatedBook = bookRepository.save(book);
+
+        System.out.println("Book information with id " + updatedBook.getId() + " was updated");
+
+
+        return toResponse(updatedBook);
     }
 
     @Override
@@ -99,6 +108,8 @@ public class BookServiceImpl implements BookService {
         }
 
         bookRepository.deleteById(id);
+
+        System.out.println("Book with id " + id + " was deleted");
     }
 
     private Book getBook(UUID id) {
@@ -123,6 +134,8 @@ public class BookServiceImpl implements BookService {
         book.setStatus(BookStatus.BLOCKED);
         bookRepository.save(book);
         eventPublisher.publishEvent(new BookBlockedEvent(id));
+
+        System.out.println("Event for Book with id " + id + " was published");
     }
 
     @Override
@@ -159,12 +172,19 @@ public class BookServiceImpl implements BookService {
                                         + targetStatus
                         ));
 
+        BookStatus previousStatus = book.getStatus();
+
         strategy.apply(book);
         bookRepository.save(book);
+
+        System.out.println("Status of Book with id " + id + " was changed from " + previousStatus + " to " + book.getStatus());
 
         if (targetStatus == BookStatus.BLOCKED) {
             eventPublisher.publishEvent(new BookBlockedEvent(id));
         }
+
+        System.out.println("Event for Book with id " + id + " was published");
+
     }
 
     @Override
