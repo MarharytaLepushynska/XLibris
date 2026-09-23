@@ -1,5 +1,6 @@
 package com.group.xlibris.book.service;
 
+import com.group.xlibris.book.BookBlockedEvent;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.entity.Book;
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -279,10 +281,12 @@ class BookServiceImplTest {
         verify(bookRepository).save(book);
     }
 
-//    @Test
-//    void shouldBlockAndPublishEvent() {
-//        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
-//        bookService.blockBook(bookId);
-//        assertEquals
-//    }
+    @Test
+    void shouldBlockAndPublishEvent() {
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+        bookService.blockBook(bookId);
+        assertEquals(BookStatus.BLOCKED, book.getStatus());
+        verify(bookRepository).save(book);
+        verify(eventPublisher).publishEvent(new BookBlockedEvent(bookId));
+    }
 }
