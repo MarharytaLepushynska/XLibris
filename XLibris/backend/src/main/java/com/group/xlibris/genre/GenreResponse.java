@@ -1,4 +1,4 @@
-package com.group.xlibris.genre.dto;
+package com.group.xlibris.genre;
 
 import java.util.UUID;
 

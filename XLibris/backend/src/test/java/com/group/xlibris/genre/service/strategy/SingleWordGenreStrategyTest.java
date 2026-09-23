@@ -1,5 +1,6 @@
 package com.group.xlibris.genre.service.strategy;
 
+import com.group.xlibris.genre.internal.strategy.SingleWordGenreStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

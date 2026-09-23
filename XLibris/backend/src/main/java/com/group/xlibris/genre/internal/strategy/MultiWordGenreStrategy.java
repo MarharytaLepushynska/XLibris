@@ -1,4 +1,4 @@
-package com.group.xlibris.genre.service.strategy;
+package com.group.xlibris.genre.internal.strategy;
 
 import org.springframework.stereotype.Component;
 

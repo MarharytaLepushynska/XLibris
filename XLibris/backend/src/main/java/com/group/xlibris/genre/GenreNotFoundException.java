@@ -1,4 +1,4 @@
-package com.group.xlibris.genre.exception;
+package com.group.xlibris.genre;
 
 import com.group.xlibris.common.NotFoundException;
 

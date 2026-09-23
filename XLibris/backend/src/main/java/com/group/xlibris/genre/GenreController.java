@@ -1,10 +1,7 @@
-package com.group.xlibris.genre.controller;
+package com.group.xlibris.genre;
 
 import com.group.xlibris.common.OnCreate;
 import com.group.xlibris.common.OnUpdate;
-import com.group.xlibris.genre.dto.GenreRequest;
-import com.group.xlibris.genre.dto.GenreResponse;
-import com.group.xlibris.genre.service.GenreService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

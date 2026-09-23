@@ -1,7 +1,4 @@
-package com.group.xlibris.genre.service;
-
-import com.group.xlibris.genre.dto.GenreRequest;
-import com.group.xlibris.genre.dto.GenreResponse;
+package com.group.xlibris.genre;
 
 import java.util.List;
 import java.util.UUID;
