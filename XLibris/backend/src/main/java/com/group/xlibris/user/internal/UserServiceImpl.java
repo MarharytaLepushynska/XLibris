@@ -58,7 +58,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createUser(CreateUserCommand command) {
         User user = User.create(command);
-        return UserResponse.from(userRepository.save(user));
+        User saved = userRepository.save(user);
+        System.out.println("User with id " + user.getId() + "was created");
+        return UserResponse.from(saved);
     }
 
     @Override
@@ -69,7 +71,9 @@ public class UserServiceImpl implements UserService {
 
         User user = findUserOrThrow(id);
         user.updateDetails(command);
-        return UserResponse.from(userRepository.save(user));
+        User updated = userRepository.save(user);
+        System.out.println("User information with id " + updated.getId() + " was updated");
+        return UserResponse.from(updated);
     }
 
     @Override
@@ -85,7 +89,9 @@ public class UserServiceImpl implements UserService {
 
         User user = findUserOrThrow(id);
         user.updateDetails(command);
-        return UserResponse.from(userRepository.save(user));
+        User updated = userRepository.save(user);
+        System.out.println("User information with id " + updated.getId() + " was updated by admin");
+        return UserResponse.from(updated);
     }
 
     @Override
@@ -94,6 +100,7 @@ public class UserServiceImpl implements UserService {
             throw new NotFoundException("User (id= " + id + ") was not found");
         }
         userRepository.deleteById(id);
+        System.out.println("User with id " + id + " was deleted");
     }
 
     private User findUserOrThrow(UUID id) {

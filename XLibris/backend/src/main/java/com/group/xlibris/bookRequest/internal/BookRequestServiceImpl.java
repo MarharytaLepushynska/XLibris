@@ -60,7 +60,9 @@ public class BookRequestServiceImpl implements BookRequestService {
                 Instant.now(),
                 null
         );
-        return BookRequestResponse.from(repository.save(entity));
+        BookRequestEntity saved = repository.save(entity);
+        System.out.println("Book request with id " + saved.getBookId() + " was created");
+        return BookRequestResponse.from(saved);
     }
 
     @Override
@@ -111,6 +113,7 @@ public class BookRequestServiceImpl implements BookRequestService {
             throw new NotFoundException("Book request (id= " + id + ") was not found");
         }
         repository.deleteById(id);
+        System.out.println("Book request with id " + id + " was deleted");
     }
 
     @Override
@@ -118,6 +121,7 @@ public class BookRequestServiceImpl implements BookRequestService {
         for (BookRequestEntity request : getOpenRequests(bookId)) {
             saveStatus(request, BookRequestStatus.CANCELLED);
         }
+        System.out.println("Book requests for book with id " + bookId + " were cancelled");
     }
 
     private BookRequestEntity findOrThrow(UUID id) {
@@ -158,10 +162,12 @@ public class BookRequestServiceImpl implements BookRequestService {
         request.setStatus(target);
         request.setRespondedAt(Instant.now());
         BookRequestEntity saved = repository.save(request);
+        System.out.println("Staus of book request with id " + request.getBookId() + " was changed from " + request.getStatus() + " to " + target );
 
         eventPublisher.publishEvent(new BookRequestStatusChangedEvent(
                 saved.getId(), saved.getBookId(), saved.getRequesterId(), saved.getOwnerId(),
                 saved.getDesiredDurationDays(), previous, saved.getStatus()));
+        System.out.println("Event for changing book request status was published");
         return BookRequestResponse.from(saved);
     }
 }
