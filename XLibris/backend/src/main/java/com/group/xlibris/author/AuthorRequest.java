@@ -1,4 +1,4 @@
-package com.group.xlibris.author.dto;
+package com.group.xlibris;
 
 import com.group.xlibris.common.OnCreate;
 import com.group.xlibris.common.OnUpdate;

@@ -1,7 +1,6 @@
-package com.group.xlibris.author.service;
+package com.group.xlibris.author;
 
-import com.group.xlibris.author.dto.AuthorResponse;
-import com.group.xlibris.author.dto.AuthorRequest;
+import com.group.xlibris.AuthorRequest;
 
 import java.util.List;
 import java.util.UUID;

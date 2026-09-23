@@ -1,5 +1,6 @@
-package com.group.xlibris.author.repository;
+package com.group.xlibris.author.internal;
 
+import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.author.entity.Author;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class AuthorRepositoryImpl implements AuthorRepository{
+public class AuthorRepositoryImpl implements AuthorRepository {
 
     private final ConcurrentHashMap<UUID, Author> authors = new ConcurrentHashMap<>();
 
