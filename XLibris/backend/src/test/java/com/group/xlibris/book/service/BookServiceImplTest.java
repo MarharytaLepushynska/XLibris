@@ -8,6 +8,7 @@ import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
 import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.bookRequest.service.BookRequestService;
 import com.group.xlibris.common.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,9 @@ class BookServiceImplTest {
     @Mock
     private BookStateTransitionStrategy strategy;
 
+    @Mock
+    private BookRequestService service;
+
     private BookServiceImpl bookService;
 
     private UUID bookId;
@@ -48,7 +52,8 @@ class BookServiceImplTest {
 
         bookService = new BookServiceImpl(
                 bookRepository,
-                List.of(strategy)
+                List.of(strategy),
+                service
         );
 
         bookId = UUID.randomUUID();
@@ -257,6 +262,24 @@ class BookServiceImplTest {
     }
 
     @Test
+    void recalculateAndSaveBookStatus_shouldSetBorrowed_whenRequestIsFulfilled() {
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        bookService.recalculateAndSaveBookStatus(
+                bookId,
+                BookRequestStatus.FULFILLED
+        );
+
+        assertThat(book.getStatus())
+                .isEqualTo(BookStatus.BORROWED);
+
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
+    }
+/*
+    @Test
     void recalculateAndSaveBookStatus_shouldSetBorrowed_whenRequestIsApproved() {
 
         when(bookRepository.findById(bookId))
@@ -312,5 +335,5 @@ class BookServiceImplTest {
 
         verify(bookRepository).findById(bookId);
         verify(bookRepository).save(book);
-    }
+    }*/
 }

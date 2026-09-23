@@ -1,5 +1,7 @@
 package com.group.xlibris.loan.service;
 
+import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.loan.command.CreateLoanCommand;
@@ -173,7 +175,10 @@ class LoanServiceImplTest {
 
     @Test
     void shouldReturnLoanSuccessfully() {
+        Book book = new Book(bookId, "HarryPotter", "some", null, BookStatus.BORROWED, ownerId, UUID.randomUUID(), UUID.randomUUID());
+
         when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         LoanResponse response = loanService.returnLoan(loanId);
@@ -184,6 +189,9 @@ class LoanServiceImplTest {
 
         verify(loanRepository).findById(loanId);
         verify(loanRepository).save(loan);
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
+        assertEquals(BookStatus.AVAILABLE, book.getStatus());
     }
 
     @Test
@@ -203,6 +211,7 @@ class LoanServiceImplTest {
         assertThrows(InvalidLoanStateException.class, () -> loanService.returnLoan(loanId));
         verify(loanRepository).findById(loanId);
         verify(loanRepository, never()).save(any());
+        verify(bookRepository, never()).findById(any());
     }
 
     @Test

@@ -51,11 +51,12 @@ public class LoanServiceImpl implements LoanService {
     public LoanResponse returnLoan(UUID id) {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Loan (id = " + id + ") was not found"));
+        loan.assignToReturned();
+
         Book book = bookRepository.findById(loan.getBookId())
                 .orElseThrow(() -> new NotFoundException("Book was not found"));
         book.setStatus(BookStatus.AVAILABLE);
         bookRepository.save(book);
-        loan.assignToReturned();
         return LoanResponse.from(loanRepository.save(loan));
     }
 

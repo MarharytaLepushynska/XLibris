@@ -103,7 +103,7 @@ class BookRequestControllerTest {
 
     @Test
     void shouldCreateRequest() throws Exception {
-        BookRequestCreate request = new BookRequestCreate(requesterId, 21);
+        BookRequestCreate request = new BookRequestCreate(requesterId2, 21);
 
         mvc.perform(post("/api/book-requests/{bookId}", bookId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -111,7 +111,7 @@ class BookRequestControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.bookId").value(bookId.toString()))
-                .andExpect(jsonPath("$.requesterId").value(requesterId.toString()))
+                .andExpect(jsonPath("$.requesterId").value(requesterId2.toString()))
                 .andExpect(jsonPath("$.desiredDurationDays").value(21))
                 .andExpect(jsonPath("$.status").value("PENDING"));
     }
@@ -177,7 +177,7 @@ class BookRequestControllerTest {
 
     @Test
     void shouldUpdateRequestStatus() throws Exception {
-        BookRequestUpdateStatus request = new BookRequestUpdateStatus(BookRequestStatus.APPROVED);
+        BookRequestUpdateStatus request = new BookRequestUpdateStatus(ownerId, BookRequestStatus.APPROVED);
 
         mvc.perform(patch("/api/book-requests/{id}", requestId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -206,7 +206,7 @@ class BookRequestControllerTest {
     void shouldReturnNotFoundWhenUpdatingWithUnknownId() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440009");
 
-        BookRequestUpdateStatus request = new BookRequestUpdateStatus(BookRequestStatus.APPROVED);
+        BookRequestUpdateStatus request = new BookRequestUpdateStatus(ownerId, BookRequestStatus.APPROVED);
 
         mvc.perform(patch("/api/book-requests/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
