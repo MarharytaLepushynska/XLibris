@@ -1,7 +1,6 @@
-package com.group.xlibris.report.repository;
+package com.group.xlibris.report.internal;
 
-import com.group.xlibris.report.entity.Report;
-import com.group.xlibris.report.enums.ReportStatus;
+import com.group.xlibris.report.ReportStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;

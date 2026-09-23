@@ -1,4 +1,4 @@
-package com.group.xlibris.report.enums;
+package com.group.xlibris.report;
 
 public enum ReportAction {
     NONE,

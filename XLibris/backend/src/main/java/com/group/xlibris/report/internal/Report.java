@@ -1,12 +1,12 @@
-package com.group.xlibris.report.entity;
+package com.group.xlibris.report.internal;
 
-import com.group.xlibris.report.enums.ReportAction;
-import com.group.xlibris.report.enums.ReportStatus;
-import com.group.xlibris.report.enums.ReportType;
-import com.group.xlibris.report.exception.InvalidReportResolutionException;
-import com.group.xlibris.report.exception.InvalidReportStateException;
-import com.group.xlibris.report.exception.NotLoanParticipantException;
-import com.group.xlibris.report.exception.SelfReportException;
+import com.group.xlibris.report.ReportAction;
+import com.group.xlibris.report.ReportStatus;
+import com.group.xlibris.report.ReportType;
+import com.group.xlibris.report.InvalidReportResolutionException;
+import com.group.xlibris.report.InvalidReportStateException;
+import com.group.xlibris.report.NotLoanParticipantException;
+import com.group.xlibris.report.SelfReportException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

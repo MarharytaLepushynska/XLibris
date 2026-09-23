@@ -1,4 +1,4 @@
-package com.group.xlibris.report.events;
+package com.group.xlibris.report;
 
 import java.time.Instant;
 import java.util.UUID;

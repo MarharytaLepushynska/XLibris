@@ -1,8 +1,11 @@
-package com.group.xlibris.report.service;
+package com.group.xlibris.report;
 
-import com.group.xlibris.report.command.*;
 import com.group.xlibris.report.dto.ReportFilterCriteria;
 import com.group.xlibris.report.dto.ReportResponse;
+import com.group.xlibris.report.internal.command.CreateLoanReportCommand;
+import com.group.xlibris.report.internal.command.CreateReportCommand;
+import com.group.xlibris.report.internal.command.ResolveReportCommand;
+import com.group.xlibris.report.internal.command.UpdateReportCommand;
 
 import java.util.List;
 import java.util.UUID;

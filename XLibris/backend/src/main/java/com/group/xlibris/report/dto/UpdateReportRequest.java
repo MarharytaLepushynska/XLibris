@@ -1,7 +1,7 @@
 package com.group.xlibris.report.dto;
 
-import com.group.xlibris.report.command.UpdateReportCommand;
-import com.group.xlibris.report.enums.ReportType;
+import com.group.xlibris.report.internal.command.UpdateReportCommand;
+import com.group.xlibris.report.ReportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
