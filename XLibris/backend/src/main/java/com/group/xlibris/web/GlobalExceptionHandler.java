@@ -9,6 +9,7 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.feedback.DuplicateFeedbackException;
 import com.group.xlibris.feedback.SelfFeedbackException;
 import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
+import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
 import com.group.xlibris.loan.InvalidLoanStateException;
 import com.group.xlibris.loan.InvalidReturnDateException;
 import com.group.xlibris.loan.SameParticipantException;
@@ -163,6 +164,23 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(InvalidFeedbackParticipantsException.class)
+    public ResponseEntity<ProblemDetail> handleInvalidFeedbackParticipants(
+            InvalidFeedbackParticipantsException exception
+    ) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Invalid feedback participants");
+
+        return ResponseEntity
+                .badRequest()
                 .body(problem);
     }
 

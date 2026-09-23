@@ -7,6 +7,7 @@ import com.group.xlibris.feedback.dto.FeedbackResponse;
 import com.group.xlibris.feedback.DuplicateFeedbackException;
 import com.group.xlibris.feedback.SelfFeedbackException;
 import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
+import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.LoanStatus;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,20 @@ public class FeedbackServiceImpl implements FeedbackService {
         if (loan.status() != LoanStatus.RETURNED) {
             throw new FeedbackBeforeLoanReturnedException(
                     "Feedback can only be submitted after the loan is returned"
+            );
+        }
+
+        boolean ownerReviewsRenter =
+                request.reviewerId().equals(loan.ownerId())
+                && request.reviewedUserId().equals(loan.renterId());
+
+        boolean renterReviewsOwner =
+                request.reviewerId().equals(loan.renterId())
+                && request.reviewedUserId().equals(loan.ownerId());
+
+        if (!ownerReviewsRenter && !renterReviewsOwner) {
+            throw new InvalidFeedbackParticipantsException(
+                    "Feedback can only be submitted between participants of the loan"
             );
         }
 

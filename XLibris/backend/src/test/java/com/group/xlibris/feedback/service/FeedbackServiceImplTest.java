@@ -7,6 +7,7 @@ import com.group.xlibris.feedback.internal.Feedback;
 import com.group.xlibris.feedback.DuplicateFeedbackException;
 import com.group.xlibris.feedback.SelfFeedbackException;
 import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
+import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.LoanStatus;
 import com.group.xlibris.loan.dto.LoanResponse;
@@ -384,12 +385,73 @@ class FeedbackServiceImplTest {
                 .save(any());
     }
 
+    @Test
+    void shouldAllowOwnerToLeaveFeedbackForRenter() {
+
+        FeedbackRequest request = new FeedbackRequest(
+                loanId,
+                reviewedUserId,
+                reviewerId,
+                5,
+                "Great renter"
+        );
+
+        when(loanService.getLoanById(loanId))
+                .thenReturn(returnedLoan());
+
+        when(feedbackRepository.existsByLoanIdAndReviewerId(
+                loanId,
+                reviewedUserId
+        )).thenReturn(false);
+
+        when(feedbackRepository.save(any(Feedback.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        FeedbackResponse response =
+                feedbackService.create(request);
+
+        assertNotNull(response);
+        assertEquals(reviewedUserId, response.reviewerId());
+        assertEquals(reviewerId, response.reviewedUserId());
+
+        verify(feedbackRepository)
+                .save(any(Feedback.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUsersAreNotLoanParticipants() {
+
+        UUID outsiderId = UUID.randomUUID();
+
+        FeedbackRequest request = new FeedbackRequest(
+                loanId,
+                outsiderId,
+                reviewedUserId,
+                5,
+                "Feedback"
+        );
+
+        when(loanService.getLoanById(loanId))
+                .thenReturn(returnedLoan());
+
+        assertThrows(
+                InvalidFeedbackParticipantsException.class,
+                () -> feedbackService.create(request)
+        );
+
+        verify(feedbackRepository, never())
+                .existsByLoanIdAndReviewerId(any(), any());
+
+        verify(feedbackRepository, never())
+                .save(any());
+    }
+
     private LoanResponse returnedLoan() {
         return new LoanResponse(
                 loanId,
                 UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                reviewedUserId,
+                reviewerId,
                 Instant.now().minusSeconds(86400),
                 Instant.now().minusSeconds(3600),
                 Instant.now(),
