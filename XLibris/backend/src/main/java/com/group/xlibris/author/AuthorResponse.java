@@ -1,4 +1,4 @@
-package com.group.xlibris.author.dto;
+package com.group.xlibris.author;
 
 import java.util.UUID;
 

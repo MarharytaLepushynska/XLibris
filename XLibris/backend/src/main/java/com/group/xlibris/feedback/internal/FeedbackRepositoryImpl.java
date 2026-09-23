@@ -1,6 +1,5 @@
-package com.group.xlibris.feedback.repository;
+package com.group.xlibris.feedback.internal;
 
-import com.group.xlibris.feedback.entity.Feedback;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

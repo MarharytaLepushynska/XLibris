@@ -1,12 +1,11 @@
-package com.group.xlibris.feedback.service;
+package com.group.xlibris.feedback.internal;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.feedback.FeedbackService;
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;
-import com.group.xlibris.feedback.entity.Feedback;
-import com.group.xlibris.feedback.exception.DuplicateFeedbackException;
-import com.group.xlibris.feedback.exception.SelfFeedbackException;
-import com.group.xlibris.feedback.repository.FeedbackRepository;
+import com.group.xlibris.feedback.DuplicateFeedbackException;
+import com.group.xlibris.feedback.SelfFeedbackException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

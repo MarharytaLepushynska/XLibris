@@ -1,6 +1,6 @@
 package com.group.xlibris.notification.dto;
 
-import com.group.xlibris.notification.enums.NotificationType;
+import com.group.xlibris.notification.NotificationType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

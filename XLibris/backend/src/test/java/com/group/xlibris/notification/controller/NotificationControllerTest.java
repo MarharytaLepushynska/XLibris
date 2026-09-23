@@ -1,9 +1,9 @@
 package com.group.xlibris.notification.controller;
 
 import com.group.xlibris.notification.dto.NotificationRequest;
-import com.group.xlibris.notification.entity.Notification;
-import com.group.xlibris.notification.enums.NotificationType;
-import com.group.xlibris.notification.repository.NotificationRepository;
+import com.group.xlibris.notification.internal.Notification;
+import com.group.xlibris.notification.NotificationType;
+import com.group.xlibris.notification.internal.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

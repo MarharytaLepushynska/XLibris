@@ -1,6 +1,4 @@
-package com.group.xlibris.feedback.repository;
-
-import com.group.xlibris.feedback.entity.Feedback;
+package com.group.xlibris.feedback.internal;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,10 +1,11 @@
-package com.group.xlibris.author.service;
+package com.group.xlibris.author.internal;
 
-import com.group.xlibris.author.dto.AuthorRequest;
-import com.group.xlibris.author.dto.AuthorResponse;
+import com.group.xlibris.author.AuthorRequest;
+import com.group.xlibris.author.AuthorResponse;
+import com.group.xlibris.author.AuthorService;
 import com.group.xlibris.author.entity.Author;
-import com.group.xlibris.author.exeption.AuthorNotFoundException;
-import com.group.xlibris.author.repository.AuthorRepository;
+import com.group.xlibris.author.AuthorNotFoundException;
+import com.group.xlibris.author.AuthorRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

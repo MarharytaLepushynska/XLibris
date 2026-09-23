@@ -1,10 +1,11 @@
 package com.group.xlibris.author.service;
 
 import com.group.xlibris.author.entity.Author;
-import com.group.xlibris.author.dto.AuthorRequest;
-import com.group.xlibris.author.dto.AuthorResponse;
-import com.group.xlibris.author.exeption.AuthorNotFoundException;
-import com.group.xlibris.author.repository.AuthorRepository;
+import com.group.xlibris.author.AuthorRequest;
+import com.group.xlibris.author.AuthorResponse;
+import com.group.xlibris.author.AuthorNotFoundException;
+import com.group.xlibris.author.internal.AuthorServiceImpl;
+import com.group.xlibris.author.AuthorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

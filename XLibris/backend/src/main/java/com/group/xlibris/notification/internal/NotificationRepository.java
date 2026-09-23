@@ -1,6 +1,4 @@
-package com.group.xlibris.notification.repository;
-
-import com.group.xlibris.notification.entity.Notification;
+package com.group.xlibris.notification.internal;
 
 import java.util.List;
 import java.util.Optional;

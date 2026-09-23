@@ -1,4 +1,4 @@
-package com.group.xlibris.notification.enums;
+package com.group.xlibris.notification;
 
 public enum NotificationType {
     BOOK_REQUEST_CREATED,

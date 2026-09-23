@@ -1,4 +1,4 @@
-package com.group.xlibris.author.exeption;
+package com.group.xlibris.author;
 
 import com.group.xlibris.common.NotFoundException;
 

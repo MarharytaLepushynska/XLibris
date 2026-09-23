@@ -1,6 +1,6 @@
-package com.group.xlibris.notification.entity;
+package com.group.xlibris.notification.internal;
 
-import com.group.xlibris.notification.enums.NotificationType;
+import com.group.xlibris.notification.NotificationType;
 
 import java.time.Instant;
 import java.util.UUID;

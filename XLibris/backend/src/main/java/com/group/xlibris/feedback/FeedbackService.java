@@ -1,4 +1,4 @@
-package com.group.xlibris.feedback.service;
+package com.group.xlibris.feedback;
 
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;

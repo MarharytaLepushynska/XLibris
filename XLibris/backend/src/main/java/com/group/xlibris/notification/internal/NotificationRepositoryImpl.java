@@ -1,6 +1,5 @@
-package com.group.xlibris.notification.repository;
+package com.group.xlibris.notification.internal;
 
-import com.group.xlibris.notification.entity.Notification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
