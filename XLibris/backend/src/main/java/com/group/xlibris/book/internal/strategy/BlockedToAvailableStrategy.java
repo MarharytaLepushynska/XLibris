@@ -1,7 +1,7 @@
-package com.group.xlibris.book.strategy;
+package com.group.xlibris.book.internal.strategy;
 
 import com.group.xlibris.book.entity.Book;
-import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.BookStatus;
 import org.springframework.stereotype.Component;
 
 @Component

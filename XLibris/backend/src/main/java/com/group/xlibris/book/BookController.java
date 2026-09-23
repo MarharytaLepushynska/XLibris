@@ -1,10 +1,8 @@
-package com.group.xlibris.book.controller;
+package com.group.xlibris.book;
 
-import com.group.xlibris.book.dto.BookRequest;
-import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.service.BookService;
 import com.group.xlibris.common.OnCreate;
 import com.group.xlibris.common.OnUpdate;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;

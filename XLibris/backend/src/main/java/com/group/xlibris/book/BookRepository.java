@@ -1,4 +1,4 @@
-package com.group.xlibris.book.repository;
+package com.group.xlibris.book;
 
 import com.group.xlibris.book.entity.Book;
 

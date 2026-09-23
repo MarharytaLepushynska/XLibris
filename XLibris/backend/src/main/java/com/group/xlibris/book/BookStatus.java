@@ -1,4 +1,4 @@
-package com.group.xlibris.book.enums;
+package com.group.xlibris.book;
 
 import org.springframework.modulith.NamedInterface;
 

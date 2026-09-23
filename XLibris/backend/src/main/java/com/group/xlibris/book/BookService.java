@@ -1,15 +1,14 @@
-package com.group.xlibris.book.service;
+package com.group.xlibris.book;
 
-import com.group.xlibris.book.dto.BookRequest;
-import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.BookRequest;
+import com.group.xlibris.book.BookResponse;
+import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.bookRequest.BookRequestStatus;
 import org.springframework.modulith.NamedInterface;
 
 import java.util.List;
 import java.util.UUID;
 
-@NamedInterface("api")
 public interface BookService {
 
     List<BookResponse> getAllBooks();

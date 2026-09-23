@@ -1,15 +1,18 @@
 package com.group.xlibris.book.service;
 
 import com.group.xlibris.book.BookBlockedEvent;
-import com.group.xlibris.book.dto.BookRequest;
-import com.group.xlibris.book.dto.BookResponse;
+import com.group.xlibris.book.BookRequest;
+import com.group.xlibris.book.BookResponse;
 import com.group.xlibris.book.entity.Book;
-import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
-import com.group.xlibris.book.repository.BookRepository;
-import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
+import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.book.InvalidBookStateTransitionException;
+import com.group.xlibris.book.BookRepository;
+import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
 import com.group.xlibris.bookRequest.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
+
+import com.group.xlibris.book.internal.BookServiceImpl;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

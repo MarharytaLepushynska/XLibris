@@ -1,6 +1,6 @@
-package com.group.xlibris.book.listener;
+package com.group.xlibris.book;
 
-import com.group.xlibris.book.service.BookService;
+import com.group.xlibris.book.BookService;
 import com.group.xlibris.bookRequest.BookRequestStatusChangedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;

@@ -1,6 +1,7 @@
-package com.group.xlibris.book.repository;
+package com.group.xlibris.book.internal;
 
 import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.BookRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

@@ -1,8 +1,9 @@
 package com.group.xlibris.bookRequest.internal;
 
-import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.service.BookService;
+import com.group.xlibris.book.BookResponse;
+import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.book.BookService;
+
 import com.group.xlibris.bookRequest.dto.BookRequestResponse;
 import com.group.xlibris.bookRequest.BookRequestService;
 import com.group.xlibris.bookRequest.BookRequestStatus;

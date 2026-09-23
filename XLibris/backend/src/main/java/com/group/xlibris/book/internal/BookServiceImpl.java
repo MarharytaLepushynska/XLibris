@@ -1,17 +1,19 @@
-package com.group.xlibris.book.service;
+package com.group.xlibris.book.internal;
 
-import com.group.xlibris.book.dto.BookRequest;
-import com.group.xlibris.book.dto.BookResponse;
+import com.group.xlibris.book.BookRequest;
+import com.group.xlibris.book.BookResponse;
+import com.group.xlibris.book.BookService;
+import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.entity.Book;
-import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
-import com.group.xlibris.book.repository.BookRepository;
+import com.group.xlibris.book.InvalidBookStateTransitionException;
+import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.BookBlockedEvent;
 import com.group.xlibris.bookRequest.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
+import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
 
 import java.util.List;
 import java.util.UUID;

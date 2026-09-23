@@ -1,8 +1,10 @@
 package com.group.xlibris.loan.service;
 
+
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.LoanReturnedEvent;
 import com.group.xlibris.loan.internal.CreateLoanCommand;
+
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.LoanStatus;
@@ -187,6 +189,13 @@ class LoanServiceImplTest {
         verify(loanRepository).findById(loanId);
         verify(loanRepository).save(loan);
         verify(eventPublisher).publishEvent(new LoanReturnedEvent(loanId, loan.getBookId(), loan.getOwnerId(), loan.getRenterId(), loan.getActualReturnDate()));
+        verify(eventPublisher).publishEvent(new LoanReturnedEvent(
+                loan.getId(),
+                loan.getBookId(),
+                loan.getOwnerId(),
+                loan.getRenterId(),
+                loan.getActualReturnDate()
+        ));
     }
 
     @Test
