@@ -1,8 +1,8 @@
 package com.group.xlibris.feedback.controller;
 
 import com.group.xlibris.feedback.dto.FeedbackRequest;
-import com.group.xlibris.feedback.entity.Feedback;
-import com.group.xlibris.feedback.repository.FeedbackRepository;
+import com.group.xlibris.feedback.internal.Feedback;
+import com.group.xlibris.feedback.internal.FeedbackRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.group.xlibris.feedback.entity;
+package com.group.xlibris.feedback.internal;
 
 import java.time.Instant;
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package com.group.xlibris.feedback.dto;
 
-import com.group.xlibris.feedback.entity.Feedback;
+import com.group.xlibris.feedback.internal.Feedback;
 
 import java.time.Instant;
 import java.util.UUID;

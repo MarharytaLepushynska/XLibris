@@ -1,8 +1,7 @@
-package com.group.xlibris.feedback.controller;
+package com.group.xlibris.feedback;
 
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;
-import com.group.xlibris.feedback.service.FeedbackService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
