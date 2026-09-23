@@ -63,6 +63,8 @@ public class ReportServiceImpl implements ReportService {
                 command.description(), command.evidenceUrl());
         Report savedReport = reportRepository.save(report);
 
+        System.out.println("Report with id " + savedReport.getId() + " was created");
+
         eventPublisher.publishEvent(new ReportCreatedEvent(
                 savedReport.getId(),
                 savedReport.getReporterId(),
@@ -72,6 +74,9 @@ public class ReportServiceImpl implements ReportService {
                 savedReport.getTitle(),
                 savedReport.getCreatedAt()
         ));
+
+        System.out.println("Event for creating report was published");
+
         return ReportResponse.from(savedReport);
     }
 
@@ -82,6 +87,8 @@ public class ReportServiceImpl implements ReportService {
                 command.evidenceUrl(), command.reporterId(), command.targetUserId());
         Report savedReport = reportRepository.save(report);
 
+        System.out.println("Report with id " + savedReport.getId() + " was created");
+
         eventPublisher.publishEvent(new ReportCreatedEvent(
                 savedReport.getId(),
                 savedReport.getReporterId(),
@@ -91,6 +98,8 @@ public class ReportServiceImpl implements ReportService {
                 savedReport.getTitle(),
                 savedReport.getCreatedAt()
         ));
+
+        System.out.println("Event for creating report was published");
 
         return ReportResponse.from(savedReport);
     }
@@ -106,6 +115,9 @@ public class ReportServiceImpl implements ReportService {
                 command.description(),
                 command.evidenceUrl()
         );
+
+        System.out.println("Report information with id " + id + " was updated");
+
         return ReportResponse.from(reportRepository.save(report));
     }
 
@@ -113,37 +125,49 @@ public class ReportServiceImpl implements ReportService {
     public ReportResponse assignToReview(UUID id) {
         Report report = reportRepository.findById(id).
                 orElseThrow(() -> new NotFoundException("Report (" + id + ") was not found"));
+        ReportStatus previousStatus = report.getStatus();
         report.assignToReview();
-        return ReportResponse.from(reportRepository.save(report));
+        Report saved = reportRepository.save(report);
+
+        System.out.println("Status of Report with id " + id + " was changed from " + previousStatus + " to " + saved.getStatus());
+
+        return ReportResponse.from(saved);
     }
 
     @Override
     public ReportResponse resolveReport(UUID id, ResolveReportCommand command) {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Report (" + id + ") was not found"));
+        ReportStatus previousStatus = report.getStatus();
         report.resolve(command.resolution(), command.moderatorComment(), command.moderatorVerdict());
-        Report savedReport = reportRepository.save(report);
+        Report saved = reportRepository.save(report);
 
-        if (savedReport.getStatus() == ReportStatus.REJECTED) {
+        System.out.println("Status of Report with id " + id + " was changed from " + previousStatus + " to " + saved.getStatus());
+
+        if (saved.getStatus() == ReportStatus.REJECTED) {
             eventPublisher.publishEvent(new ReportRejectedEvent(
-                    savedReport.getId(),
-                    savedReport.getReporterId(),
-                    savedReport.getTargetUserId(),
-                    savedReport.getModeratorComment(),
+                    saved.getId(),
+                    saved.getReporterId(),
+                    saved.getTargetUserId(),
+                    saved.getModeratorComment(),
                     Instant.now()
             ));
-        } else if (savedReport.getStatus() == ReportStatus.RESOLVED) {
+
+            System.out.println("Event for rejecting report was published");
+        } else if (saved.getStatus() == ReportStatus.RESOLVED) {
             eventPublisher.publishEvent(new ReportResolvedEvent(
-                    savedReport.getId(),
-                    savedReport.getReporterId(),
-                    savedReport.getTargetUserId(),
-                    savedReport.getModeratorVerdict(),
-                    savedReport.getModeratorComment(),
+                    saved.getId(),
+                    saved.getReporterId(),
+                    saved.getTargetUserId(),
+                    saved.getModeratorVerdict(),
+                    saved.getModeratorComment(),
                     Instant.now()
             ));
+
+            System.out.println("Event for resolving report was published");
         }
 
-        return ReportResponse.from(savedReport);
+        return ReportResponse.from(saved);
     }
 
     @Override
@@ -152,5 +176,7 @@ public class ReportServiceImpl implements ReportService {
             throw new NotFoundException("Report (" + id + ") was not found");
         }
         reportRepository.deleteById(id);
+
+        System.out.println("Report with id " + id + " was deleted");
     }
 }
