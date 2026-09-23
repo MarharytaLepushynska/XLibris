@@ -55,6 +55,8 @@ public class GenreServiceImpl implements GenreService {
 
         Genre savedGenre = genreRepository.save(genre);
 
+        System.out.println("Genre with id " + savedGenre.getId() + " was created");
+
         return toResponse(savedGenre);
     }
 
@@ -71,6 +73,8 @@ public class GenreServiceImpl implements GenreService {
 
         Genre updatedGenre = genreRepository.save(existingGenre);
 
+        System.out.println("Genre information with id " + updatedGenre.getId() + " was updated");
+
         return toResponse(updatedGenre);
     }
 
@@ -81,6 +85,8 @@ public class GenreServiceImpl implements GenreService {
         }
 
         genreRepository.deleteById(id);
+
+        System.out.println("Genre with id " + id + " was deleted");
     }
 
     private GenreStrategy findStrategy(String genreName) {
