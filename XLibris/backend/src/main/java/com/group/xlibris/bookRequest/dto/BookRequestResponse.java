@@ -1,7 +1,7 @@
 package com.group.xlibris.bookRequest.dto;
 
 import com.group.xlibris.bookRequest.internal.BookRequestEntity;
-import com.group.xlibris.landCommon.BookRequestStatus;
+import com.group.xlibris.bookRequest.BookRequestStatus;
 
 import java.time.Instant;
 import java.util.UUID;

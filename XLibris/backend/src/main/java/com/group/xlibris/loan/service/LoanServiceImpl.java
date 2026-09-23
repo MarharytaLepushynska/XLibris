@@ -1,7 +1,7 @@
 package com.group.xlibris.loan.service;
 
 import com.group.xlibris.common.NotFoundException;
-import com.group.xlibris.landCommon.LoanReturnedEvent;
+import com.group.xlibris.loan.LoanReturnedEvent;
 import com.group.xlibris.loan.command.CreateLoanCommand;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;

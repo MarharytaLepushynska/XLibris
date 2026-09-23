@@ -6,7 +6,7 @@ import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.bookRequest.dto.BookRequestCreate;
 import com.group.xlibris.bookRequest.dto.BookRequestUpdateStatus;
 import com.group.xlibris.bookRequest.internal.BookRequestEntity;
-import com.group.xlibris.landCommon.BookRequestStatus;
+import com.group.xlibris.bookRequest.BookRequestStatus;
 import com.group.xlibris.bookRequest.internal.BookRequestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -7,7 +7,7 @@ import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
-import com.group.xlibris.landCommon.BookRequestStatus;
+import com.group.xlibris.bookRequest.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

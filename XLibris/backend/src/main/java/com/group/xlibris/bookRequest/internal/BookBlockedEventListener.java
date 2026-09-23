@@ -1,7 +1,7 @@
 package com.group.xlibris.bookRequest.internal;
 
 import com.group.xlibris.bookRequest.BookRequestService;
-import com.group.xlibris.landCommon.BookBlockedEvent;
+import com.group.xlibris.book.BookBlockedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

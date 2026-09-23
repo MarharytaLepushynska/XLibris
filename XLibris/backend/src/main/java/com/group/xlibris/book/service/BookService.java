@@ -3,7 +3,7 @@ package com.group.xlibris.book.service;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.landCommon.BookRequestStatus;
+import com.group.xlibris.bookRequest.BookRequestStatus;
 import org.springframework.modulith.NamedInterface;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.group.xlibris.landCommon;
+package com.group.xlibris.loan;
 
 import java.util.UUID;
 

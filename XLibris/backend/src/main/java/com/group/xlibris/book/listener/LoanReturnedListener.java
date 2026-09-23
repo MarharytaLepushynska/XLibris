@@ -1,7 +1,7 @@
 package com.group.xlibris.book.listener;
 
 import com.group.xlibris.book.service.BookService;
-import com.group.xlibris.landCommon.LoanReturnedEvent;
+import com.group.xlibris.loan.LoanReturnedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

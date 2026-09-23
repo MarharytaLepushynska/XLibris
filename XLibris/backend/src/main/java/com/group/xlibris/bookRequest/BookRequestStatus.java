@@ -1,4 +1,4 @@
-package com.group.xlibris.landCommon;
+package com.group.xlibris.bookRequest;
 
 public enum BookRequestStatus {
     PENDING, APPROVED, FULFILLED, REJECTED, CANCELLED;
