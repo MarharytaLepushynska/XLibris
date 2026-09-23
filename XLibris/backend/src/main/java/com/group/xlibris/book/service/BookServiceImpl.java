@@ -158,13 +158,12 @@ public class BookServiceImpl implements BookService {
     public void recalculateAndSaveBookStatus(
             UUID bookId,
             BookRequestStatus requestStatus) {
+        if (requestStatus != BookRequestStatus.FULFILLED) {
+            return;
+        }
 
         Book book = getBook(bookId);
-
-        BookStatus targetStatus = mapRequestStatusToBookStatus(requestStatus);
-
-        book.setStatus(targetStatus);
-
+        book.setStatus(BookStatus.BORROWED);
         bookRepository.save(book);
     }
 
@@ -173,8 +172,9 @@ public class BookServiceImpl implements BookService {
 
         return switch (requestStatus) {
             case PENDING -> BookStatus.AVAILABLE;
-            case APPROVED -> BookStatus.BORROWED;
+            case APPROVED -> BookStatus.AVAILABLE;
             case REJECTED, CANCELLED -> BookStatus.AVAILABLE;
+            case FULFILLED -> BookStatus.BORROWED;
         };
     }
 

@@ -14,7 +14,6 @@ import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.bookRequest.repository.BookRequestRepository;
 import com.group.xlibris.common.exception.NotFoundException;
-import com.group.xlibris.loan.command.CreateLoanCommand;
 import com.group.xlibris.loan.service.LoanService;
 import com.group.xlibris.user.exception.AccessDeniedException;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,22 +29,20 @@ public class BookRequestServiceImpl implements BookRequestService {
     private final BookRequestRepository repository;
     private final BookRepository bookRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final LoanService loanService;
 
     public BookRequestServiceImpl(BookRequestRepository repository,
                                   BookRepository bookRepository,
-                                  ApplicationEventPublisher eventPublisher,
-                                  LoanService loanService) {
+                                  ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
         this.bookRepository = bookRepository;
         this.eventPublisher = eventPublisher;
-        this.loanService = loanService;
     }
 
     @Override
     public BookRequestResponse create(CreateBookRequestCommand command) {
         Book book = bookRepository.findById(command.bookId())
                 .orElseThrow(() -> new NotFoundException("Book (id= " + command.bookId() + ") was not found"));
+
         if (book.getOwnerId().equals(command.requesterId())) {
             throw new IllegalArgumentException("Cannot request to borrow your own book");
         }
@@ -130,7 +127,6 @@ public class BookRequestServiceImpl implements BookRequestService {
             saveStatus(request, BookRequestStatus.CANCELLED);
         }
     }
-
 
     private BookRequestEntity findOrThrow(UUID id) {
         return repository.findById(id)

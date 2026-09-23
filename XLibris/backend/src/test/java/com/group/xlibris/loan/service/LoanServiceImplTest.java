@@ -1,5 +1,6 @@
 package com.group.xlibris.loan.service;
 
+import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.loan.command.CreateLoanCommand;
 import com.group.xlibris.loan.dto.LoanResponse;
@@ -30,6 +31,9 @@ class LoanServiceImplTest {
     @Mock
     private LoanRepository loanRepository;
 
+    @Mock
+    private BookRepository bookRepository;
+
     private LoanServiceImpl loanService;
 
     private UUID loanId;
@@ -41,7 +45,7 @@ class LoanServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        loanService = new LoanServiceImpl(loanRepository);
+        loanService = new LoanServiceImpl(loanRepository, bookRepository);
 
         loanId = UUID.randomUUID();
         bookId = UUID.randomUUID();
