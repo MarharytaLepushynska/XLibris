@@ -14,7 +14,6 @@ import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.bookRequest.repository.BookRequestRepository;
 import com.group.xlibris.common.exception.NotFoundException;
-import com.group.xlibris.loan.service.LoanService;
 import com.group.xlibris.user.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

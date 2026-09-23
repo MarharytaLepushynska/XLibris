@@ -1,5 +1,8 @@
 package com.group.xlibris.loan.controller;
 
+import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.enums.BookStatus;
+import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.loan.dto.LoanRequest;
 import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.loan.repository.LoanRepository;
@@ -31,6 +34,9 @@ public class LoanControllerTest {
     @Autowired
     private LoanRepository loanRepository;
 
+    @Autowired
+    private BookRepository bookRepository;
+
     private final UUID activeLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
     private final UUID overdueLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
 
@@ -52,6 +58,12 @@ public class LoanControllerTest {
 
         loanRepository.save(loan);
         loanRepository.save(loan2);
+
+        Book book = new Book(bookId, "Test Book 1", "desc", null, BookStatus.BORROWED, ownerId, UUID.randomUUID(), UUID.randomUUID());
+        Book book2 = new Book(bookId2, "Test Book 2", "desc", null, BookStatus.BORROWED, ownerId2, UUID.randomUUID(), UUID.randomUUID());
+
+        bookRepository.save(book);
+        bookRepository.save(book2);
     }
 
     @Test
