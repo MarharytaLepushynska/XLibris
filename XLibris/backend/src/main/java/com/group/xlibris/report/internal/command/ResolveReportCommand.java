@@ -1,7 +1,7 @@
-package com.group.xlibris.report.command;
+package com.group.xlibris.report.internal.command;
 
-import com.group.xlibris.report.enums.ReportAction;
-import com.group.xlibris.report.enums.ReportStatus;
+import com.group.xlibris.report.ReportAction;
+import com.group.xlibris.report.ReportStatus;
 
 public record ResolveReportCommand(
         ReportStatus resolution,

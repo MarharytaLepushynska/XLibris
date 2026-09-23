@@ -1,6 +1,4 @@
-package com.group.xlibris.report.events;
-
-import com.group.xlibris.report.enums.ReportAction;
+package com.group.xlibris.report;
 
 import java.time.Instant;
 import java.util.UUID;

@@ -1,9 +1,9 @@
 package com.group.xlibris.report.dto;
 
-import com.group.xlibris.report.entity.Report;
-import com.group.xlibris.report.enums.ReportAction;
-import com.group.xlibris.report.enums.ReportStatus;
-import com.group.xlibris.report.enums.ReportType;
+import com.group.xlibris.report.internal.Report;
+import com.group.xlibris.report.ReportAction;
+import com.group.xlibris.report.ReportStatus;
+import com.group.xlibris.report.ReportType;
 
 import java.net.URI;
 import java.time.Instant;

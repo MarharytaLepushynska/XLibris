@@ -1,8 +1,7 @@
-package com.group.xlibris.report.controller;
+package com.group.xlibris.report;
 
 import com.group.xlibris.report.dto.LoanReportRequest;
 import com.group.xlibris.report.dto.ReportResponse;
-import com.group.xlibris.report.service.ReportService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

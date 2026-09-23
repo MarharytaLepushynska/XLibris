@@ -1,17 +1,19 @@
-package com.group.xlibris.report.service;
+package com.group.xlibris.report.internal;
 
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.LoanService;
-import com.group.xlibris.report.command.*;
+import com.group.xlibris.report.ReportService;
 import com.group.xlibris.report.dto.ReportFilterCriteria;
 import com.group.xlibris.report.dto.ReportResponse;
-import com.group.xlibris.report.entity.Report;
-import com.group.xlibris.report.enums.ReportStatus;
-import com.group.xlibris.report.events.ReportCreatedEvent;
-import com.group.xlibris.report.events.ReportRejectedEvent;
-import com.group.xlibris.report.events.ReportResolvedEvent;
-import com.group.xlibris.report.repository.ReportRepository;
+import com.group.xlibris.report.ReportStatus;
+import com.group.xlibris.report.ReportCreatedEvent;
+import com.group.xlibris.report.ReportRejectedEvent;
+import com.group.xlibris.report.ReportResolvedEvent;
+import com.group.xlibris.report.internal.command.CreateLoanReportCommand;
+import com.group.xlibris.report.internal.command.CreateReportCommand;
+import com.group.xlibris.report.internal.command.ResolveReportCommand;
+import com.group.xlibris.report.internal.command.UpdateReportCommand;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 

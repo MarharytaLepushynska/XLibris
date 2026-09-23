@@ -1,6 +1,6 @@
-package com.group.xlibris.report.command;
+package com.group.xlibris.report.internal.command;
 
-import com.group.xlibris.report.enums.ReportType;
+import com.group.xlibris.report.ReportType;
 
 import java.net.URI;
 

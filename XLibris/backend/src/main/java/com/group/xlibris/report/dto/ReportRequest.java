@@ -1,7 +1,7 @@
 package com.group.xlibris.report.dto;
 
-import com.group.xlibris.report.command.CreateReportCommand;
-import com.group.xlibris.report.enums.ReportType;
+import com.group.xlibris.report.internal.command.CreateReportCommand;
+import com.group.xlibris.report.ReportType;
 import jakarta.validation.constraints.*;
 
 import java.net.URI;

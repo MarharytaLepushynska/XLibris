@@ -1,4 +1,4 @@
-package com.group.xlibris.report.exception;
+package com.group.xlibris.report;
 
 import com.group.xlibris.common.DomainException;
 

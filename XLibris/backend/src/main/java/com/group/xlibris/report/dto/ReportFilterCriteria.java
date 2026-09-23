@@ -1,6 +1,6 @@
 package com.group.xlibris.report.dto;
 
-import com.group.xlibris.report.enums.ReportStatus;
+import com.group.xlibris.report.ReportStatus;
 
 import java.util.UUID;
 
