@@ -4,7 +4,6 @@ import com.group.xlibris.common.exception.IdMismatch;
 import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.repository.LoanRepository;
 import com.group.xlibris.loan.service.LoanService;
 import com.group.xlibris.user.command.CreateUserCommand;
 import com.group.xlibris.user.command.UpdateUserCommand;

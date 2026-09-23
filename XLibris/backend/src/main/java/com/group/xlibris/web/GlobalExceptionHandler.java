@@ -104,7 +104,7 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST,
-                "Request body is invalid"
+                exception.getMessage()
         );
 
         problem.setTitle("Invalid request body");

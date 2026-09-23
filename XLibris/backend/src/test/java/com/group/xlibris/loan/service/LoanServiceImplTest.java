@@ -2,7 +2,6 @@ package com.group.xlibris.loan.service;
 
 import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.landCommon.LoanReturnedEvent;
 import com.group.xlibris.loan.command.CreateLoanCommand;
@@ -177,8 +176,6 @@ class LoanServiceImplTest {
 
     @Test
     void shouldReturnLoanSuccessfully() {
-        Book book = new Book(bookId, "HarryPotter", "some", null, BookStatus.BORROWED, ownerId, UUID.randomUUID(), UUID.randomUUID());
-
         when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 

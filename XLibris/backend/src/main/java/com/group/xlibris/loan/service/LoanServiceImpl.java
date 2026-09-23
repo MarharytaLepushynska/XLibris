@@ -1,8 +1,5 @@
 package com.group.xlibris.loan.service;
 
-import com.group.xlibris.book.entity.Book;
-import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
 import com.group.xlibris.landCommon.LoanReturnedEvent;
 import com.group.xlibris.loan.command.CreateLoanCommand;
