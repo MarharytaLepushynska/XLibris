@@ -47,6 +47,8 @@ public class AuthorServiceImpl implements AuthorService {
 
         Author savedAuthor = authorRepository.save(author);
 
+        System.out.println("Author with id " + savedAuthor.getId() + " was created");
+
         return toResponse(savedAuthor);
     }
 
@@ -59,6 +61,8 @@ public class AuthorServiceImpl implements AuthorService {
 
         Author updatedAuthor = authorRepository.save(existingAuthor);
 
+        System.out.println("Author information with id " + updatedAuthor.getId() + " was updated");
+
         return toResponse(updatedAuthor);
     }
 
@@ -69,6 +73,8 @@ public class AuthorServiceImpl implements AuthorService {
         }
 
         authorRepository.deleteById(id);
+
+        System.out.println("Author with id " + id + " was deleted");
     }
 
     private AuthorResponse toResponse(Author author) {
