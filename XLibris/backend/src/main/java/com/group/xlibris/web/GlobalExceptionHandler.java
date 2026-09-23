@@ -8,6 +8,7 @@ import com.group.xlibris.common.IdMismatch;
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.feedback.DuplicateFeedbackException;
 import com.group.xlibris.feedback.SelfFeedbackException;
+import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
 import com.group.xlibris.loan.InvalidLoanStateException;
 import com.group.xlibris.loan.InvalidReturnDateException;
 import com.group.xlibris.loan.SameParticipantException;
@@ -145,6 +146,23 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(FeedbackBeforeLoanReturnedException.class)
+    public ResponseEntity<ProblemDetail> handleFeedbackBeforeLoanReturned(
+            FeedbackBeforeLoanReturnedException exception
+    ) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNPROCESSABLE_CONTENT,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Loan has not been returned");
+
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(problem);
     }
 

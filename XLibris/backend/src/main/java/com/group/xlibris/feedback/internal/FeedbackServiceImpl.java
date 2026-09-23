@@ -6,6 +6,9 @@ import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;
 import com.group.xlibris.feedback.DuplicateFeedbackException;
 import com.group.xlibris.feedback.SelfFeedbackException;
+import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
+import com.group.xlibris.loan.LoanService;
+import com.group.xlibris.loan.LoanStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -16,9 +19,14 @@ import java.util.UUID;
 public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
+    private final LoanService loanService;
 
-    public FeedbackServiceImpl(FeedbackRepository feedbackRepository) {
+    public FeedbackServiceImpl(
+            FeedbackRepository feedbackRepository,
+            LoanService loanService
+    ) {
         this.feedbackRepository = feedbackRepository;
+        this.loanService = loanService;
     }
 
     @Override
@@ -27,6 +35,14 @@ public class FeedbackServiceImpl implements FeedbackService {
         if (request.reviewerId().equals(request.reviewedUserId())) {
             throw new SelfFeedbackException(
                     "User cannot leave feedback for themselves"
+            );
+        }
+
+        var loan = loanService.getLoanById(request.loanId());
+
+        if (loan.status() != LoanStatus.RETURNED) {
+            throw new FeedbackBeforeLoanReturnedException(
+                    "Feedback can only be submitted after the loan is returned"
             );
         }
 

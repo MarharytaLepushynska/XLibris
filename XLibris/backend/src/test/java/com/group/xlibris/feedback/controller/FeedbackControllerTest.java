@@ -3,6 +3,8 @@ package com.group.xlibris.feedback.controller;
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.internal.Feedback;
 import com.group.xlibris.feedback.internal.FeedbackRepository;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.loan.internal.LoanRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,9 @@ class FeedbackControllerTest {
     @Autowired
     private FeedbackRepository feedbackRepository;
 
+    @Autowired
+    private LoanRepository loanRepository;
+
     private UUID feedbackId;
     private UUID loanId;
     private UUID reviewerId;
@@ -40,6 +45,7 @@ class FeedbackControllerTest {
     void resetRepository() {
 
         feedbackRepository.deleteAll();
+        loanRepository.deleteAll();
 
         feedbackId =
                 UUID.fromString("550e8400-e29b-41d4-a716-446655440100");
@@ -75,6 +81,18 @@ class FeedbackControllerTest {
                 Instant.now()
         );
 
+        Loan returnedLoan = new Loan(
+                loanId,
+                UUID.randomUUID(),
+                reviewedUserId,
+                reviewerId,
+                Instant.now().minusSeconds(172800),
+                Instant.now().minusSeconds(86400),
+                Instant.now().minusSeconds(3600)
+        );
+
+        loanRepository.save(returnedLoan);
+
         Feedback feedback2 = new Feedback(
                 feedbackId2,
                 loanId2,
@@ -92,10 +110,31 @@ class FeedbackControllerTest {
     @Test
     void shouldCreateFeedback() throws Exception {
 
+        UUID newLoanId =
+                UUID.fromString("550e8400-e29b-41d4-a716-446655440202");
+
+        UUID newReviewerId =
+                UUID.fromString("550e8400-e29b-41d4-a716-446655440302");
+
+        UUID newReviewedUserId =
+                UUID.fromString("550e8400-e29b-41d4-a716-446655440402");
+
+        Loan returnedLoan = new Loan(
+                newLoanId,
+                UUID.randomUUID(),
+                newReviewedUserId,
+                newReviewerId,
+                Instant.now().minusSeconds(172800),
+                Instant.now().minusSeconds(86400),
+                Instant.now().minusSeconds(3600)
+        );
+
+        loanRepository.save(returnedLoan);
+
         FeedbackRequest request = new FeedbackRequest(
-                UUID.fromString("550e8400-e29b-41d4-a716-446655440202"),
-                UUID.fromString("550e8400-e29b-41d4-a716-446655440302"),
-                UUID.fromString("550e8400-e29b-41d4-a716-446655440402"),
+                newLoanId,
+                newReviewerId,
+                newReviewedUserId,
                 5,
                 "Excellent experience"
         );

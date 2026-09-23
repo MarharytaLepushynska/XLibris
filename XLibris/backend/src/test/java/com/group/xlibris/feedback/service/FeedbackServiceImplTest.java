@@ -6,6 +6,10 @@ import com.group.xlibris.feedback.dto.FeedbackResponse;
 import com.group.xlibris.feedback.internal.Feedback;
 import com.group.xlibris.feedback.DuplicateFeedbackException;
 import com.group.xlibris.feedback.SelfFeedbackException;
+import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
+import com.group.xlibris.loan.LoanService;
+import com.group.xlibris.loan.LoanStatus;
+import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.feedback.internal.FeedbackRepository;
 import com.group.xlibris.feedback.internal.FeedbackServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +33,9 @@ class FeedbackServiceImplTest {
     @Mock
     private FeedbackRepository feedbackRepository;
 
+    @Mock
+    private LoanService loanService;
+
     private FeedbackServiceImpl feedbackService;
 
     private UUID feedbackId;
@@ -40,8 +47,7 @@ class FeedbackServiceImplTest {
     @BeforeEach
     void setUp() {
 
-        feedbackService =
-                new FeedbackServiceImpl(feedbackRepository);
+        feedbackService = new FeedbackServiceImpl(feedbackRepository, loanService);
 
         feedbackId = UUID.randomUUID();
         loanId = UUID.randomUUID();
@@ -69,6 +75,9 @@ class FeedbackServiceImplTest {
                 5,
                 "Great experience"
         );
+
+        when(loanService.getLoanById(loanId))
+                .thenReturn(returnedLoan());
 
         when(feedbackRepository.existsByLoanIdAndReviewerId(
                 loanId,
@@ -98,6 +107,8 @@ class FeedbackServiceImplTest {
 
         verify(feedbackRepository)
                 .save(any(Feedback.class));
+
+        verify(loanService).getLoanById(loanId);
     }
 
     @Test
@@ -135,6 +146,9 @@ class FeedbackServiceImplTest {
                 4,
                 "Second feedback"
         );
+
+        when(loanService.getLoanById(loanId))
+                .thenReturn(returnedLoan());
 
         when(feedbackRepository.existsByLoanIdAndReviewerId(
                 loanId,
@@ -334,5 +348,52 @@ class FeedbackServiceImplTest {
         );
 
         verify(feedbackRepository).findAll();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLoanIsNotReturned() {
+
+        FeedbackRequest request = new FeedbackRequest(
+                loanId,
+                reviewerId,
+                reviewedUserId,
+                5,
+                "Great experience"
+        );
+
+        LoanResponse activeLoan = new LoanResponse(
+                loanId,
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                Instant.now(),
+                Instant.now().plusSeconds(86400),
+                null,
+                LoanStatus.ACTIVE
+        );
+
+        when(loanService.getLoanById(loanId))
+                .thenReturn(activeLoan);
+
+        assertThrows(
+                FeedbackBeforeLoanReturnedException.class,
+                () -> feedbackService.create(request)
+        );
+
+        verify(feedbackRepository, never())
+                .save(any());
+    }
+
+    private LoanResponse returnedLoan() {
+        return new LoanResponse(
+                loanId,
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                Instant.now().minusSeconds(86400),
+                Instant.now().minusSeconds(3600),
+                Instant.now(),
+                LoanStatus.RETURNED
+        );
     }
 }
