@@ -2,8 +2,10 @@ package com.group.xlibris.user.service;
 
 import com.group.xlibris.common.exception.IdMismatch;
 import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.loan.repository.LoanRepository;
+import com.group.xlibris.loan.service.LoanService;
 import com.group.xlibris.user.command.CreateUserCommand;
 import com.group.xlibris.user.command.UpdateUserCommand;
 import com.group.xlibris.user.command.UserUpdateAdminCommand;
@@ -11,7 +13,7 @@ import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
 import com.group.xlibris.user.entity.User;
 import com.group.xlibris.user.enums.Role;
-import com.group.xlibris.user.exception.AccessDeniedException;
+import com.group.xlibris.common.exception.AccessDeniedException;
 import com.group.xlibris.user.exception.ContactAccessDeniedException;
 import com.group.xlibris.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +37,7 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private LoanRepository loanRepository;
+    private LoanService loanService;
 
     private UserServiceImpl userService;
 
@@ -46,7 +48,7 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, loanRepository);
+        userService = new UserServiceImpl(userRepository, loanService);
 
         userId = UUID.randomUUID();
         userId2 = UUID.randomUUID();
@@ -122,24 +124,26 @@ class UserServiceImplTest {
         Loan loan = Loan.create(UUID.randomUUID(), userId, userId2, Instant.now().plusSeconds(1200));
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(loanRepository.findAll()).thenReturn(List.of(loan));
+        when(loanService.getAllLoans(userId, userId2, null))
+                .thenReturn(List.of(LoanResponse.from(loan)));
 
         UserContactInfo response = userService.getContactInfoById(userId, userId2);
         assertEquals("a@gmail.com", response.email());
         assertEquals("+380998876443", response.phone());
 
         verify(userRepository).findById(userId);
-        verify(loanRepository).findAll();
+        verify(loanService).getAllLoans(userId, userId2, null);
     }
 
     @Test
     void shouldDenyContactInfoWithoutLoan() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(loanRepository.findAll()).thenReturn(List.of());
+        when(loanService.getAllLoans(userId, userId2, null))
+                .thenReturn(List.of());
 
         assertThrows(ContactAccessDeniedException.class, () -> userService.getContactInfoById(userId, userId2));
         verify(userRepository).findById(userId);
-        verify(loanRepository).findAll();
+        verify(loanService).getAllLoans(userId, userId2, null);
     }
 
     @Test

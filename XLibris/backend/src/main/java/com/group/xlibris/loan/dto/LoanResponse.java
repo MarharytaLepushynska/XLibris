@@ -2,10 +2,12 @@ package com.group.xlibris.loan.dto;
 
 import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.loan.enums.LoanStatus;
+import org.springframework.modulith.NamedInterface;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@NamedInterface(value = "api")
 public record LoanResponse(
         UUID id,
         UUID bookId,

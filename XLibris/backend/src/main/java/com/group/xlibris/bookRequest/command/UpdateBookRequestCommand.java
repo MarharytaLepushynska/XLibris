@@ -1,6 +1,6 @@
 package com.group.xlibris.bookRequest.command;
 
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.landCommon.BookRequestStatus;
 
 import java.util.UUID;
 

@@ -4,6 +4,7 @@ import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.landCommon.LoanReturnedEvent;
 import com.group.xlibris.loan.command.CreateLoanCommand;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.Instant;
 import java.util.List;
@@ -34,7 +36,7 @@ class LoanServiceImplTest {
     private LoanRepository loanRepository;
 
     @Mock
-    private BookRepository bookRepository;
+    private ApplicationEventPublisher eventPublisher;
 
     private LoanServiceImpl loanService;
 
@@ -47,7 +49,7 @@ class LoanServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        loanService = new LoanServiceImpl(loanRepository, bookRepository);
+        loanService = new LoanServiceImpl(loanRepository, eventPublisher);
 
         loanId = UUID.randomUUID();
         bookId = UUID.randomUUID();
@@ -178,7 +180,6 @@ class LoanServiceImplTest {
         Book book = new Book(bookId, "HarryPotter", "some", null, BookStatus.BORROWED, ownerId, UUID.randomUUID(), UUID.randomUUID());
 
         when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
-        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         LoanResponse response = loanService.returnLoan(loanId);
@@ -189,9 +190,7 @@ class LoanServiceImplTest {
 
         verify(loanRepository).findById(loanId);
         verify(loanRepository).save(loan);
-        verify(bookRepository).findById(bookId);
-        verify(bookRepository).save(book);
-        assertEquals(BookStatus.AVAILABLE, book.getStatus());
+        verify(eventPublisher).publishEvent(new LoanReturnedEvent(loanId, loan.getBookId()));
     }
 
     @Test
@@ -211,7 +210,6 @@ class LoanServiceImplTest {
         assertThrows(InvalidLoanStateException.class, () -> loanService.returnLoan(loanId));
         verify(loanRepository).findById(loanId);
         verify(loanRepository, never()).save(any());
-        verify(bookRepository, never()).findById(any());
     }
 
     @Test

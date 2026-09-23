@@ -1,6 +1,6 @@
 package com.group.xlibris.bookRequest.entity;
 
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.landCommon.BookRequestStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

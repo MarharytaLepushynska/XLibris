@@ -3,7 +3,7 @@ package com.group.xlibris.bookRequest.controller;
 import com.group.xlibris.bookRequest.dto.BookRequestCreate;
 import com.group.xlibris.bookRequest.dto.BookRequestResponse;
 import com.group.xlibris.bookRequest.dto.BookRequestUpdateStatus;
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.landCommon.BookRequestStatus;
 import com.group.xlibris.bookRequest.service.BookRequestService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;

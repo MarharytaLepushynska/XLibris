@@ -7,7 +7,7 @@ import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.landCommon.BookRequestStatus;
 import com.group.xlibris.bookRequest.service.BookRequestService;
 import com.group.xlibris.common.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ class BookServiceImplTest {
     private BookStateTransitionStrategy strategy;
 
     @Mock
-    private BookRequestService service;
+    private ApplicationEventPublisher eventPublisher;
 
     private BookServiceImpl bookService;
 
@@ -53,7 +54,7 @@ class BookServiceImplTest {
         bookService = new BookServiceImpl(
                 bookRepository,
                 List.of(strategy),
-                service
+                eventPublisher
         );
 
         bookId = UUID.randomUUID();

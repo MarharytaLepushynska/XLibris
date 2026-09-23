@@ -6,9 +6,10 @@ import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
-import com.group.xlibris.bookRequest.service.BookRequestService;
+import com.group.xlibris.landCommon.BookBlockedEvent;
+import com.group.xlibris.landCommon.BookRequestStatus;
 import com.group.xlibris.common.exception.NotFoundException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
 
@@ -20,14 +21,14 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
     private final List<BookStateTransitionStrategy> strategies;
-    private final BookRequestService bookRequestService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public BookServiceImpl(BookRepository bookRepository,
                            List<BookStateTransitionStrategy> strategies,
-                           BookRequestService bookRequestService) {
+                           ApplicationEventPublisher eventPublisher) {
         this.bookRepository = bookRepository;
         this.strategies = strategies;
-        this.bookRequestService = bookRequestService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -119,7 +120,7 @@ public class BookServiceImpl implements BookService {
 
         book.setStatus(BookStatus.BLOCKED);
         bookRepository.save(book);
-        bookRequestService.cancelOpenRequests(id);
+        eventPublisher.publishEvent(new BookBlockedEvent(id));
     }
 
     @Override
@@ -160,7 +161,7 @@ public class BookServiceImpl implements BookService {
         bookRepository.save(book);
 
         if (targetStatus == BookStatus.BLOCKED) {
-            bookRequestService.cancelOpenRequests(id);
+            eventPublisher.publishEvent(new BookBlockedEvent(id));
         }
     }
 
@@ -174,6 +175,16 @@ public class BookServiceImpl implements BookService {
 
         Book book = getBook(bookId);
         book.setStatus(BookStatus.BORROWED);
+        bookRepository.save(book);
+    }
+
+    @Override
+    public void markAvailableAfterReturn(UUID bookId) {
+        Book book = getBook(bookId);
+        if (book.getStatus() != BookStatus.BORROWED) {
+            return;
+        }
+        book.setStatus(BookStatus.AVAILABLE);
         bookRepository.save(book);
     }
 

@@ -3,7 +3,7 @@ package com.group.xlibris.bookRequest.service;
 import com.group.xlibris.bookRequest.command.CreateBookRequestCommand;
 import com.group.xlibris.bookRequest.command.UpdateBookRequestCommand;
 import com.group.xlibris.bookRequest.dto.BookRequestResponse;
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
+import com.group.xlibris.landCommon.BookRequestStatus;
 
 import java.util.List;
 import java.util.UUID;

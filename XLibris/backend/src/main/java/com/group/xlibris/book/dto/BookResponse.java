@@ -1,9 +1,11 @@
 package com.group.xlibris.book.dto;
 
 import com.group.xlibris.book.enums.BookStatus;
+import org.springframework.modulith.NamedInterface;
 
 import java.util.UUID;
 
+@NamedInterface("api")
 public record BookResponse(
         UUID id,
         String title,

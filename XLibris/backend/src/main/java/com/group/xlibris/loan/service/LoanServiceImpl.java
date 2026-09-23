@@ -4,11 +4,13 @@ import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.enums.BookStatus;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.landCommon.LoanReturnedEvent;
 import com.group.xlibris.loan.command.CreateLoanCommand;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.loan.enums.LoanStatus;
 import com.group.xlibris.loan.repository.LoanRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,11 +19,11 @@ import java.util.UUID;
 @Service
 public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
-    private final BookRepository bookRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public LoanServiceImpl(LoanRepository loanRepository, BookRepository bookRepository) {
+    public LoanServiceImpl(LoanRepository loanRepository, ApplicationEventPublisher eventPublisher) {
         this.loanRepository = loanRepository;
-        this.bookRepository = bookRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -53,11 +55,9 @@ public class LoanServiceImpl implements LoanService {
                 .orElseThrow(() -> new NotFoundException("Loan (id = " + id + ") was not found"));
         loan.assignToReturned();
 
-        Book book = bookRepository.findById(loan.getBookId())
-                .orElseThrow(() -> new NotFoundException("Book was not found"));
-        book.setStatus(BookStatus.AVAILABLE);
-        bookRepository.save(book);
-        return LoanResponse.from(loanRepository.save(loan));
+        Loan saved = loanRepository.save(loan);
+        eventPublisher.publishEvent(new LoanReturnedEvent(saved.getId(), saved.getBookId()));
+        return LoanResponse.from(saved);
     }
 
     @Override

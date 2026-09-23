@@ -1,6 +1,4 @@
-package com.group.xlibris.user.exception;
-
-import com.group.xlibris.common.exception.DomainException;
+package com.group.xlibris.common.exception;
 
 public class AccessDeniedException extends DomainException {
     public AccessDeniedException(String message) {

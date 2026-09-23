@@ -2,7 +2,7 @@ package com.group.xlibris.user.service;
 
 import com.group.xlibris.common.exception.IdMismatch;
 import com.group.xlibris.common.exception.NotFoundException;
-import com.group.xlibris.loan.repository.LoanRepository;
+import com.group.xlibris.loan.service.LoanService;
 import com.group.xlibris.user.command.CreateUserCommand;
 import com.group.xlibris.user.command.UpdateUserCommand;
 import com.group.xlibris.user.command.UserUpdateAdminCommand;
@@ -10,7 +10,7 @@ import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
 import com.group.xlibris.user.entity.User;
 import com.group.xlibris.user.enums.Role;
-import com.group.xlibris.user.exception.AccessDeniedException;
+import com.group.xlibris.common.exception.AccessDeniedException;
 import com.group.xlibris.user.exception.ContactAccessDeniedException;
 import com.group.xlibris.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -22,11 +22,11 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final LoanRepository loanRepository;
+    private final LoanService loanService;
 
-    public UserServiceImpl(UserRepository userRepository, LoanRepository loanRepository) {
+    public UserServiceImpl(UserRepository userRepository, LoanService loanService) {
         this.userRepository = userRepository;
-        this.loanRepository = loanRepository;
+        this.loanService = loanService;
     }
 
     @Override
@@ -48,11 +48,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserContactInfo getContactInfoById(UUID targetUserId, UUID viewerId) {
         User user = findUserOrThrow(targetUserId);
-        boolean hasConfirmedLoan = loanRepository.findAll().stream()
-                .anyMatch(loan ->
-                                loan.getOwnerId().equals(targetUserId) && loan.getRenterId().equals(viewerId));
+        boolean hasConfirmedLoan = !loanService
+                .getAllLoans(targetUserId, viewerId, null)
+                .isEmpty();
+
         if (!hasConfirmedLoan) {
-            throw new ContactAccessDeniedException("contact info of user " + targetUserId + "is visible only after a confirmed loan");
+            throw new ContactAccessDeniedException("No confirmed loan");
         }
 
         return new UserContactInfo(user.getEmail(), user.getPhone());

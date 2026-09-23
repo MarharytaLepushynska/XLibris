@@ -1,20 +1,20 @@
 package com.group.xlibris.bookRequest.service;
 
-import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.enums.BookStatus;
-import com.group.xlibris.book.repository.BookRepository;
+import com.group.xlibris.book.service.BookService;
 import com.group.xlibris.bookRequest.command.CreateBookRequestCommand;
 import com.group.xlibris.bookRequest.command.UpdateBookRequestCommand;
 import com.group.xlibris.bookRequest.dto.BookRequestResponse;
 import com.group.xlibris.bookRequest.entity.BookRequestEntity;
-import com.group.xlibris.bookRequest.enums.BookRequestStatus;
-import com.group.xlibris.bookRequest.events.BookRequestStatusChangedEvent;
+import com.group.xlibris.landCommon.BookRequestStatus;
+import com.group.xlibris.landCommon.BookRequestStatusChangedEvent;
 import com.group.xlibris.bookRequest.exception.DuplicateBookRequestException;
 import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
 import com.group.xlibris.bookRequest.repository.BookRequestRepository;
 import com.group.xlibris.common.exception.NotFoundException;
-import com.group.xlibris.user.exception.AccessDeniedException;
+import com.group.xlibris.common.exception.AccessDeniedException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -26,27 +26,24 @@ import java.util.UUID;
 @Service
 public class BookRequestServiceImpl implements BookRequestService {
     private final BookRequestRepository repository;
-    private final BookRepository bookRepository;
+    private final BookService bookService;
     private final ApplicationEventPublisher eventPublisher;
 
     public BookRequestServiceImpl(BookRequestRepository repository,
-                                  BookRepository bookRepository,
+                                  BookService bookService,
                                   ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
-        this.bookRepository = bookRepository;
+        this.bookService = bookService;
         this.eventPublisher = eventPublisher;
     }
 
     @Override
     public BookRequestResponse create(CreateBookRequestCommand command) {
-        Book book = bookRepository.findById(command.bookId())
-                .orElseThrow(() -> new NotFoundException("Book (id= " + command.bookId() + ") was not found"));
-
-        if (book.getOwnerId().equals(command.requesterId())) {
-            throw new IllegalArgumentException("Cannot request to borrow your own book");
+        BookResponse book = bookService.getBookById(command.bookId());
+        if (book.ownerId().equals(command.requesterId())) {
+            throw new IllegalArgumentException("Cannot request your own book");
         }
-
-        if (book.getStatus() == BookStatus.BLOCKED) {
+        if (book.status() == BookStatus.BLOCKED) {
             throw new InvalidBookStateException("Book is blocked");
         }
 
@@ -60,7 +57,7 @@ public class BookRequestServiceImpl implements BookRequestService {
                 UUID.randomUUID(),
                 command.bookId(),
                 command.requesterId(),
-                book.getOwnerId(),
+                book.ownerId(),
                 command.desiredDurationDays(),
                 BookRequestStatus.PENDING,
                 Instant.now(),
@@ -98,12 +95,11 @@ public class BookRequestServiceImpl implements BookRequestService {
                     " from " + existing.getStatus() + " to " + command.targetStatus());
         }
 
-        Book book = bookRepository.findById(existing.getBookId())
-                .orElseThrow(() -> new NotFoundException("Book was not found"));
+        BookResponse book = bookService.getBookById(existing.getBookId());
         checkActor(existing, book, command.actorId(), target);
 
         if (target == BookRequestStatus.APPROVED || target == BookRequestStatus.FULFILLED) {
-            if (book.getStatus() != BookStatus.AVAILABLE) {
+            if (book.status() != BookStatus.AVAILABLE) {
                 throw new InvalidBookStateException("Book must be available");
             }
             checkFirstInQueue(existing);
@@ -148,10 +144,10 @@ public class BookRequestServiceImpl implements BookRequestService {
         }
     }
 
-    private void checkActor(BookRequestEntity request, Book book,
+    private void checkActor(BookRequestEntity request, BookResponse book,
                             UUID actorId, BookRequestStatus target) {
         boolean allowed = switch (target) {
-            case APPROVED, REJECTED -> book.getOwnerId().equals(actorId);
+            case APPROVED, REJECTED -> book.ownerId().equals(actorId);
             case FULFILLED, CANCELLED -> request.getRequesterId().equals(actorId);
             default -> false;
         };
