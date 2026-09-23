@@ -1,6 +1,6 @@
 package com.group.xlibris.loan.internal;
 
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.bookRequest.BookRequestStatusChangedEvent;
 import com.group.xlibris.loan.LoanService;
 import org.springframework.context.event.EventListener;

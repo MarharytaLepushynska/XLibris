@@ -1,6 +1,6 @@
 package com.group.xlibris.bookRequest.internal;
 
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

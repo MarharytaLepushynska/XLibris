@@ -8,7 +8,7 @@ import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.InvalidBookStateTransitionException;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
 
 import com.group.xlibris.book.internal.BookServiceImpl;

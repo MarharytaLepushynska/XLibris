@@ -1,7 +1,7 @@
 package com.group.xlibris.bookRequest.dto;
 
 import com.group.xlibris.bookRequest.internal.UpdateBookRequestCommand;
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;

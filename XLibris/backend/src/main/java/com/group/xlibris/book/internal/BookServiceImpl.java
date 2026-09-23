@@ -8,7 +8,7 @@ import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.InvalidBookStateTransitionException;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.BookBlockedEvent;
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
 
 import org.springframework.context.ApplicationEventPublisher;

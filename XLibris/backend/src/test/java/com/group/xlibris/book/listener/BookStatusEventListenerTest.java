@@ -1,10 +1,10 @@
 package com.group.xlibris.book.listener;
 
 import com.group.xlibris.book.BookService;
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.bookRequest.BookRequestStatusChangedEvent;
 
-import com.group.xlibris.book.BookStatusEventListener;
+import com.group.xlibris.bookRequest.internal.BookStatusEventListener;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

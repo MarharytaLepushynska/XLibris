@@ -6,7 +6,7 @@ import com.group.xlibris.book.BookService;
 
 import com.group.xlibris.bookRequest.dto.BookRequestResponse;
 import com.group.xlibris.bookRequest.BookRequestService;
-import com.group.xlibris.bookRequest.BookRequestStatus;
+import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.bookRequest.BookRequestStatusChangedEvent;
 import com.group.xlibris.bookRequest.DuplicateBookRequestException;
 import com.group.xlibris.bookRequest.InvalidBookRequestStateException;

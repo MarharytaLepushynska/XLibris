@@ -1,10 +1,6 @@
 package com.group.xlibris.book;
 
-import com.group.xlibris.book.BookRequest;
-import com.group.xlibris.book.BookResponse;
-import com.group.xlibris.book.BookStatus;
-import com.group.xlibris.bookRequest.BookRequestStatus;
-import org.springframework.modulith.NamedInterface;
+import com.group.xlibris.common.BookRequestStatus;
 
 import java.util.List;
 import java.util.UUID;

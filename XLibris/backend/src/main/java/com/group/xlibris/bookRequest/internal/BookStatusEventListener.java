@@ -1,4 +1,4 @@
-package com.group.xlibris.book;
+package com.group.xlibris.bookRequest.internal;
 
 import com.group.xlibris.book.BookService;
 import com.group.xlibris.bookRequest.BookRequestStatusChangedEvent;

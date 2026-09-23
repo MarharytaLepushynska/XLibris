@@ -1,5 +1,7 @@
 package com.group.xlibris.bookRequest;
 
+import com.group.xlibris.common.BookRequestStatus;
+
 import java.util.UUID;
 
 public record BookRequestStatusChangedEvent(
