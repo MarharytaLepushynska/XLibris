@@ -1,8 +1,7 @@
-package com.group.xlibris.notification.controller;
+package com.group.xlibris.notification;
 
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
-import com.group.xlibris.notification.service.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

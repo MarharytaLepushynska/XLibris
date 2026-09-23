@@ -1,11 +1,10 @@
-package com.group.xlibris.notification.service;
+package com.group.xlibris.notification.internal;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.notification.NotificationService;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
-import com.group.xlibris.notification.entity.Notification;
-import com.group.xlibris.notification.enums.NotificationType;
-import com.group.xlibris.notification.repository.NotificationRepository;
+import com.group.xlibris.notification.NotificationType;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
