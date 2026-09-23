@@ -1,8 +1,7 @@
-package com.group.xlibris.notification.service;
+package com.group.xlibris.notification;
 
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
-import com.group.xlibris.notification.enums.NotificationType;
 
 import java.util.List;
 import java.util.UUID;
