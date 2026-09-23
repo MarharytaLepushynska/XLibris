@@ -3,7 +3,7 @@ package com.group.xlibris.loan.internal;
 import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.bookRequest.BookRequestStatusChangedEvent;
 import com.group.xlibris.loan.LoanService;
-import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +16,7 @@ public class BookRequestEventListener {
 
     private final LoanService loanService;
 
-    @EventListener
+    @ApplicationModuleListener
     public void onBookRequestStatusChanged(BookRequestStatusChangedEvent event) {
         if (event.newStatus() != BookRequestStatus.FULFILLED) {
             return;

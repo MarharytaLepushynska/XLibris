@@ -44,6 +44,8 @@ public class LoanServiceImpl implements LoanService {
         Loan loan = Loan.create(command.bookId(), command.ownerId(), command.renterId(), command.expectedReturnDate());
         Loan saved = loanRepository.save(loan);
 
+        System.out.println("Loan with id " + saved.getId() + " was created");
+
         eventPublisher.publishEvent(new LoanCreatedEvent(
                 saved.getId(),
                 saved.getBookId(),
@@ -52,6 +54,8 @@ public class LoanServiceImpl implements LoanService {
                 saved.getStartDate(),
                 saved.getExpectedReturnDate()
         ));
+
+        System.out.println("Event for loan creation was published");
 
         return LoanResponse.from(saved);
     }
@@ -64,6 +68,8 @@ public class LoanServiceImpl implements LoanService {
 
         Loan saved = loanRepository.save(loan);
 
+        System.out.println("Loan for book " + saved.getBookId() + " was marked as returned");
+
         eventPublisher.publishEvent(new LoanReturnedEvent(
                 saved.getId(),
                 saved.getBookId(),
@@ -71,6 +77,8 @@ public class LoanServiceImpl implements LoanService {
                 saved.getRenterId(),
                 saved.getActualReturnDate()
         ));
+
+        System.out.println("Event for loan return was published");
 
         return LoanResponse.from(saved);
     }
@@ -81,5 +89,7 @@ public class LoanServiceImpl implements LoanService {
             throw new NotFoundException("Loan (id = " + id + ") was not found");
         }
         loanRepository.deleteById(id);
+
+        System.out.println("Loan with id " + id + " was deleted");
     }
 }
