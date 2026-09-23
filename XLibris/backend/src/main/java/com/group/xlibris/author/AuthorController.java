@@ -1,6 +1,5 @@
 package com.group.xlibris.author;
 
-import com.group.xlibris.AuthorRequest;
 import com.group.xlibris.common.OnCreate;
 import com.group.xlibris.common.OnUpdate;
 import org.springframework.http.HttpStatus;

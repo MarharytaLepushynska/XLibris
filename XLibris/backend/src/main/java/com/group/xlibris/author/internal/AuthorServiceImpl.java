@@ -1,6 +1,6 @@
 package com.group.xlibris.author.internal;
 
-import com.group.xlibris.AuthorRequest;
+import com.group.xlibris.author.AuthorRequest;
 import com.group.xlibris.author.AuthorResponse;
 import com.group.xlibris.author.AuthorService;
 import com.group.xlibris.author.entity.Author;
