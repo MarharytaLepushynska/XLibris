@@ -1,6 +1,6 @@
 package com.group.xlibris.bookRequest.dto;
 
-import com.group.xlibris.bookRequest.command.CreateBookRequestCommand;
+import com.group.xlibris.bookRequest.internal.CreateBookRequestCommand;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

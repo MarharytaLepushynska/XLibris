@@ -1,6 +1,6 @@
 package com.group.xlibris.feedback.service;
 
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;
 import com.group.xlibris.feedback.entity.Feedback;

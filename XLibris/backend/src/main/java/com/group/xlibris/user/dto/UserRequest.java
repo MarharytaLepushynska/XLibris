@@ -1,9 +1,9 @@
 package com.group.xlibris.user.dto;
 
-import com.group.xlibris.common.validation.OnCreate;
-import com.group.xlibris.common.validation.OnUpdate;
-import com.group.xlibris.user.command.CreateUserCommand;
-import com.group.xlibris.user.command.UpdateUserCommand;
+import com.group.xlibris.common.OnCreate;
+import com.group.xlibris.common.OnUpdate;
+import com.group.xlibris.user.internal.CreateUserCommand;
+import com.group.xlibris.user.internal.UpdateUserCommand;
 import jakarta.validation.constraints.*;
 
 import java.util.UUID;

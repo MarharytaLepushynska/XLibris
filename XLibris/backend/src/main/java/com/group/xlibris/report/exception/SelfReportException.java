@@ -1,6 +1,6 @@
 package com.group.xlibris.report.exception;
 
-import com.group.xlibris.common.exception.DomainException;
+import com.group.xlibris.common.DomainException;
 
 public class SelfReportException extends DomainException {
     public SelfReportException(String message) {

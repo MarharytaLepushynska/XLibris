@@ -1,7 +1,7 @@
 package com.group.xlibris.book.dto;
 
-import com.group.xlibris.common.validation.OnCreate;
-import com.group.xlibris.common.validation.OnUpdate;
+import com.group.xlibris.common.OnCreate;
+import com.group.xlibris.common.OnUpdate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;

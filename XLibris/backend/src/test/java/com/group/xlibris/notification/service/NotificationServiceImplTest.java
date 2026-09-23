@@ -1,6 +1,6 @@
 package com.group.xlibris.notification.service;
 
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
 import com.group.xlibris.notification.entity.Notification;

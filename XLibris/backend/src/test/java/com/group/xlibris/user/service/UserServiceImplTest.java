@@ -1,20 +1,16 @@
 package com.group.xlibris.user.service;
 
-import com.group.xlibris.common.exception.IdMismatch;
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.common.IdMismatch;
+import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.entity.Loan;
 import com.group.xlibris.loan.service.LoanService;
-import com.group.xlibris.user.command.CreateUserCommand;
-import com.group.xlibris.user.command.UpdateUserCommand;
-import com.group.xlibris.user.command.UserUpdateAdminCommand;
+import com.group.xlibris.user.internal.*;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
-import com.group.xlibris.user.entity.User;
-import com.group.xlibris.user.enums.Role;
-import com.group.xlibris.common.exception.AccessDeniedException;
-import com.group.xlibris.user.exception.ContactAccessDeniedException;
-import com.group.xlibris.user.repository.UserRepository;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.common.AccessDeniedException;
+import com.group.xlibris.user.ContactAccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

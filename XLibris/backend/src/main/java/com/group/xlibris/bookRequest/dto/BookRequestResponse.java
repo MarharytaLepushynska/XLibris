@@ -1,6 +1,6 @@
 package com.group.xlibris.bookRequest.dto;
 
-import com.group.xlibris.bookRequest.entity.BookRequestEntity;
+import com.group.xlibris.bookRequest.internal.BookRequestEntity;
 import com.group.xlibris.landCommon.BookRequestStatus;
 
 import java.time.Instant;

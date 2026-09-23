@@ -1,7 +1,7 @@
 package com.group.xlibris.user.dto;
 
-import com.group.xlibris.user.entity.User;
-import com.group.xlibris.user.enums.Role;
+import com.group.xlibris.user.internal.User;
+import com.group.xlibris.user.Role;
 
 import java.time.Instant;
 import java.util.UUID;

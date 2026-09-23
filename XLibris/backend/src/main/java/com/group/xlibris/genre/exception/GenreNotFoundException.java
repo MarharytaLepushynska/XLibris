@@ -1,6 +1,6 @@
 package com.group.xlibris.genre.exception;
 
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.common.NotFoundException;
 
 import java.util.UUID;
 

@@ -1,11 +1,11 @@
 package com.group.xlibris.web;
 
-import com.group.xlibris.bookRequest.exception.DuplicateBookRequestException;
-import com.group.xlibris.bookRequest.exception.InvalidBookRequestStateException;
-import com.group.xlibris.bookRequest.exception.InvalidBookStateException;
-import com.group.xlibris.common.exception.AccessDeniedException;
-import com.group.xlibris.common.exception.IdMismatch;
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.bookRequest.DuplicateBookRequestException;
+import com.group.xlibris.bookRequest.InvalidBookRequestStateException;
+import com.group.xlibris.bookRequest.InvalidBookStateException;
+import com.group.xlibris.common.AccessDeniedException;
+import com.group.xlibris.common.IdMismatch;
+import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.feedback.exception.DuplicateFeedbackException;
 import com.group.xlibris.feedback.exception.SelfFeedbackException;
 import com.group.xlibris.loan.exception.InvalidLoanStateException;
@@ -15,7 +15,7 @@ import com.group.xlibris.report.exception.InvalidReportResolutionException;
 import com.group.xlibris.report.exception.InvalidReportStateException;
 import com.group.xlibris.report.exception.NotLoanParticipantException;
 import com.group.xlibris.report.exception.SelfReportException;
-import com.group.xlibris.user.exception.ContactAccessDeniedException;
+import com.group.xlibris.user.ContactAccessDeniedException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

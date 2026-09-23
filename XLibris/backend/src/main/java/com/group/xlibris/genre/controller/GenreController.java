@@ -1,7 +1,7 @@
 package com.group.xlibris.genre.controller;
 
-import com.group.xlibris.common.validation.OnCreate;
-import com.group.xlibris.common.validation.OnUpdate;
+import com.group.xlibris.common.OnCreate;
+import com.group.xlibris.common.OnUpdate;
 import com.group.xlibris.genre.dto.GenreRequest;
 import com.group.xlibris.genre.dto.GenreResponse;
 import com.group.xlibris.genre.service.GenreService;

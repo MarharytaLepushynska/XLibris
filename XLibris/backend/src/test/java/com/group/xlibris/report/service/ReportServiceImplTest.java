@@ -1,6 +1,6 @@
 package com.group.xlibris.report.service;
 
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.enums.LoanStatus;
 import com.group.xlibris.loan.service.LoanService;

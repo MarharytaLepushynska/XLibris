@@ -1,6 +1,6 @@
 package com.group.xlibris.feedback.exception;
 
-import com.group.xlibris.common.exception.DomainException;
+import com.group.xlibris.common.DomainException;
 
 public class DuplicateFeedbackException extends DomainException {
 

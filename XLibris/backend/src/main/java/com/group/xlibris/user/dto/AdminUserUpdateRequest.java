@@ -1,7 +1,7 @@
 package com.group.xlibris.user.dto;
 
-import com.group.xlibris.user.command.UserUpdateAdminCommand;
-import com.group.xlibris.user.enums.Role;
+import com.group.xlibris.user.internal.UserUpdateAdminCommand;
+import com.group.xlibris.user.Role;
 import jakarta.validation.constraints.*;
 
 import java.util.UUID;

@@ -8,7 +8,7 @@ import com.group.xlibris.book.exception.InvalidBookStateTransitionException;
 import com.group.xlibris.book.repository.BookRepository;
 import com.group.xlibris.book.strategy.BookStateTransitionStrategy;
 import com.group.xlibris.landCommon.BookRequestStatus;
-import com.group.xlibris.common.exception.NotFoundException;
+import com.group.xlibris.common.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -278,4 +278,11 @@ class BookServiceImplTest {
         verify(bookRepository).findById(bookId);
         verify(bookRepository).save(book);
     }
+
+//    @Test
+//    void shouldBlockAndPublishEvent() {
+//        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+//        bookService.blockBook(bookId);
+//        assertEquals
+//    }
 }
