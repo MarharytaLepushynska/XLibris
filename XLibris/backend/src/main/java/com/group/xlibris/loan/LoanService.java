@@ -1,8 +1,7 @@
-package com.group.xlibris.loan.service;
+package com.group.xlibris.loan;
 
-import com.group.xlibris.loan.command.CreateLoanCommand;
+import com.group.xlibris.loan.internal.CreateLoanCommand;
 import com.group.xlibris.loan.dto.LoanResponse;
-import com.group.xlibris.loan.enums.LoanStatus;
 import org.springframework.modulith.NamedInterface;
 
 import java.util.List;

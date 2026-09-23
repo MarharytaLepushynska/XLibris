@@ -1,4 +1,4 @@
-package com.group.xlibris.loan.enums;
+package com.group.xlibris.loan;
 
 import org.springframework.modulith.NamedInterface;
 

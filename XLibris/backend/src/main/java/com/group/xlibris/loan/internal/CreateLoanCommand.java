@@ -1,4 +1,4 @@
-package com.group.xlibris.loan.command;
+package com.group.xlibris.loan.internal;
 
 import org.springframework.modulith.NamedInterface;
 

@@ -1,12 +1,11 @@
-package com.group.xlibris.loan.service;
+package com.group.xlibris.loan.internal;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.loan.LoanCreatedEvent;
 import com.group.xlibris.loan.LoanReturnedEvent;
-import com.group.xlibris.loan.command.CreateLoanCommand;
+import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.dto.LoanResponse;
-import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.enums.LoanStatus;
-import com.group.xlibris.loan.repository.LoanRepository;
+import com.group.xlibris.loan.LoanStatus;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +42,18 @@ public class LoanServiceImpl implements LoanService {
     @Override
     public LoanResponse createLoan(CreateLoanCommand command) {
         Loan loan = Loan.create(command.bookId(), command.ownerId(), command.renterId(), command.expectedReturnDate());
-        return LoanResponse.from(loanRepository.save(loan));
+        Loan saved = loanRepository.save(loan);
+
+        eventPublisher.publishEvent(new LoanCreatedEvent(
+                saved.getId(),
+                saved.getBookId(),
+                saved.getOwnerId(),
+                saved.getRenterId(),
+                saved.getStartDate(),
+                saved.getExpectedReturnDate()
+        ));
+
+        return LoanResponse.from(saved);
     }
 
     @Override
@@ -53,7 +63,15 @@ public class LoanServiceImpl implements LoanService {
         loan.assignToReturned();
 
         Loan saved = loanRepository.save(loan);
-        eventPublisher.publishEvent(new LoanReturnedEvent(saved.getId(), saved.getBookId()));
+
+        eventPublisher.publishEvent(new LoanReturnedEvent(
+                saved.getId(),
+                saved.getBookId(),
+                saved.getOwnerId(),
+                saved.getRenterId(),
+                saved.getActualReturnDate()
+        ));
+
         return LoanResponse.from(saved);
     }
 

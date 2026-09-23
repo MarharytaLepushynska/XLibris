@@ -1,6 +1,6 @@
 package com.group.xlibris.loan.dto;
 
-import com.group.xlibris.loan.command.CreateLoanCommand;
+import com.group.xlibris.loan.internal.CreateLoanCommand;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 

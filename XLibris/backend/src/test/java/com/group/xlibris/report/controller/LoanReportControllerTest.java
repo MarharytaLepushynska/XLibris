@@ -1,7 +1,7 @@
 package com.group.xlibris.report.controller;
 
-import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.repository.LoanRepository;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.report.dto.LoanReportRequest;
 import com.group.xlibris.report.entity.Report;
 import com.group.xlibris.report.enums.ReportType;

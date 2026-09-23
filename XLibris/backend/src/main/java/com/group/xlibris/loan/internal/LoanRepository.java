@@ -1,6 +1,4 @@
-package com.group.xlibris.loan.repository;
-
-import com.group.xlibris.loan.entity.Loan;
+package com.group.xlibris.loan.internal;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,6 +1,5 @@
-package com.group.xlibris.loan.repository;
+package com.group.xlibris.loan.internal;
 
-import com.group.xlibris.loan.entity.Loan;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;

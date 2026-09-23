@@ -2,7 +2,7 @@ package com.group.xlibris.report.service;
 
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
-import com.group.xlibris.loan.service.LoanService;
+import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.report.command.*;
 import com.group.xlibris.report.dto.ReportFilterCriteria;
 import com.group.xlibris.report.dto.ReportResponse;

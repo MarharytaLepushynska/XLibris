@@ -2,7 +2,7 @@ package com.group.xlibris.user.internal;
 
 import com.group.xlibris.common.IdMismatch;
 import com.group.xlibris.common.NotFoundException;
-import com.group.xlibris.loan.service.LoanService;
+import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.user.UserService;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;

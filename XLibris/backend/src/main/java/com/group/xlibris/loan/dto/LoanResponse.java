@@ -1,7 +1,7 @@
 package com.group.xlibris.loan.dto;
 
-import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.enums.LoanStatus;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.loan.LoanStatus;
 import org.springframework.modulith.NamedInterface;
 
 import java.time.Instant;

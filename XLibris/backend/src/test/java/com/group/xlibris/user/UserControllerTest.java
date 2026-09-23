@@ -1,7 +1,7 @@
 package com.group.xlibris.user;
 
-import com.group.xlibris.loan.entity.Loan;
-import com.group.xlibris.loan.repository.LoanRepository;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.user.dto.AdminUserUpdateRequest;
 import com.group.xlibris.user.dto.UserRequest;
 import com.group.xlibris.user.internal.User;

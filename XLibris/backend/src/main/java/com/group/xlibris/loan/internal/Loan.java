@@ -1,9 +1,9 @@
-package com.group.xlibris.loan.entity;
+package com.group.xlibris.loan.internal;
 
-import com.group.xlibris.loan.exception.InvalidLoanStateException;
-import com.group.xlibris.loan.enums.LoanStatus;
-import com.group.xlibris.loan.exception.InvalidReturnDateException;
-import com.group.xlibris.loan.exception.SameParticipantException;
+import com.group.xlibris.loan.InvalidLoanStateException;
+import com.group.xlibris.loan.LoanStatus;
+import com.group.xlibris.loan.InvalidReturnDateException;
+import com.group.xlibris.loan.SameParticipantException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

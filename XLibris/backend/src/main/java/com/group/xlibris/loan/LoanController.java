@@ -1,9 +1,7 @@
-package com.group.xlibris.loan.controller;
+package com.group.xlibris.loan;
 
 import com.group.xlibris.loan.dto.LoanRequest;
 import com.group.xlibris.loan.dto.LoanResponse;
-import com.group.xlibris.loan.enums.LoanStatus;
-import com.group.xlibris.loan.service.LoanService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
