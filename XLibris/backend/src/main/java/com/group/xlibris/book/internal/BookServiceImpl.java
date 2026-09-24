@@ -74,27 +74,24 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookResponse updateBook(UUID id, BookRequest request) {
-        if (!bookRepository.existsById(id)) {
-            throw new NotFoundException(
-                    "Book (id = " + id + ") was not found"
-            );
-        }
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() ->
+                        new NotFoundException(
+                                "Book (id = " + id + ") was not found"
+                        ));
 
-        Book book = new Book(
-                id,
-                request.title(),
-                request.description(),
-                request.photoURL(),
-                BookStatus.AVAILABLE,
-                request.ownerId(),
-                request.authorId(),
-                request.genreId()
-        );
+        book.setTitle(request.title());
+        book.setDescription(request.description());
+        book.setPhotoURL(request.photoURL());
+        book.setOwnerId(request.ownerId());
+        book.setAuthorId(request.authorId());
+        book.setGenreId(request.genreId());
 
         Book updatedBook = bookRepository.save(book);
 
-        System.out.println("Book information with id " + updatedBook.getId() + " was updated");
-
+        System.out.println(
+                "Book information with id " + updatedBook.getId() + " was updated"
+        );
 
         return toResponse(updatedBook);
     }
