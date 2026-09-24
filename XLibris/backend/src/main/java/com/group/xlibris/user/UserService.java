@@ -14,7 +14,7 @@ public interface UserService {
     List<UserResponse> getAllUsers(String name, int page, int size);
     UserContactInfo getContactInfoById(UUID targetUserId, UUID viewerId);
     UserResponse createUser(CreateUserCommand command);
-    UserResponse updateUser(UUID id, UpdateUserCommand command);
+    UserResponse updateUser(UUID id, UpdateUserCommand command, UUID requesterId);
     UserResponse updateUserAdmin(UUID id, UUID callerId, UserUpdateAdminCommand command);
-    void removeUser(UUID id);
+    void removeUser(UUID id, UUID callerId);
 }

@@ -64,9 +64,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(UUID id, UpdateUserCommand command) {
+    public UserResponse updateUser(UUID id, UpdateUserCommand command, UUID requesterId) {
         if (!id.equals(command.id())) {
             throw new IdMismatch("Id mismatch");
+        }
+
+        if (!id.equals(requesterId)) {
+            throw new AccessDeniedException("User can only change their information");
         }
 
         User user = findUserOrThrow(id);
@@ -95,10 +99,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void removeUser(UUID id) {
+    public void removeUser(UUID id, UUID callerId) {
         if(!userRepository.existsById(id)) {
             throw new NotFoundException("User (id= " + id + ") was not found");
         }
+
+        User caller = findUserOrThrow(callerId);
+        if (!id.equals(callerId) && caller.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("User can only change their information");
+        }
+
         userRepository.deleteById(id);
         System.out.println("User with id " + id + " was deleted");
     }

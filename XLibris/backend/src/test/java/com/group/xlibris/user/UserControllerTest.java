@@ -112,6 +112,7 @@ class UserControllerTest {
                 null, "d@gmail.com", "+380998876445");
 
         mvc.perform(put("/api/users/{id}", id)
+                        .param("requesterId", String.valueOf(id))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -146,7 +147,8 @@ class UserControllerTest {
     void shouldDeleteUser() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
 
-        mvc.perform(delete("/api/users/{id}", id))
+        mvc.perform(delete("/api/users/{id}", id)
+                        .param("callerId", id.toString()))
                 .andExpect(status().isNoContent());
     }
 
@@ -181,6 +183,7 @@ class UserControllerTest {
                 null, "d@gmail.com", "+380998876445");
 
         mvc.perform(put("/api/users/{id}", id)
+                        .param("requesterId", String.valueOf(id))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

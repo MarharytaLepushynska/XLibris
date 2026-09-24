@@ -159,7 +159,7 @@ class UserServiceImplTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = userService.updateUser(userId, command);
+        UserResponse response = userService.updateUser(userId, command, userId);
         assertEquals("Dima", response.name());
         assertEquals("Berlin", response.city());
 
@@ -168,9 +168,20 @@ class UserServiceImplTest {
     }
 
     @Test
+    void shouldThrowAccessDeniedExceptionWhenUpdateOtherUser() {
+        User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+
+        UpdateUserCommand command = new UpdateUserCommand(userId, "Dima", "Berlin", null, "d@gmail.com", "+380776654334");
+        assertThrows(AccessDeniedException.class, () -> userService.updateUser(userId, command, userId2));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     void shouldTrowIdMismatchWhenUpdatingWithWrongId() {
         UpdateUserCommand command = new UpdateUserCommand(userId2, "Dima", "Berlin", null, "d@gmail.com", "+380776654334");
-        assertThrows(IdMismatch.class, () -> userService.updateUser(userId, command));
+        assertThrows(IdMismatch.class, () -> userService.updateUser(userId, command, userId));
         verify(userRepository, never()).findById(any());
 
     }
@@ -216,14 +227,37 @@ class UserServiceImplTest {
     @Test
     void shouldDeleteUserSuccessfully() {
         when(userRepository.existsById(userId)).thenReturn(true);
-        userService.removeUser(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        userService.removeUser(userId, userId);
         verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    void AdminShouldDeleteUserSuccessfully() {
+        User admin = new User(adminId, "Admin", "Kyiv", null, "a@gmail.com",
+                "+380998876446", Instant.now(), Role.ADMIN,
+                null, null, 0, 0, 0);
+
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
+        userService.removeUser(userId, adminId);
+        verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    void shouldThrowAccessDeniedExceptionWhenDeleteOtherUser() {
+        User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId2)).thenReturn(Optional.of(user2));
+        assertThrows(AccessDeniedException.class, () -> userService.removeUser(userId, userId2));
     }
 
     @Test
     void shouldTrowNotFoundExceptionWhenNoDeletingUser() {
         when(userRepository.existsById(userId)).thenReturn(false);
-        assertThrows(NotFoundException.class, () -> userService.removeUser(userId));
+        assertThrows(NotFoundException.class, () -> userService.removeUser(userId, userId));
         verify(userRepository, never()).deleteById(any());
     }
 }

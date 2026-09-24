@@ -59,8 +59,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @Validated(OnUpdate.class) @RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.updateUser(id, request.toUpdateCommand()));
+    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @RequestParam UUID requesterId, @Validated(OnUpdate.class) @RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.updateUser(id, request.toUpdateCommand(), requesterId));
     }
 
     @PutMapping("/{id}/admin")
@@ -72,8 +72,8 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
-       userService.removeUser(id);
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id, @RequestParam UUID callerId) {
+        userService.removeUser(id, callerId);
         return ResponseEntity.noContent().build();
     }
 }
