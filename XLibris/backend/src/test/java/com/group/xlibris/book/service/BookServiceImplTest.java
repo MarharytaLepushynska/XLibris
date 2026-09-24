@@ -143,8 +143,8 @@ class BookServiceImplTest {
     @Test
     void updateBook_shouldUpdateAndReturnBook_whenBookExists() {
 
-        when(bookRepository.existsById(bookId))
-                .thenReturn(true);
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -160,21 +160,22 @@ class BookServiceImplTest {
         assertThat(response.authorId()).isEqualTo(authorId);
         assertThat(response.genreId()).isEqualTo(genreId);
 
-        verify(bookRepository).existsById(bookId);
-        verify(bookRepository).save(any(Book.class));
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
     }
 
     @Test
     void updateBook_shouldThrowException_whenBookDoesNotExist() {
 
-        when(bookRepository.existsById(bookId))
-                .thenReturn(false);
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> bookService.updateBook(bookId, request))
+        assertThatThrownBy(() ->
+                bookService.updateBook(bookId, request))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Book");
 
-        verify(bookRepository).existsById(bookId);
+        verify(bookRepository).findById(bookId);
         verify(bookRepository, never()).save(any(Book.class));
     }
 
