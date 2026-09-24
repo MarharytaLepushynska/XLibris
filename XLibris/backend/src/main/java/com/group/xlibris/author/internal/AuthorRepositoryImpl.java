@@ -1,7 +1,6 @@
 package com.group.xlibris.author.internal;
 
 import com.group.xlibris.author.AuthorRepository;
-import com.group.xlibris.author.entity.Author;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

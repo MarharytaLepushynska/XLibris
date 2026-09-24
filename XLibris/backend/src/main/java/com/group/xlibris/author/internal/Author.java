@@ -1,4 +1,4 @@
-package com.group.xlibris.author.entity;
+package com.group.xlibris.author.internal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

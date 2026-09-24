@@ -1,5 +1,8 @@
 package com.group.xlibris.author;
 
+import com.group.xlibris.author.dto.AuthorRequest;
+import com.group.xlibris.author.dto.AuthorResponse;
+
 import java.util.List;
 import java.util.UUID;
 

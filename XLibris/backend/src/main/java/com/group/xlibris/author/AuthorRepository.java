@@ -1,6 +1,6 @@
 package com.group.xlibris.author;
 
-import com.group.xlibris.author.entity.Author;
+import com.group.xlibris.author.internal.Author;
 
 import java.util.List;
 import java.util.Optional;
