@@ -141,6 +141,49 @@ class BookServiceImplTest {
     }
 
     @Test
+    void getAllBooks_shouldReturnAllBooks() {
+
+        Book secondBook = new Book(
+                UUID.randomUUID(),
+                "Second Book",
+                "Second description",
+                "second.jpg",
+                BookStatus.BLOCKED,
+                ownerId,
+                authorId,
+                genreId
+        );
+
+        when(bookRepository.findAll())
+                .thenReturn(List.of(book, secondBook));
+
+        List<BookResponse> response = bookService.getAllBooks();
+
+        assertThat(response)
+                .hasSize(2);
+
+        assertThat(response.get(0).id())
+                .isEqualTo(book.getId());
+
+        assertThat(response.get(0).title())
+                .isEqualTo("Test Book");
+
+        assertThat(response.get(0).status())
+                .isEqualTo(BookStatus.AVAILABLE);
+
+        assertThat(response.get(1).id())
+                .isEqualTo(secondBook.getId());
+
+        assertThat(response.get(1).title())
+                .isEqualTo("Second Book");
+
+        assertThat(response.get(1).status())
+                .isEqualTo(BookStatus.BLOCKED);
+
+        verify(bookRepository).findAll();
+    }
+
+    @Test
     void updateBook_shouldUpdateAndReturnBook_whenBookExists() {
 
         when(bookRepository.findById(bookId))
@@ -159,6 +202,46 @@ class BookServiceImplTest {
         assertThat(response.ownerId()).isEqualTo(ownerId);
         assertThat(response.authorId()).isEqualTo(authorId);
         assertThat(response.genreId()).isEqualTo(genreId);
+
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
+    }
+
+    @Test
+    void updateBook_shouldPreserveStatus_whenBookIsBorrowed() {
+
+        book.setStatus(BookStatus.BORROWED);
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        when(bookRepository.save(any(Book.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookResponse response = bookService.updateBook(bookId, request);
+
+        assertThat(response.status())
+                .isEqualTo(BookStatus.BORROWED);
+
+        verify(bookRepository).findById(bookId);
+        verify(bookRepository).save(book);
+    }
+
+    @Test
+    void updateBook_shouldPreserveStatus_whenBookIsBlocked() {
+
+        book.setStatus(BookStatus.BLOCKED);
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        when(bookRepository.save(any(Book.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookResponse response = bookService.updateBook(bookId, request);
+
+        assertThat(response.status())
+                .isEqualTo(BookStatus.BLOCKED);
 
         verify(bookRepository).findById(bookId);
         verify(bookRepository).save(book);
@@ -268,6 +351,74 @@ class BookServiceImplTest {
     }
 
     @Test
+    void changeStatus_shouldChangeStatus_whenStrategySupportsTransition() {
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        when(strategy.supports(
+                BookStatus.AVAILABLE,
+                BookStatus.BLOCKED
+        )).thenReturn(true);
+
+        doAnswer(invocation -> {
+            Book b = invocation.getArgument(0);
+            b.setStatus(BookStatus.BLOCKED);
+            return null;
+        }).when(strategy).apply(book);
+
+        bookService.changeStatus(
+                bookId,
+                BookStatus.BLOCKED
+        );
+
+        assertThat(book.getStatus())
+                .isEqualTo(BookStatus.BLOCKED);
+
+        verify(strategy).supports(
+                BookStatus.AVAILABLE,
+                BookStatus.BLOCKED
+        );
+
+        verify(strategy).apply(book);
+        verify(bookRepository).save(book);
+        verify(eventPublisher).publishEvent(
+                new BookBlockedEvent(bookId)
+        );
+    }
+
+    @Test
+    void changeStatus_shouldThrowException_whenBorrowedBookIsBlocked() {
+
+        book.setStatus(BookStatus.BORROWED);
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        when(strategy.supports(
+                BookStatus.BORROWED,
+                BookStatus.BLOCKED
+        )).thenReturn(false);
+
+        assertThatThrownBy(() ->
+                bookService.changeStatus(
+                        bookId,
+                        BookStatus.BLOCKED
+                ))
+                .isInstanceOf(InvalidBookStateTransitionException.class)
+                .hasMessageContaining("BORROWED")
+                .hasMessageContaining("BLOCKED");
+
+        verify(strategy).supports(
+                BookStatus.BORROWED,
+                BookStatus.BLOCKED
+        );
+
+        verify(strategy, never()).apply(any(Book.class));
+        verify(bookRepository, never()).save(any(Book.class));
+    }
+
+    @Test
     void recalculateAndSaveBookStatus_shouldSetBorrowed_whenRequestIsFulfilled() {
 
         when(bookRepository.findById(bookId))
@@ -283,6 +434,23 @@ class BookServiceImplTest {
 
         verify(bookRepository).findById(bookId);
         verify(bookRepository).save(book);
+    }
+
+    @Test
+    void recalculateAndSaveBookStatus_shouldDoNothing_whenRequestIsNotFulfilled() {
+
+        book.setStatus(BookStatus.AVAILABLE);
+
+        bookService.recalculateAndSaveBookStatus(
+                bookId,
+                BookRequestStatus.APPROVED
+        );
+
+        assertThat(book.getStatus())
+                .isEqualTo(BookStatus.AVAILABLE);
+
+        verify(bookRepository, never()).findById(bookId);
+        verify(bookRepository, never()).save(any(Book.class));
     }
 
     @Test
