@@ -1,4 +1,4 @@
-package com.group.xlibris.loan.internal;
+package com.group.xlibris.book.internal;
 
 import com.group.xlibris.book.BookService;
 import com.group.xlibris.loan.LoanReturnedEvent;
