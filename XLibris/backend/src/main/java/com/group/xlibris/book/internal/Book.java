@@ -1,4 +1,4 @@
-package com.group.xlibris.book.entity;
+package com.group.xlibris.book.internal;
 
 import com.group.xlibris.book.BookStatus;
 import lombok.AllArgsConstructor;

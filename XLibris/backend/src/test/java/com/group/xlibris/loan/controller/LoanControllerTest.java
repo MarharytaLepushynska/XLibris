@@ -1,6 +1,6 @@
 package com.group.xlibris.loan.controller;
 
-import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.internal.Book;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.loan.dto.LoanRequest;

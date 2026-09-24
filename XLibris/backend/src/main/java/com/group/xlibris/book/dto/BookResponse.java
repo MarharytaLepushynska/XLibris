@@ -1,5 +1,6 @@
-package com.group.xlibris.book;
+package com.group.xlibris.book.dto;
 
+import com.group.xlibris.book.BookStatus;
 import org.springframework.modulith.NamedInterface;
 
 import java.util.UUID;

@@ -1,7 +1,8 @@
 package com.group.xlibris.book;
 
+import com.group.xlibris.book.dto.BookRequest;
 import tools.jackson.databind.ObjectMapper;
-import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.internal.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

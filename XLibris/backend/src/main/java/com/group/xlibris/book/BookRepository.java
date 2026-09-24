@@ -1,6 +1,6 @@
 package com.group.xlibris.book;
 
-import com.group.xlibris.book.entity.Book;
+import com.group.xlibris.book.internal.Book;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,5 +1,7 @@
 package com.group.xlibris.book;
 
+import com.group.xlibris.book.dto.BookRequest;
+import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.common.OnCreate;
 import com.group.xlibris.common.OnUpdate;
 

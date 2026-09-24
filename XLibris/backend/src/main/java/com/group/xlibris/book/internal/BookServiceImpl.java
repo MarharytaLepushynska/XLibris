@@ -1,10 +1,9 @@
 package com.group.xlibris.book.internal;
 
-import com.group.xlibris.book.BookRequest;
-import com.group.xlibris.book.BookResponse;
+import com.group.xlibris.book.dto.BookRequest;
+import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.BookService;
 import com.group.xlibris.book.BookStatus;
-import com.group.xlibris.book.entity.Book;
 import com.group.xlibris.book.InvalidBookStateTransitionException;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.BookBlockedEvent;
