@@ -178,9 +178,11 @@ public class BookServiceImpl implements BookService {
 
         if (targetStatus == BookStatus.BLOCKED) {
             eventPublisher.publishEvent(new BookBlockedEvent(id));
+
+            System.out.println("Event for Book with id " + id + " was published");
+
         }
 
-        System.out.println("Event for Book with id " + id + " was published");
 
     }
 
@@ -205,17 +207,6 @@ public class BookServiceImpl implements BookService {
         }
         book.setStatus(BookStatus.AVAILABLE);
         bookRepository.save(book);
-    }
-
-    private BookStatus mapRequestStatusToBookStatus(
-            BookRequestStatus requestStatus) {
-
-        return switch (requestStatus) {
-            case PENDING -> BookStatus.AVAILABLE;
-            case APPROVED -> BookStatus.AVAILABLE;
-            case REJECTED, CANCELLED -> BookStatus.AVAILABLE;
-            case FULFILLED -> BookStatus.BORROWED;
-        };
     }
 
     private BookResponse toResponse(Book book) {
