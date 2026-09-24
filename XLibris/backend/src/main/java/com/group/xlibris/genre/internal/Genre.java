@@ -1,4 +1,4 @@
-package com.group.xlibris.genre.entity;
+package com.group.xlibris.genre.internal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

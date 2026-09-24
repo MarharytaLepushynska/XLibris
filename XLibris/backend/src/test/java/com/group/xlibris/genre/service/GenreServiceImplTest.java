@@ -1,8 +1,8 @@
 package com.group.xlibris.genre.service;
 
-import com.group.xlibris.genre.GenreRequest;
-import com.group.xlibris.genre.GenreResponse;
-import com.group.xlibris.genre.entity.Genre;
+import com.group.xlibris.genre.dto.GenreRequest;
+import com.group.xlibris.genre.dto.GenreResponse;
+import com.group.xlibris.genre.internal.Genre;
 import com.group.xlibris.genre.GenreNotFoundException;
 import com.group.xlibris.genre.internal.GenreServiceImpl;
 import com.group.xlibris.genre.GenreRepository;
