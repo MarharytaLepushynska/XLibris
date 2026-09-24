@@ -36,6 +36,10 @@ public class Report {
                                  String title, ReportType type,
                                  String description, URI evidenceUrl) {
         UUID targetUserId = resolveOpponent(loanId, ownerId, renterId, reporterId);
+        if (Objects.equals(reporterId, targetUserId)) {
+            throw new SelfReportException("User cannot report themselves");
+        }
+
         return new Report(
                 UUID.randomUUID(), title, type,
                 description, evidenceUrl, Instant.now(),
