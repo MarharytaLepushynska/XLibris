@@ -169,10 +169,6 @@ class UserServiceImplTest {
 
     @Test
     void shouldThrowAccessDeniedExceptionWhenUpdateOtherUser() {
-        User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
-                2.0, 1.9, 4, 5, 1);
-
         UpdateUserCommand command = new UpdateUserCommand(userId, "Dima", "Berlin", null, "d@gmail.com", "+380776654334");
         assertThrows(AccessDeniedException.class, () -> userService.updateUser(userId, command, userId2));
         verify(userRepository, never()).save(any());
