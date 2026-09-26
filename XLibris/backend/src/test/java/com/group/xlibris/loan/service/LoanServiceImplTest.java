@@ -2,15 +2,11 @@ package com.group.xlibris.loan.service;
 
 
 import com.group.xlibris.common.NotFoundException;
-import com.group.xlibris.loan.LoanReturnedEvent;
+import com.group.xlibris.loan.*;
 import com.group.xlibris.loan.internal.CreateLoanCommand;
 
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.internal.Loan;
-import com.group.xlibris.loan.LoanStatus;
-import com.group.xlibris.loan.InvalidLoanStateException;
-import com.group.xlibris.loan.InvalidReturnDateException;
-import com.group.xlibris.loan.SameParticipantException;
 import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.loan.internal.LoanServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,6 +79,7 @@ class LoanServiceImplTest {
         assertNull(response.actualReturnDate());
 
         verify(loanRepository).findById(loanId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -91,6 +88,7 @@ class LoanServiceImplTest {
 
         assertThrows(NotFoundException.class, () -> loanService.getLoanById(loanId));
         verify(loanRepository).findById(loanId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -112,6 +110,7 @@ class LoanServiceImplTest {
 
         assertEquals(2, responses.size());
         verify(loanRepository).findByOwnerAndRenter(ownerId, renterId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -138,6 +137,7 @@ class LoanServiceImplTest {
         assertEquals(LoanStatus.OVERDUE, overdueResponses.getFirst().status());
 
         verify(loanRepository, times(2)).findByOwnerAndRenter(ownerId, renterId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -156,6 +156,7 @@ class LoanServiceImplTest {
         assertEquals(LoanStatus.ACTIVE, response.status());
 
         verify(loanRepository).save(any(Loan.class));
+        verify(eventPublisher).publishEvent(any(LoanCreatedEvent.class));
     }
 
     @Test
@@ -164,6 +165,7 @@ class LoanServiceImplTest {
 
         assertThrows(SameParticipantException.class, () -> loanService.createLoan(command));
         verify(loanRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -173,6 +175,7 @@ class LoanServiceImplTest {
 
         assertThrows(InvalidReturnDateException.class, () -> loanService.createLoan(command));
         verify(loanRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -205,6 +208,7 @@ class LoanServiceImplTest {
         assertThrows(NotFoundException.class, () -> loanService.returnLoan(loanId));
         verify(loanRepository).findById(loanId);
         verify(loanRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -215,6 +219,7 @@ class LoanServiceImplTest {
         assertThrows(InvalidLoanStateException.class, () -> loanService.returnLoan(loanId));
         verify(loanRepository).findById(loanId);
         verify(loanRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -225,6 +230,7 @@ class LoanServiceImplTest {
 
         verify(loanRepository).existsById(loanId);
         verify(loanRepository).deleteById(loanId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -234,5 +240,6 @@ class LoanServiceImplTest {
         assertThrows(NotFoundException.class, () -> loanService.removeLoan(loanId));
         verify(loanRepository).existsById(loanId);
         verify(loanRepository, never()).deleteById(any());
+        verifyNoInteractions(eventPublisher);
     }
 }

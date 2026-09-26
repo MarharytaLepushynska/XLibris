@@ -4,18 +4,12 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.LoanStatus;
 import com.group.xlibris.loan.LoanService;
+import com.group.xlibris.report.*;
 import com.group.xlibris.report.internal.ReportServiceImpl;
 import com.group.xlibris.report.internal.command.*;
 import com.group.xlibris.report.dto.ReportFilterCriteria;
 import com.group.xlibris.report.dto.ReportResponse;
 import com.group.xlibris.report.internal.Report;
-import com.group.xlibris.report.ReportAction;
-import com.group.xlibris.report.ReportStatus;
-import com.group.xlibris.report.ReportType;
-import com.group.xlibris.report.InvalidReportResolutionException;
-import com.group.xlibris.report.InvalidReportStateException;
-import com.group.xlibris.report.NotLoanParticipantException;
-import com.group.xlibris.report.SelfReportException;
 import com.group.xlibris.report.internal.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -105,6 +99,7 @@ class ReportServiceImplTest {
         assertEquals(ReportStatus.PENDING, response.status());
 
         verify(reportRepository).findById(reportId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -113,6 +108,7 @@ class ReportServiceImplTest {
 
         assertThrows(NotFoundException.class, () -> reportService.getReportById(reportId));
         verify(reportRepository).findById(reportId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -126,6 +122,7 @@ class ReportServiceImplTest {
         assertEquals(1, responses.size());
         assertEquals(reportId, responses.getFirst().id());
         verify(reportRepository).findAll(ReportStatus.PENDING, null, ownerId, null);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -138,6 +135,7 @@ class ReportServiceImplTest {
         assertEquals(1, responses.size());
         verify(loanService).getLoanById(loanId);
         verify(reportRepository).findAll(null, loanId, null, null);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -163,6 +161,7 @@ class ReportServiceImplTest {
 
         verify(loanService).getLoanById(loanId);
         verify(reportRepository).save(any(Report.class));
+        verify(eventPublisher).publishEvent(any(ReportCreatedEvent.class));
     }
 
     @Test
@@ -180,6 +179,7 @@ class ReportServiceImplTest {
 
         assertThrows(NotLoanParticipantException.class, () -> reportService.createReportForLoan(loanId, command));
         verify(reportRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -204,6 +204,7 @@ class ReportServiceImplTest {
         assertNull(response.loanId());
 
         verify(reportRepository).save(any(Report.class));
+        verify(eventPublisher).publishEvent(any(ReportCreatedEvent.class));
     }
 
     @Test
@@ -219,6 +220,7 @@ class ReportServiceImplTest {
 
         assertThrows(SelfReportException.class, () -> reportService.createReportStandalone(command));
         verify(reportRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -241,6 +243,7 @@ class ReportServiceImplTest {
 
         verify(reportRepository).findById(reportId);
         verify(reportRepository).save(pendingReport);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -257,6 +260,7 @@ class ReportServiceImplTest {
 
         assertThrows(InvalidReportStateException.class, () -> reportService.updateReport(reportId, command));
         verify(reportRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -271,6 +275,7 @@ class ReportServiceImplTest {
 
         verify(reportRepository).findById(reportId);
         verify(reportRepository).save(pendingReport);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -294,6 +299,31 @@ class ReportServiceImplTest {
 
         verify(reportRepository).findById(reportId);
         verify(reportRepository).save(pendingReport);
+        verify(eventPublisher).publishEvent(any(ReportResolvedEvent.class));
+    }
+
+    @Test
+    void shouldRejectReportSuccessfully() {
+        pendingReport.assignToReview();
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(pendingReport));
+        when(reportRepository.save(any(Report.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ResolveReportCommand command = new ResolveReportCommand(
+                ReportStatus.REJECTED,
+                "No evidence provided",
+                ReportAction.NONE
+        );
+
+        ReportResponse response = reportService.resolveReport(reportId, command);
+
+        assertNotNull(response);
+        assertEquals(ReportStatus.REJECTED, response.status());
+        assertEquals("No evidence provided", response.moderatorComment());
+        assertEquals(ReportAction.NONE, response.moderatorVerdict());
+
+        verify(reportRepository).findById(reportId);
+        verify(reportRepository).save(pendingReport);
+        verify(eventPublisher).publishEvent(any(ReportRejectedEvent.class));
     }
 
     @Test
@@ -309,6 +339,7 @@ class ReportServiceImplTest {
 
         assertThrows(InvalidReportResolutionException.class, () -> reportService.resolveReport(reportId, invalidCommand));
         verify(reportRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -319,6 +350,7 @@ class ReportServiceImplTest {
 
         verify(reportRepository).existsById(reportId);
         verify(reportRepository).deleteById(reportId);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -328,5 +360,6 @@ class ReportServiceImplTest {
         assertThrows(NotFoundException.class, () -> reportService.deleteReport(reportId));
         verify(reportRepository).existsById(reportId);
         verify(reportRepository, never()).deleteById(any());
+        verifyNoInteractions(eventPublisher);
     }
 }
