@@ -1,15 +1,17 @@
 package com.group.xlibris.book.internal;
 
+import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorService;
+import com.group.xlibris.book.*;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.BookService;
-import com.group.xlibris.book.BookStatus;
-import com.group.xlibris.book.InvalidBookStateTransitionException;
-import com.group.xlibris.book.BookRepository;
-import com.group.xlibris.book.BookBlockedEvent;
 import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
 
+import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreService;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
@@ -23,13 +25,22 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final List<BookStateTransitionStrategy> strategies;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserService userService;
+    private final AuthorService authorService;
+    private final GenreService genreService;
 
     public BookServiceImpl(BookRepository bookRepository,
                            List<BookStateTransitionStrategy> strategies,
-                           ApplicationEventPublisher eventPublisher) {
+                           ApplicationEventPublisher eventPublisher,
+                           UserService userService,
+                           AuthorService authorService,
+                           GenreService genreService) {
         this.bookRepository = bookRepository;
         this.strategies = strategies;
         this.eventPublisher = eventPublisher;
+        this.userService = userService;
+        this.authorService = authorService;
+        this.genreService = genreService;
     }
 
     @Override
@@ -52,6 +63,9 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponse createBook(BookRequest request) {
         UUID id = UUID.randomUUID();
+        User owner = userService.getEntityById(request.ownerId());
+        Author author = authorService.getEntityById(request.authorId());
+        Genre genre = genreService.getEntityById(request.genreId());
 
         Book book = new Book(
                 id,
@@ -59,9 +73,9 @@ public class BookServiceImpl implements BookService {
                 request.description(),
                 request.photoURL(),
                 BookStatus.AVAILABLE,
-                request.ownerId(),
-                request.authorId(),
-                request.genreId()
+                owner,
+                author,
+                genre
         );
 
         Book savedBook = bookRepository.save(book);
@@ -79,12 +93,16 @@ public class BookServiceImpl implements BookService {
                                 "Book (id = " + id + ") was not found"
                         ));
 
+        User owner = userService.getEntityById(request.ownerId());
+        Author author = authorService.getEntityById(request.authorId());
+        Genre genre = genreService.getEntityById(request.genreId());
+
         book.setTitle(request.title());
         book.setDescription(request.description());
         book.setPhotoURL(request.photoURL());
-        book.setOwnerId(request.ownerId());
-        book.setAuthorId(request.authorId());
-        book.setGenreId(request.genreId());
+        book.setOwner(owner);
+        book.setAuthor(author);
+        book.setGenre(genre);
 
         Book updatedBook = bookRepository.save(book);
 
@@ -208,6 +226,12 @@ public class BookServiceImpl implements BookService {
         bookRepository.save(book);
     }
 
+    @Override
+    public Book getEntityById(UUID id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Book (id = " + id + ") was not found"));
+    }
+
     private BookResponse toResponse(Book book) {
         return new BookResponse(
                 book.getId(),
@@ -215,9 +239,9 @@ public class BookServiceImpl implements BookService {
                 book.getDescription(),
                 book.getPhotoURL(),
                 book.getStatus(),
-                book.getOwnerId(),
-                book.getAuthorId(),
-                book.getGenreId()
+                book.getOwner().getId(),
+                book.getAuthor().getId(),
+                book.getGenre().getId()
         );
     }
 }

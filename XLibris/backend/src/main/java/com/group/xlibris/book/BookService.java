@@ -29,4 +29,6 @@ public interface BookService {
 
     void markAvailableAfterReturn(UUID bookId);
 
+    Book getEntityById(UUID id);
+
 }

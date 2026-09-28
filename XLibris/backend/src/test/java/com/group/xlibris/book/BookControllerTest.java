@@ -1,9 +1,15 @@
 package com.group.xlibris.book;
 
+import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.dto.BookRequest;
+import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreRepository;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.internal.UserRepository;
 import org.springframework.test.context.ActiveProfiles;
 import tools.jackson.databind.ObjectMapper;
-import com.group.xlibris.book.internal.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +18,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -35,10 +42,22 @@ class BookControllerTest {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
+
     private UUID bookId;
     private UUID ownerId;
     private UUID authorId;
     private UUID genreId;
+    private User user;
+    private Author author;
+    private Genre genre;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +65,17 @@ class BookControllerTest {
         ownerId = UUID.randomUUID();
         authorId = UUID.randomUUID();
         genreId = UUID.randomUUID();
+        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+
+        author = new Author(authorId, "JK Rowling");
+
+        genre = new Genre(genreId, "Horror");
+
+        user = userRepository.save(user);
+        author = authorRepository.save(author);
+        genre = genreRepository.save(genre);
     }
 
     @Test
@@ -79,9 +109,9 @@ class BookControllerTest {
                 "Test description",
                 "photo.jpg",
                 BookStatus.AVAILABLE,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         bookRepository.save(book);
@@ -103,9 +133,9 @@ class BookControllerTest {
                 "Description one",
                 "photo1.jpg",
                 BookStatus.AVAILABLE,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         Book book2 = new Book(
@@ -114,9 +144,9 @@ class BookControllerTest {
                 "Description two",
                 "photo2.jpg",
                 BookStatus.BORROWED,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         bookRepository.save(book1);
@@ -136,9 +166,9 @@ class BookControllerTest {
                 "Old description",
                 "old.jpg",
                 BookStatus.AVAILABLE,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         bookRepository.save(book);
@@ -172,9 +202,9 @@ class BookControllerTest {
                 "Test description",
                 "photo.jpg",
                 BookStatus.AVAILABLE,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         bookRepository.save(book);

@@ -1,9 +1,11 @@
 package com.group.xlibris.book.service;
 
+import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorService;
 import com.group.xlibris.book.BookBlockedEvent;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.internal.Book;
+import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.InvalidBookStateTransitionException;
 import com.group.xlibris.book.BookRepository;
@@ -13,6 +15,11 @@ import com.group.xlibris.common.NotFoundException;
 
 import com.group.xlibris.book.internal.BookServiceImpl;
 
+import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreService;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +50,15 @@ class BookServiceImplTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private UserService userService;
+
+    @Mock
+    private AuthorService authorService;
+
+    @Mock
+    private GenreService genreService;
+
     private BookServiceImpl bookService;
 
     private UUID bookId;
@@ -51,6 +68,9 @@ class BookServiceImplTest {
 
     private Book book;
     private BookRequest request;
+    private User user;
+    private Author author;
+    private Genre genre;
 
     @BeforeEach
     void setUp() {
@@ -58,7 +78,10 @@ class BookServiceImplTest {
         bookService = new BookServiceImpl(
                 bookRepository,
                 List.of(strategy),
-                eventPublisher
+                eventPublisher,
+                userService,
+                authorService,
+                genreService
         );
 
         bookId = UUID.randomUUID();
@@ -66,15 +89,23 @@ class BookServiceImplTest {
         authorId = UUID.randomUUID();
         genreId = UUID.randomUUID();
 
+        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+
+        author = new Author(authorId, "JK Rowling");
+
+        genre = new Genre(genreId, "Horror");
+
         book = new Book(
                 bookId,
                 "Test Book",
                 "Test description",
                 "photo.jpg",
                 BookStatus.AVAILABLE,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         request = new BookRequest(
@@ -126,6 +157,9 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getEntityById(ownerId)).thenReturn(user);
+        when(authorService.getEntityById(authorId)).thenReturn(author);
+        when(genreService.getEntityById(genreId)).thenReturn(genre);
 
         BookResponse response = bookService.createBook(request);
 
@@ -149,9 +183,9 @@ class BookServiceImplTest {
                 "Second description",
                 "second.jpg",
                 BookStatus.BLOCKED,
-                ownerId,
-                authorId,
-                genreId
+                user,
+                author,
+                genre
         );
 
         when(bookRepository.findAll())
@@ -191,6 +225,9 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getEntityById(ownerId)).thenReturn(user);
+        when(authorService.getEntityById(authorId)).thenReturn(author);
+        when(genreService.getEntityById(genreId)).thenReturn(genre);
 
         BookResponse response = bookService.updateBook(bookId, request);
 
@@ -217,6 +254,9 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getEntityById(ownerId)).thenReturn(user);
+        when(authorService.getEntityById(authorId)).thenReturn(author);
+        when(genreService.getEntityById(genreId)).thenReturn(genre);
 
         BookResponse response = bookService.updateBook(bookId, request);
 
@@ -237,6 +277,9 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(userService.getEntityById(ownerId)).thenReturn(user);
+        when(authorService.getEntityById(authorId)).thenReturn(author);
+        when(genreService.getEntityById(genreId)).thenReturn(genre);
 
         BookResponse response = bookService.updateBook(bookId, request);
 
