@@ -1,23 +1,44 @@
 package com.group.xlibris.user.internal;
 
 import com.group.xlibris.user.Role;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @AllArgsConstructor
 @Getter
+@Entity
+@Table(name = "users")
 public class User {
+    protected User () {}
+
+    @Id
     private UUID id;
+
+    @Column(nullable = false, length = 255)
     private String name;
+
+    @Column(nullable = false, length = 70)
     private String city;
+
+    @Column
     private String photoURL;
+
+    @Column(nullable = false, length = 255)
     private String email;
+
+    @Column(nullable = false)
     private String phone;
+
+    @Column(nullable = false, updatable = false)
     private Instant registrationDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
     private Double ownerRating;
