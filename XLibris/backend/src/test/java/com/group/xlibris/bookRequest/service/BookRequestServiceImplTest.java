@@ -1,7 +1,8 @@
 package com.group.xlibris.bookRequest.service;
 
+import com.group.xlibris.author.Author;
 import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.internal.Book;
+import com.group.xlibris.book.Book;
 
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookService;
@@ -15,6 +16,10 @@ import com.group.xlibris.bookRequest.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.InvalidBookStateException;
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.common.AccessDeniedException;
+import com.group.xlibris.genre.Genre;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,22 +49,43 @@ class BookRequestServiceImplTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private UserService userService;
+
     private BookRequestServiceImpl service;
     private UUID ownerId;
     private UUID borrowerId;
     private Book book;
     private BookRequestEntity request;
+    private UUID authorId;
+    private UUID genreId;
+
+    private User user;
+    private User user2;
+    private Author author;
+    private Genre genre;
 
     @BeforeEach
     void setUp() {
-        service = new BookRequestServiceImpl(repository, bookService, eventPublisher);
+        service = new BookRequestServiceImpl(repository, bookService, eventPublisher, userService);
         ownerId = UUID.randomUUID();
         borrowerId = UUID.randomUUID();
-        book = new Book(UUID.randomUUID(), "Book", "Description", null,
-                BookStatus.AVAILABLE, ownerId, UUID.randomUUID(), UUID.randomUUID());
+        authorId = UUID.fromString("550e8400-e29b-41d4-a716-446655440007");
+        genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655440006");
 
-        request = new BookRequestEntity(UUID.randomUUID(), book.getId(), borrowerId,
-                ownerId, 14, BookRequestStatus.PENDING, Instant.now(), null);
+        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+        user2 = new User(borrowerId, "Max", "Lviv", null, "max@gmail.com",
+                "+380998876447", Instant.now(), Role.USER,
+                4.0, 2.9, 5, 6, 0);
+
+        author = new Author(authorId, "JK Rowling");
+        genre = new Genre(genreId, "Horror");
+        book = new Book(UUID.randomUUID(), "Book", "Description", null,
+                BookStatus.AVAILABLE, user, author, genre);
+        request = new BookRequestEntity(UUID.randomUUID(), book, user2,
+                user, 14, BookRequestStatus.PENDING, Instant.now(), null);
     }
 
     @Test
@@ -70,6 +96,8 @@ class BookRequestServiceImplTest {
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
         when(repository.findAll()).thenReturn(List.of());
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userService.getEntityById(borrowerId)).thenReturn(user2);
+        when(bookService.getEntityById(book.getId())).thenReturn(book);
 
         BookRequestResponse result = service.create(new CreateBookRequestCommand(book.getId(), borrowerId, 14));
         assertNotNull(result.id());
@@ -103,6 +131,8 @@ class BookRequestServiceImplTest {
                 "Kapitoshka", "some", null, BookStatus.AVAILABLE,
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
         when(repository.findAll()).thenReturn(List.of(request));
+        when(userService.getEntityById(borrowerId)).thenReturn(user2);
+        when(bookService.getEntityById(book.getId())).thenReturn(book);
 
         assertThrows(DuplicateBookRequestException.class, () -> service.create(
                 new CreateBookRequestCommand(book.getId(), borrowerId, 14)));
@@ -133,6 +163,8 @@ class BookRequestServiceImplTest {
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
         when(repository.findAll()).thenReturn(List.of(request));
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userService.getEntityById(borrowerId)).thenReturn(user2);
+        when(bookService.getEntityById(book.getId())).thenReturn(book);
 
         BookRequestResponse result = service.create(new CreateBookRequestCommand(book.getId(), borrowerId, 14));
         assertEquals(BookRequestStatus.PENDING, result.status());
@@ -185,6 +217,8 @@ class BookRequestServiceImplTest {
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
         when(repository.findAll()).thenReturn(List.of(request));
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userService.getEntityById(borrowerId)).thenReturn(user2);
+        when(bookService.getEntityById(book.getId())).thenReturn(book);
 
         BookRequestResponse result = service.updateStatus(new UpdateBookRequestCommand(request.getId(), actor, BookRequestStatus.APPROVED));
         assertEquals(BookRequestStatus.APPROVED, result.status());
@@ -238,6 +272,7 @@ class BookRequestServiceImplTest {
         when(bookService.getBookById(book.getId())).thenReturn(new BookResponse(book.getId(),
                 "Kapitoshka", "some", null, BookStatus.AVAILABLE,
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
+
         assertThrows(AccessDeniedException.class, () -> service.updateStatus(
                 new UpdateBookRequestCommand(request.getId(), UUID.randomUUID(), target)
         ));

@@ -1,5 +1,6 @@
 package com.group.xlibris.bookRequest.internal;
 
+import com.group.xlibris.book.Book;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookService;
@@ -13,6 +14,8 @@ import com.group.xlibris.bookRequest.InvalidBookRequestStateException;
 import com.group.xlibris.bookRequest.InvalidBookStateException;
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.common.AccessDeniedException;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -26,13 +29,16 @@ public class BookRequestServiceImpl implements BookRequestService {
     private final BookRequestRepository repository;
     private final BookService bookService;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserService userService;
 
     public BookRequestServiceImpl(BookRequestRepository repository,
                                   BookService bookService,
-                                  ApplicationEventPublisher eventPublisher) {
+                                  ApplicationEventPublisher eventPublisher,
+                                  UserService userService) {
         this.repository = repository;
         this.bookService = bookService;
         this.eventPublisher = eventPublisher;
+        this.userService = userService;
     }
 
     @Override
@@ -45,24 +51,28 @@ public class BookRequestServiceImpl implements BookRequestService {
             throw new InvalidBookStateException("Book is blocked");
         }
 
+        User requester = userService.getEntityById(command.requesterId());
+        Book reqBook = bookService.getEntityById(command.bookId());
+        User owner = reqBook.getOwner();
+
         boolean existsAlready = getOpenRequests(command.bookId()).stream()
-                .anyMatch(r -> r.getRequesterId().equals(command.requesterId()));
+                .anyMatch(r -> r.getRequester().getId().equals(command.requesterId()));
         if (existsAlready) {
             throw new DuplicateBookRequestException("Request for this book was already created");
         }
 
         BookRequestEntity entity = new BookRequestEntity(
                 UUID.randomUUID(),
-                command.bookId(),
-                command.requesterId(),
-                book.ownerId(),
+                reqBook,
+                requester,
+                owner,
                 command.desiredDurationDays(),
                 BookRequestStatus.PENDING,
                 Instant.now(),
                 null
         );
         BookRequestEntity saved = repository.save(entity);
-        System.out.println("Book request with id " + saved.getBookId() + " was created");
+        System.out.println("Book request with id " + saved.getBook().getId() + " was created");
         return BookRequestResponse.from(saved);
     }
 
@@ -74,8 +84,8 @@ public class BookRequestServiceImpl implements BookRequestService {
     @Override
     public List<BookRequestResponse> getAll(UUID bookId, UUID requesterId, BookRequestStatus status, int page, int size) {
         return repository.findAll().stream()
-                .filter(r -> bookId == null || r.getBookId().equals(bookId))
-                .filter(r -> requesterId == null || r.getRequesterId().equals(requesterId))
+                .filter(r -> bookId == null || r.getBook().getId().equals(bookId))
+                .filter(r -> requesterId == null || r.getRequester().getId().equals(requesterId))
                 .filter(r -> status == null || r.getStatus().equals(status))
                 .skip((long) page*size)
                 .limit(size)
@@ -95,7 +105,7 @@ public class BookRequestServiceImpl implements BookRequestService {
                     " from " + existing.getStatus() + " to " + command.targetStatus());
         }
 
-        BookResponse book = bookService.getBookById(existing.getBookId());
+        BookResponse book = bookService.getBookById(existing.getBook().getId());
         checkActor(existing, book, command.actorId(), target);
 
         if (target == BookRequestStatus.APPROVED || target == BookRequestStatus.FULFILLED) {
@@ -132,7 +142,7 @@ public class BookRequestServiceImpl implements BookRequestService {
 
     private List<BookRequestEntity> getOpenRequests(UUID bookId) {
         return repository.findAll().stream()
-                .filter(r -> r.getBookId().equals(bookId))
+                .filter(r -> r.getBook().getId().equals(bookId))
                 .filter(r -> r.getStatus().isOpen())
                 .sorted(Comparator.comparing(BookRequestEntity::getCreatedAt)
                         .thenComparing(BookRequestEntity::getId))
@@ -140,7 +150,7 @@ public class BookRequestServiceImpl implements BookRequestService {
     }
 
     private void checkFirstInQueue(BookRequestEntity request) {
-        List<BookRequestEntity> queue = getOpenRequests(request.getBookId());
+        List<BookRequestEntity> queue = getOpenRequests(request.getBook().getId());
         if (queue.isEmpty() || !queue.getFirst().getId().equals(request.getId())) {
             throw new InvalidBookRequestStateException("Only the first request can be confirmed");
         }
@@ -150,7 +160,7 @@ public class BookRequestServiceImpl implements BookRequestService {
                             UUID actorId, BookRequestStatus target) {
         boolean allowed = switch (target) {
             case APPROVED, REJECTED -> book.ownerId().equals(actorId);
-            case FULFILLED, CANCELLED -> request.getRequesterId().equals(actorId);
+            case FULFILLED, CANCELLED -> request.getRequester().getId().equals(actorId);
             default -> false;
         };
         if (!allowed) {
@@ -163,10 +173,10 @@ public class BookRequestServiceImpl implements BookRequestService {
         request.setStatus(target);
         request.setRespondedAt(Instant.now());
         BookRequestEntity saved = repository.save(request);
-        System.out.println("Staus of book request with id " + request.getBookId() + " was changed from " + request.getStatus() + " to " + target );
+        System.out.println("Staus of book request with id " + request.getBook().getId() + " was changed from " + request.getStatus() + " to " + target );
 
         eventPublisher.publishEvent(new BookRequestStatusChangedEvent(
-                saved.getId(), saved.getBookId(), saved.getRequesterId(), saved.getOwnerId(),
+                saved.getId(), saved.getBook().getId(), saved.getRequester().getId(), saved.getOwner().getId(),
                 saved.getDesiredDurationDays(), previous, saved.getStatus()));
         System.out.println("Event for changing book request status was published");
         return BookRequestResponse.from(saved);

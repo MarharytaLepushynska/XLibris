@@ -19,9 +19,9 @@ public record BookRequestResponse(
     public static BookRequestResponse from(BookRequestEntity entity) {
         return new BookRequestResponse(
                 entity.getId(),
-                entity.getBookId(),
-                entity.getRequesterId(),
-                entity.getOwnerId(),
+                entity.getBook().getId(),
+                entity.getRequester().getId(),
+                entity.getOwner().getId(),
                 entity.getDesiredDurationDays(),
                 entity.getStatus(),
                 entity.getCreatedAt(),

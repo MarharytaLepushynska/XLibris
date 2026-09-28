@@ -1,6 +1,7 @@
 package com.group.xlibris.bookRequest.controller;
 
-import com.group.xlibris.book.internal.Book;
+import com.group.xlibris.author.Author;
+import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.bookRequest.dto.BookRequestCreate;
@@ -8,6 +9,9 @@ import com.group.xlibris.bookRequest.dto.BookRequestUpdateStatus;
 import com.group.xlibris.bookRequest.internal.BookRequestEntity;
 import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.bookRequest.internal.BookRequestRepository;
+import com.group.xlibris.genre.Genre;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +55,16 @@ class BookRequestControllerTest {
     private UUID requesterId2;
 
     private UUID ownerId;
+    private UUID borrowerId;
+    private UUID authorId;
+    private UUID genreId;
+
+    private User user;
+    private User user2;
+    private Author author;
+    private Genre genre;
+    private Book book;
+    private Book book2;
 
     @BeforeEach
     void resetMap() {
@@ -64,12 +78,51 @@ class BookRequestControllerTest {
         requesterId = UUID.fromString("550e8400-e29b-41d4-a716-446655440004");
         requesterId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440005");
         ownerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440006");
+        borrowerId = UUID.fromString("550e8400-e29b-41d4-a716-446655440009");
+        authorId = UUID.fromString("550e8400-e29b-41d4-a716-446655440007");
+        genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655440008");
+
+        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+
+        user2 = new User(borrowerId, "Max", "Lviv", null, "max@gmail.com",
+                "+380998876447", Instant.now(), Role.USER,
+                4.0, 2.9, 5, 6, 0);
+
+
+        author = new Author(authorId, "JK Rowling");
+
+        genre = new Genre(genreId, "Horror");
+
+        book = new Book(
+                bookId,
+                "Test book",
+                "Test desc",
+                null,
+                BookStatus.AVAILABLE,
+                user,
+                author,
+                genre
+        );
+
+        book2 = new Book(
+                bookId2,
+                "Test book2",
+                "Test desc2",
+                null,
+                BookStatus.AVAILABLE,
+                user2,
+                author,
+                genre
+        );
+
 
         BookRequestEntity entity = new BookRequestEntity(
                 requestId,
-                bookId,
-                requesterId,
-                ownerId,
+                book,
+                user,
+                user2,
                 14,
                 BookRequestStatus.PENDING,
                 Instant.now(),
@@ -78,25 +131,15 @@ class BookRequestControllerTest {
 
         BookRequestEntity entity2 = new BookRequestEntity(
                 requestId2,
-                bookId2,
-                requesterId2,
-                ownerId,
+                book2,
+                user,
+                user2,
                 21,
                 BookRequestStatus.APPROVED,
                 Instant.now(),
                 null
         );
 
-        Book book = new Book(
-                bookId,
-                "Test book",
-                "Test desc",
-                null,
-                BookStatus.AVAILABLE,
-                ownerId,
-                UUID.randomUUID(),
-                UUID.randomUUID()
-        );
         bookRepository.save(book);
 
         repository.save(entity);
@@ -105,7 +148,7 @@ class BookRequestControllerTest {
 
     @Test
     void shouldCreateRequest() throws Exception {
-        BookRequestCreate request = new BookRequestCreate(requesterId2, 21);
+        BookRequestCreate request = new BookRequestCreate(ownerId, 21);
 
         mvc.perform(post("/api/book-requests/{bookId}", bookId)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +156,7 @@ class BookRequestControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.bookId").value(bookId.toString()))
-                .andExpect(jsonPath("$.requesterId").value(requesterId2.toString()))
+                .andExpect(jsonPath("$.requesterId").value(ownerId.toString()))
                 .andExpect(jsonPath("$.desiredDurationDays").value(21))
                 .andExpect(jsonPath("$.status").value("PENDING"));
     }
