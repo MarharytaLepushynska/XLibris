@@ -3,6 +3,9 @@ package com.group.xlibris.user.internal;
 import com.group.xlibris.common.IdMismatch;
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.LoanService;
+import com.group.xlibris.loan.LoanStatus;
+import com.group.xlibris.loan.dto.LoanResponse;
+import com.group.xlibris.user.UserHasActiveLoansException;
 import com.group.xlibris.user.UserService;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
@@ -107,6 +110,15 @@ public class UserServiceImpl implements UserService {
         User caller = findUserOrThrow(callerId);
         if (!id.equals(callerId) && caller.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("User can only change their information");
+        }
+
+        List<LoanResponse> activeLoans = loanService.getAllLoans(id, null, null)
+                .stream()
+                .filter(l ->l.status() != LoanStatus.RETURNED)
+                        .toList();
+
+        if (!activeLoans.isEmpty()) {
+            throw new UserHasActiveLoansException("User has active loans and cannot be deleted");
         }
 
         userRepository.deleteById(id);

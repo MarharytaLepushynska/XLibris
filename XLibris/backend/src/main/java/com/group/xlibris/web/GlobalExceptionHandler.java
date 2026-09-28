@@ -18,6 +18,7 @@ import com.group.xlibris.report.InvalidReportStateException;
 import com.group.xlibris.report.NotLoanParticipantException;
 import com.group.xlibris.report.SelfReportException;
 import com.group.xlibris.user.ContactAccessDeniedException;
+import com.group.xlibris.user.UserHasActiveLoansException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -367,6 +368,20 @@ public class GlobalExceptionHandler {
         );
 
         problem.setTitle("Book request duplicate");
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(problem);
+    }
+
+    @ExceptionHandler(UserHasActiveLoansException.class)
+    public ResponseEntity<ProblemDetail> handleUserHasActiveLoansException(UserHasActiveLoansException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
+
+        problem.setTitle("User has active loans and cannot be deleted");
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)

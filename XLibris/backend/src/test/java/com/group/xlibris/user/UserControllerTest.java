@@ -148,6 +148,7 @@ class UserControllerTest {
     @Test
     void shouldDeleteUser() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
+        loanRepository.deleteAll();
 
         mvc.perform(delete("/api/users/{id}", id)
                         .param("callerId", id.toString()))
