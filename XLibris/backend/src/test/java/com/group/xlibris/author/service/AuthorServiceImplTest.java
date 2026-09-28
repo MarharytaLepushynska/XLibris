@@ -1,6 +1,6 @@
 package com.group.xlibris.author.service;
 
-import com.group.xlibris.author.internal.Author;
+import com.group.xlibris.author.Author;
 import com.group.xlibris.author.dto.AuthorRequest;
 import com.group.xlibris.author.dto.AuthorResponse;
 import com.group.xlibris.author.AuthorNotFoundException;

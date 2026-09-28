@@ -13,4 +13,5 @@ public interface AuthorService{
     AuthorResponse createAuthor(AuthorRequest request);
     AuthorResponse updateAuthor(UUID id, AuthorRequest request);
     void deleteAuthor(UUID id);
+    Author getEntityById(UUID id);
 }

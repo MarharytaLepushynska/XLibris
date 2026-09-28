@@ -1,5 +1,6 @@
 package com.group.xlibris.author.internal;
 
+import com.group.xlibris.author.Author;
 import com.group.xlibris.author.dto.AuthorRequest;
 import com.group.xlibris.author.dto.AuthorResponse;
 import com.group.xlibris.author.AuthorService;
@@ -74,6 +75,12 @@ public class AuthorServiceImpl implements AuthorService {
         authorRepository.deleteById(id);
 
         System.out.println("Author with id " + id + " was deleted");
+    }
+
+    @Override
+    public Author getEntityById(UUID id) {
+        return authorRepository.findById(id)
+                .orElseThrow(() -> new AuthorNotFoundException(id));
     }
 
     private AuthorResponse toResponse(Author author) {
