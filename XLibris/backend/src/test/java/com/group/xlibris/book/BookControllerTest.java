@@ -1,6 +1,7 @@
 package com.group.xlibris.book;
 
 import com.group.xlibris.book.dto.BookRequest;
+import org.springframework.test.context.ActiveProfiles;
 import tools.jackson.databind.ObjectMapper;
 import com.group.xlibris.book.internal.Book;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class BookControllerTest {
 
     @Autowired
