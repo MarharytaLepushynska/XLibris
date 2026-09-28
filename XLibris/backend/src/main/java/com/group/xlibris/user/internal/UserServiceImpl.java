@@ -2,9 +2,6 @@ package com.group.xlibris.user.internal;
 
 import com.group.xlibris.common.IdMismatch;
 import com.group.xlibris.common.NotFoundException;
-import com.group.xlibris.loan.LoanService;
-import com.group.xlibris.loan.LoanStatus;
-import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.user.*;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
@@ -18,11 +15,11 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final LoanService loanService;
+    private final UserLoanCheck userLoanCheck;
 
-    public UserServiceImpl(UserRepository userRepository, LoanService loanService) {
+    public UserServiceImpl(UserRepository userRepository, UserLoanCheck userLoanCheck) {
         this.userRepository = userRepository;
-        this.loanService = loanService;
+        this.userLoanCheck = userLoanCheck;
     }
 
     @Override
@@ -44,11 +41,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserContactInfo getContactInfoById(UUID targetUserId, UUID viewerId) {
         User user = findUserOrThrow(targetUserId);
-        boolean hasConfirmedLoan = !loanService
-                .getAllLoans(targetUserId, viewerId, null)
-                .isEmpty();
-
-        if (!hasConfirmedLoan) {
+        if (!userLoanCheck.canViewContacts(targetUserId, viewerId)) {
             throw new ContactAccessDeniedException("No confirmed loan");
         }
 
@@ -109,12 +102,7 @@ public class UserServiceImpl implements UserService {
             throw new AccessDeniedException("User can only change their information");
         }
 
-        List<LoanResponse> activeLoans = loanService.getAllLoans(id, null, null)
-                .stream()
-                .filter(l ->l.status() != LoanStatus.RETURNED)
-                        .toList();
-
-        if (!activeLoans.isEmpty()) {
+        if (userLoanCheck.hasActiveLoans(id)) {
             throw new UserHasActiveLoansException("User has active loans and cannot be deleted");
         }
 

@@ -5,13 +5,11 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.LoanService;
-import com.group.xlibris.user.User;
+import com.group.xlibris.user.*;
 import com.group.xlibris.user.internal.*;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
-import com.group.xlibris.user.Role;
 import com.group.xlibris.common.AccessDeniedException;
-import com.group.xlibris.user.ContactAccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +33,7 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private LoanService loanService;
+    private UserLoanCheck userLoanCheck;
 
     private UserServiceImpl userService;
 
@@ -46,7 +44,7 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, loanService);
+        userService = new UserServiceImpl(userRepository, userLoanCheck);
 
         userId = UUID.randomUUID();
         userId2 = UUID.randomUUID();
@@ -122,26 +120,24 @@ class UserServiceImplTest {
         Loan loan = Loan.create(UUID.randomUUID(), userId, userId2, Instant.now().plusSeconds(1200));
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(loanService.getAllLoans(userId, userId2, null))
-                .thenReturn(List.of(LoanResponse.from(loan)));
+        when(userLoanCheck.canViewContacts(userId, userId2)).thenReturn(true);
 
         UserContactInfo response = userService.getContactInfoById(userId, userId2);
         assertEquals("a@gmail.com", response.email());
         assertEquals("+380998876443", response.phone());
 
         verify(userRepository).findById(userId);
-        verify(loanService).getAllLoans(userId, userId2, null);
+        verify(userLoanCheck).canViewContacts(userId, userId2);
     }
 
     @Test
     void shouldDenyContactInfoWithoutLoan() {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(loanService.getAllLoans(userId, userId2, null))
-                .thenReturn(List.of());
+        when(userLoanCheck.canViewContacts(userId, userId2)).thenReturn(false);
 
         assertThrows(ContactAccessDeniedException.class, () -> userService.getContactInfoById(userId, userId2));
         verify(userRepository).findById(userId);
-        verify(loanService).getAllLoans(userId, userId2, null);
+        verify(userLoanCheck).canViewContacts(userId, userId2);
     }
 
     @Test
@@ -227,6 +223,7 @@ class UserServiceImplTest {
     void shouldDeleteUserSuccessfully() {
         when(userRepository.existsById(userId)).thenReturn(true);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userLoanCheck.hasActiveLoans(userId)).thenReturn(false);
         userService.removeUser(userId, userId);
         verify(userRepository).deleteById(userId);
     }
@@ -239,6 +236,7 @@ class UserServiceImplTest {
 
         when(userRepository.existsById(userId)).thenReturn(true);
         when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
+        when(userLoanCheck.hasActiveLoans(userId)).thenReturn(false);
         userService.removeUser(userId, adminId);
         verify(userRepository).deleteById(userId);
     }
@@ -257,6 +255,16 @@ class UserServiceImplTest {
     void shouldTrowNotFoundExceptionWhenNoDeletingUser() {
         when(userRepository.existsById(userId)).thenReturn(false);
         assertThrows(NotFoundException.class, () -> userService.removeUser(userId, userId));
+        verify(userRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void shouldDenyWhenUserHasActiveLoans() {
+        when(userRepository.existsById(userId)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userLoanCheck.hasActiveLoans(userId)).thenReturn(true);
+
+        assertThrows(UserHasActiveLoansException.class, () -> userService.removeUser(userId, userId));
         verify(userRepository, never()).deleteById(any());
     }
 }
