@@ -5,6 +5,7 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.LoanService;
+import com.group.xlibris.user.User;
 import com.group.xlibris.user.internal.*;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;

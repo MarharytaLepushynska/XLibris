@@ -5,13 +5,10 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.LoanStatus;
 import com.group.xlibris.loan.dto.LoanResponse;
-import com.group.xlibris.user.UserHasActiveLoansException;
-import com.group.xlibris.user.UserService;
+import com.group.xlibris.user.*;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
-import com.group.xlibris.user.Role;
 import com.group.xlibris.common.AccessDeniedException;
-import com.group.xlibris.user.ContactAccessDeniedException;
 import org.springframework.stereotype.Service;
 
 
@@ -128,5 +125,10 @@ public class UserServiceImpl implements UserService {
     private User findUserOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User (id= " + id + ") was not found"));
+    }
+
+    @Override
+    public User getEntityById(UUID id) {
+        return findUserOrThrow(id);
     }
 }

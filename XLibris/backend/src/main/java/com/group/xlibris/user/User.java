@@ -1,10 +1,11 @@
-package com.group.xlibris.user.internal;
+package com.group.xlibris.user;
 
-import com.group.xlibris.user.Role;
+import com.group.xlibris.user.internal.CreateUserCommand;
+import com.group.xlibris.user.internal.UpdateUserCommand;
+import com.group.xlibris.user.internal.UserUpdateAdminCommand;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -19,7 +20,7 @@ public class User {
     @Id
     private UUID id;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false, length = 70)
@@ -28,7 +29,7 @@ public class User {
     @Column
     private String photoURL;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)

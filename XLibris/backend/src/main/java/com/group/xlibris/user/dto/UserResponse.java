@@ -1,6 +1,6 @@
 package com.group.xlibris.user.dto;
 
-import com.group.xlibris.user.internal.User;
+import com.group.xlibris.user.User;
 import com.group.xlibris.user.Role;
 
 import java.time.Instant;

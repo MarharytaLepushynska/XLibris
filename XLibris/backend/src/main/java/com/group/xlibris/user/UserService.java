@@ -17,4 +17,5 @@ public interface UserService {
     UserResponse updateUser(UUID id, UpdateUserCommand command, UUID requesterId);
     UserResponse updateUserAdmin(UUID id, UUID callerId, UserUpdateAdminCommand command);
     void removeUser(UUID id, UUID callerId);
+    User getEntityById(UUID id);
 }

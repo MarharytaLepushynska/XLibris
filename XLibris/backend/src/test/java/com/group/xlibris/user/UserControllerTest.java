@@ -4,7 +4,6 @@ import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.user.dto.AdminUserUpdateRequest;
 import com.group.xlibris.user.dto.UserRequest;
-import com.group.xlibris.user.internal.User;
 import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.http.MediaType;
