@@ -2,7 +2,6 @@ package com.group.xlibris.user.service;
 
 import com.group.xlibris.common.IdMismatch;
 import com.group.xlibris.common.NotFoundException;
-import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.user.*;
 import com.group.xlibris.user.internal.*;
 import com.group.xlibris.user.dto.UserContactInfo;
@@ -115,8 +114,6 @@ class UserServiceImplTest {
 
     @Test
     void shouldGetContactInfoByIdSuccessfully() {
-        Loan loan = Loan.create(UUID.randomUUID(), userId, userId2, Instant.now().plusSeconds(1200));
-
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userLoanCheck.canViewContacts(userId, userId2)).thenReturn(true);
 
