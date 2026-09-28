@@ -1,11 +1,15 @@
 package com.group.xlibris.loan.controller;
 
-import com.group.xlibris.book.internal.Book;
+import com.group.xlibris.author.Author;
+import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookRepository;
+import com.group.xlibris.genre.Genre;
 import com.group.xlibris.loan.dto.LoanRequest;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +55,14 @@ public class LoanControllerTest {
     private final UUID renterId = UUID.fromString("550e8400-e29b-41d4-a716-446655447000");
     private final UUID renterId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655447001");
 
+    private final UUID authorId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
+    private final UUID genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
+
+    private User user;
+    private User user2;
+    private Author author;
+    private Genre genre;
+
     @BeforeEach
     void resetMap() {
         loanRepository.deleteAll();
@@ -61,11 +73,23 @@ public class LoanControllerTest {
         loanRepository.save(loan);
         loanRepository.save(loan2);
 
-        Book book = new Book(bookId, "Test Book 1", "desc", null, BookStatus.BORROWED, ownerId, UUID.randomUUID(), UUID.randomUUID());
-        Book book2 = new Book(bookId2, "Test Book 2", "desc", null, BookStatus.BORROWED, ownerId2, UUID.randomUUID(), UUID.randomUUID());
+        Book book = new Book(bookId, "Test Book 1", "desc", null, BookStatus.BORROWED, user, author, genre);
+        Book book2 = new Book(bookId2, "Test Book 2", "desc", null, BookStatus.BORROWED, user2, author, genre);
 
         bookRepository.save(book);
         bookRepository.save(book2);
+
+        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+
+        user2 = new User(ownerId2, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+
+        author = new Author(authorId, "JK Rowling");
+
+        genre = new Genre(genreId, "Horror");
     }
 
     @Test
