@@ -29,6 +29,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserReferenceById(UUID id) {
+        return userRepository.getReferenceById(id);
+    }
+
+    @Override
     public List<UserResponse> getAllUsers(String name, int page, int size) {
         return userRepository.findAll().stream()
                 .filter(u -> name == null || u.getName().toLowerCase().contains(name.toLowerCase()))

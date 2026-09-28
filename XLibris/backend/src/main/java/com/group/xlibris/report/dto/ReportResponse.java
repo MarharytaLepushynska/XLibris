@@ -27,7 +27,8 @@ public record ReportResponse(
         return new ReportResponse(
                 report.getId(), report.getTitle(), report.getType(),
                 report.getDescription(), report.getEvidenceUrl(), report.getCreatedAt(),
-                report.getLoanId(), report.getReporterId(), report.getTargetUserId(),
+                report.getLoan() != null ? report.getLoan().getId() : null,
+                report.getReporter().getId(), report.getTargetUser().getId(),
                 report.getStatus(), report.getModeratorComment(), report.getModeratorVerdict());
     }
 }
