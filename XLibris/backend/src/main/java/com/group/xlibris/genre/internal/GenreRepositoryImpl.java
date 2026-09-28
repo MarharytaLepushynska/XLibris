@@ -1,5 +1,6 @@
 package com.group.xlibris.genre.internal;
 
+import com.group.xlibris.genre.Genre;
 import com.group.xlibris.genre.GenreRepository;
 import org.springframework.stereotype.Repository;
 

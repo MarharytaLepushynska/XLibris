@@ -17,4 +17,6 @@ public interface GenreService {
     GenreResponse updateGenre(UUID id, GenreRequest request);
 
     void deleteGenre(UUID id);
+
+    Genre getEntityById(UUID id);
 }

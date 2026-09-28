@@ -1,7 +1,5 @@
 package com.group.xlibris.genre;
 
-import com.group.xlibris.genre.internal.Genre;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

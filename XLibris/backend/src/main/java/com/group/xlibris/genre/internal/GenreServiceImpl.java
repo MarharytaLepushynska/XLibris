@@ -1,5 +1,6 @@
 package com.group.xlibris.genre.internal;
 
+import com.group.xlibris.genre.Genre;
 import com.group.xlibris.genre.dto.GenreRequest;
 import com.group.xlibris.genre.dto.GenreResponse;
 import com.group.xlibris.genre.GenreNotFoundException;
@@ -86,6 +87,12 @@ public class GenreServiceImpl implements GenreService {
         genreRepository.deleteById(id);
 
         System.out.println("Genre with id " + id + " was deleted");
+    }
+
+    @Override
+    public Genre getEntityById(UUID id) {
+        return genreRepository.findById(id)
+                .orElseThrow(() -> new GenreNotFoundException(id));
     }
 
     private GenreStrategy findStrategy(String genreName) {
