@@ -21,9 +21,9 @@ public record LoanResponse(
     public static LoanResponse from(Loan loan) {
         return new LoanResponse(
                 loan.getId(),
-                loan.getBookId(),
-                loan.getOwnerId(),
-                loan.getRenterId(),
+                loan.getBook().getId(),
+                loan.getOwner().getId(),
+                loan.getRenter().getId(),
                 loan.getStartDate(),
                 loan.getExpectedReturnDate(),
                 loan.getActualReturnDate(),

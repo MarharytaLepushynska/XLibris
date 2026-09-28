@@ -61,6 +61,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public Book getBookReferenceById(UUID id) {
+        return null; // поки заглушка, щоб не було помилки в loan
+    }
+
+    @Override
     public BookResponse createBook(BookRequest request) {
         UUID id = UUID.randomUUID();
         User owner = userService.getEntityById(request.ownerId());

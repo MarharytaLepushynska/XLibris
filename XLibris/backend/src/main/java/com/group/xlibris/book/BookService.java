@@ -13,6 +13,8 @@ public interface BookService {
 
     BookResponse getBookById(UUID id);
 
+    Book getBookReferenceById(UUID id);
+
     BookResponse createBook(BookRequest request);
 
     BookResponse updateBook(UUID id, BookRequest request);
