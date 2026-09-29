@@ -75,6 +75,8 @@ public class LoanReportControllerTest {
     @BeforeEach
     void resetMaps() {
         loanRepository.deleteAll();
+        userRepository.deleteAll();
+        reportRepository.deleteAll();
 
         User owner = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
                 "+380998876446", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
