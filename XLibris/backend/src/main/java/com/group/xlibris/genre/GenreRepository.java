@@ -15,4 +15,6 @@ public interface GenreRepository {
     boolean existsById(UUID id);
 
     void deleteById(UUID id);
+
+    void deleteAll();
 }

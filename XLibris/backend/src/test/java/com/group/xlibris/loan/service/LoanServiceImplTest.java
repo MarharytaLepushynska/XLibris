@@ -1,6 +1,8 @@
 package com.group.xlibris.loan.service;
 
 
+import com.group.xlibris.book.Book;
+import com.group.xlibris.book.BookService;
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.*;
 import com.group.xlibris.loan.internal.CreateLoanCommand;
@@ -9,6 +11,9 @@ import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.loan.internal.LoanServiceImpl;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +37,12 @@ class LoanServiceImplTest {
     private LoanRepository loanRepository;
 
     @Mock
+    private UserService userService;
+
+    @Mock
+    private BookService bookService;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
     private LoanServiceImpl loanService;
@@ -43,9 +54,13 @@ class LoanServiceImplTest {
     private Instant expectedReturnDate;
     private Loan loan;
 
+    private Book book;
+    private User owner;
+    private User renter;
+
     @BeforeEach
     void setUp() {
-        loanService = new LoanServiceImpl(loanRepository, eventPublisher);
+        loanService = new LoanServiceImpl(loanRepository, userService, bookService, eventPublisher);
 
         loanId = UUID.randomUUID();
         bookId = UUID.randomUUID();
@@ -53,11 +68,20 @@ class LoanServiceImplTest {
         renterId = UUID.randomUUID();
         expectedReturnDate = Instant.now().plusSeconds(86400 * 14);
 
+        book = mock(Book.class);
+        when(book.getId()).thenReturn(bookId);
+
+        owner = new User(ownerId, "Artem", "Lviv", null, "a@gmail.com",
+                "+380998876443", Instant.now(), Role.USER, 1.0, 0.9, 0, 0, 0);
+
+        renter = new User(renterId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+
         loan = new Loan(
                 loanId,
-                bookId,
-                ownerId,
-                renterId,
+                book,
+                owner,
+                renter,
                 Instant.now(),
                 expectedReturnDate,
                 null
@@ -67,6 +91,7 @@ class LoanServiceImplTest {
     @Test
     void shouldGetByIdSuccessfully() {
         when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
+        when(book.getId()).thenReturn(bookId);
 
         LoanResponse response = loanService.getLoanById(loanId);
 
@@ -96,20 +121,21 @@ class LoanServiceImplTest {
         UUID loanId2 = UUID.randomUUID();
         Loan overdueLoan = new Loan(
                 loanId2,
-                UUID.randomUUID(),
-                ownerId,
-                renterId,
+                book,
+                owner,
+                renter,
                 Instant.now().minusSeconds(86400 * 10),
                 Instant.now().minusSeconds(1),
                 null
         );
 
-        when(loanRepository.findByOwnerAndRenter(ownerId, renterId)).thenReturn(List.of(loan, overdueLoan));
+        when(loanRepository.findLoansByCriteria(ownerId, renterId)).thenReturn(List.of(loan, overdueLoan));
+        when(book.getId()).thenReturn(bookId);
 
         List<LoanResponse> responses = loanService.getAllLoans(ownerId, renterId, null);
 
         assertEquals(2, responses.size());
-        verify(loanRepository).findByOwnerAndRenter(ownerId, renterId);
+        verify(loanRepository).findLoansByCriteria(ownerId, renterId);
         verifyNoInteractions(eventPublisher);
     }
 
@@ -118,15 +144,16 @@ class LoanServiceImplTest {
         UUID loanId2 = UUID.randomUUID();
         Loan overdueLoan = new Loan(
                 loanId2,
-                UUID.randomUUID(),
-                ownerId,
-                renterId,
+                book,
+                owner,
+                renter,
                 Instant.now().minusSeconds(86400 * 10),
                 Instant.now().minusSeconds(1),
                 null
         );
 
-        when(loanRepository.findByOwnerAndRenter(ownerId, renterId)).thenReturn(List.of(loan, overdueLoan));
+        when(loanRepository.findLoansByCriteria(ownerId, renterId)).thenReturn(List.of(loan, overdueLoan));
+        when(book.getId()).thenReturn(bookId);
 
         List<LoanResponse> activeResponses = loanService.getAllLoans(ownerId, renterId, LoanStatus.ACTIVE);
         assertEquals(1, activeResponses.size());
@@ -136,7 +163,7 @@ class LoanServiceImplTest {
         assertEquals(1, overdueResponses.size());
         assertEquals(LoanStatus.OVERDUE, overdueResponses.getFirst().status());
 
-        verify(loanRepository, times(2)).findByOwnerAndRenter(ownerId, renterId);
+        verify(loanRepository, times(2)).findLoansByCriteria(ownerId, renterId);
         verifyNoInteractions(eventPublisher);
     }
 
@@ -144,7 +171,11 @@ class LoanServiceImplTest {
     void shouldCreateLoanSuccessfully() {
         CreateLoanCommand command = new CreateLoanCommand(bookId, ownerId, renterId, expectedReturnDate);
 
+        when(bookService.getBookReferenceById(bookId)).thenReturn(book);
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
+        when(userService.getUserReferenceById(renterId)).thenReturn(renter);
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(book.getId()).thenReturn(bookId);
 
         LoanResponse response = loanService.createLoan(command);
 
@@ -163,6 +194,9 @@ class LoanServiceImplTest {
     void shouldThrowSameParticipantExceptionWhenOwnerIsRenter() {
         CreateLoanCommand command = new CreateLoanCommand(bookId, ownerId, ownerId, expectedReturnDate);
 
+        when(bookService.getBookReferenceById(bookId)).thenReturn(book);
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
+
         assertThrows(SameParticipantException.class, () -> loanService.createLoan(command));
         verify(loanRepository, never()).save(any());
         verifyNoInteractions(eventPublisher);
@@ -173,6 +207,10 @@ class LoanServiceImplTest {
         Instant pastDate = Instant.now().minusSeconds(3600);
         CreateLoanCommand command = new CreateLoanCommand(bookId, ownerId, renterId, pastDate);
 
+        when(bookService.getBookReferenceById(bookId)).thenReturn(book);
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
+        when(userService.getUserReferenceById(renterId)).thenReturn(renter);
+
         assertThrows(InvalidReturnDateException.class, () -> loanService.createLoan(command));
         verify(loanRepository, never()).save(any());
         verifyNoInteractions(eventPublisher);
@@ -182,6 +220,7 @@ class LoanServiceImplTest {
     void shouldReturnLoanSuccessfully() {
         when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(book.getId()).thenReturn(bookId);
 
         LoanResponse response = loanService.returnLoan(loanId);
 
@@ -191,12 +230,12 @@ class LoanServiceImplTest {
 
         verify(loanRepository).findById(loanId);
         verify(loanRepository).save(loan);
-        verify(eventPublisher).publishEvent(new LoanReturnedEvent(loanId, loan.getBookId(), loan.getOwnerId(), loan.getRenterId(), loan.getActualReturnDate()));
+        verify(eventPublisher).publishEvent(new LoanReturnedEvent(loanId, loan.getBook().getId(), loan.getOwner().getId(), loan.getRenter().getId(), loan.getActualReturnDate()));
         verify(eventPublisher).publishEvent(new LoanReturnedEvent(
                 loan.getId(),
-                loan.getBookId(),
-                loan.getOwnerId(),
-                loan.getRenterId(),
+                loan.getBook().getId(),
+                loan.getOwner().getId(),
+                loan.getRenter().getId(),
                 loan.getActualReturnDate()
         ));
     }

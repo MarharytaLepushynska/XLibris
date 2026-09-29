@@ -40,5 +40,10 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         authors.remove(id);
     }
 
+    @Override
+    public void deleteAll() {
+        authors.clear();
+    }
+
 
 }

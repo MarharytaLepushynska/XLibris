@@ -1,15 +1,18 @@
 package com.group.xlibris.loan.controller;
 
 import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreRepository;
 import com.group.xlibris.loan.dto.LoanRequest;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.user.Role;
 import com.group.xlibris.user.User;
+import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +46,15 @@ public class LoanControllerTest {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
+
     private final UUID activeLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
     private final UUID overdueLoanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444001");
 
@@ -58,46 +70,71 @@ public class LoanControllerTest {
     private final UUID authorId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
     private final UUID genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
 
-    private User user;
-    private User user2;
-    private Author author;
-    private Genre genre;
+    private final UUID newBookId = UUID.fromString("550e8400-e29b-41d4-a716-446655445002");
+    private final UUID newOwnerId = UUID.fromString("550e8400-e29b-41d4-a716-446655446002");
+    private final UUID newRenterId = UUID.fromString("550e8400-e29b-41d4-a716-446655447002");
 
     @BeforeEach
     void resetMap() {
         loanRepository.deleteAll();
+        bookRepository.deleteAll();
+        userRepository.deleteAll();
+        authorRepository.deleteAll();
+        genreRepository.deleteAll();
 
-        Loan loan = new Loan(activeLoanId, bookId, ownerId, renterId, Instant.now(), Instant.now().plusSeconds(86400 * 14), null);
-        Loan loan2 = new Loan(overdueLoanId, bookId2, ownerId2, renterId2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null);
+        User user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
 
-        loanRepository.save(loan);
-        loanRepository.save(loan2);
+        User user2 = new User(ownerId2, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER,
+                2.0, 1.9, 4, 5, 1);
+        User renter = new User(renterId, "Ivan", "Rivne", null, "i@gmail.com",
+                "+380111111111", Instant.now(), Role.USER, 0.0, 1.9, 4, 5, 1);
+
+        User renter2 = new User(renterId2, "Oleg", "Odesa", null, "o@gmail.com",
+                "+380222222222", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+
+        User newOwner = new User(newOwnerId, "Anna", "Lviv", null, "a@gmail.com",
+                "+380333333333", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+
+        User newRenter = new User(newRenterId, "Petro", "Kharkiv", null, "p@gmail.com",
+                "+380444444444", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+
+        userRepository.save(user);
+        userRepository.save(user2);
+        userRepository.save(renter);
+        userRepository.save(renter2);
+        userRepository.save(newOwner);
+        userRepository.save(newRenter);
+
+        Author author = new Author(authorId, "JK Rowling");
+        Genre genre = new Genre(genreId, "Horror");
+
+        authorRepository.save(author);
+        genreRepository.save(genre);
 
         Book book = new Book(bookId, "Test Book 1", "desc", null, BookStatus.BORROWED, user, author, genre);
         Book book2 = new Book(bookId2, "Test Book 2", "desc", null, BookStatus.BORROWED, user2, author, genre);
+        Book newBook = new Book(newBookId, "Test Book 3", "desc", null, BookStatus.AVAILABLE, newOwner, author, genre);
 
         bookRepository.save(book);
         bookRepository.save(book2);
+        bookRepository.save(newBook);
 
-        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
-                2.0, 1.9, 4, 5, 1);
+        Loan loan = new Loan(activeLoanId, book, user, renter, Instant.now(), Instant.now().plusSeconds(86400 * 14), null);
+        Loan loan2 = new Loan(overdueLoanId, book2, user2, renter2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null);
 
-        user2 = new User(ownerId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
-                2.0, 1.9, 4, 5, 1);
-
-        author = new Author(authorId, "JK Rowling");
-
-        genre = new Genre(genreId, "Horror");
+        loanRepository.save(loan);
+        loanRepository.save(loan2);
     }
 
     @Test
     void shouldCreateLoan() throws Exception {
         LoanRequest request = new LoanRequest(
-                UUID.fromString("550e8400-e29b-41d4-a716-446655445002"),
-                UUID.fromString("550e8400-e29b-41d4-a716-446655446002"),
-                UUID.fromString("550e8400-e29b-41d4-a716-446655447002"),
+                newBookId,
+                newOwnerId,
+                newRenterId,
                 Instant.now().plusSeconds(86400 * 14)
         );
 
@@ -112,8 +149,8 @@ public class LoanControllerTest {
     void shouldGetLoanById() throws Exception {
         mvc.perform(get("/api/loans/{id}", activeLoanId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ownerId").value("550e8400-e29b-41d4-a716-446655446000"))
-                .andExpect(jsonPath("$.renterId").value("550e8400-e29b-41d4-a716-446655447000"));
+                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()))
+                .andExpect(jsonPath("$.renterId").value(renterId.toString()));
     }
 
     @Test

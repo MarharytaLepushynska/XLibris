@@ -37,4 +37,9 @@ public class GenreRepositoryImpl implements GenreRepository {
     public void deleteById(UUID id) {
         genres.remove(id);
     }
+
+    @Override
+    public void deleteAll() {
+        genres.clear();
+    }
 }
