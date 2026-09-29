@@ -17,13 +17,13 @@ public record FeedbackResponse(
 
     public static FeedbackResponse from(Feedback feedback) {
         return new FeedbackResponse(
-                feedback.id(),
-                feedback.loanId(),
-                feedback.reviewerId(),
-                feedback.reviewedUserId(),
-                feedback.rating(),
-                feedback.comment(),
-                feedback.createdAt()
+                feedback.getId(),
+                feedback.getLoan().getId(),
+                feedback.getReviewer().getId(),
+                feedback.getReviewedUser().getId(),
+                feedback.getRating(),
+                feedback.getComment(),
+                feedback.getCreatedAt()
         );
     }
 }

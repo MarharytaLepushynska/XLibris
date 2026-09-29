@@ -1,15 +1,18 @@
 package com.group.xlibris.feedback.internal;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.feedback.DuplicateFeedbackException;
+import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
 import com.group.xlibris.feedback.FeedbackService;
+import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
+import com.group.xlibris.feedback.SelfFeedbackException;
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;
-import com.group.xlibris.feedback.DuplicateFeedbackException;
-import com.group.xlibris.feedback.SelfFeedbackException;
-import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
-import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.LoanStatus;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -21,13 +24,16 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
     private final LoanService loanService;
+    private final UserService userService;
 
     public FeedbackServiceImpl(
             FeedbackRepository feedbackRepository,
-            LoanService loanService
+            LoanService loanService,
+            UserService userService
     ) {
         this.feedbackRepository = feedbackRepository;
         this.loanService = loanService;
+        this.userService = userService;
     }
 
     @Override
@@ -39,21 +45,21 @@ public class FeedbackServiceImpl implements FeedbackService {
             );
         }
 
-        var loan = loanService.getLoanById(request.loanId());
+        var loanResponse = loanService.getLoanById(request.loanId());
 
-        if (loan.status() != LoanStatus.RETURNED) {
+        if (loanResponse.status() != LoanStatus.RETURNED) {
             throw new FeedbackBeforeLoanReturnedException(
                     "Feedback can only be submitted after the loan is returned"
             );
         }
 
         boolean ownerReviewsRenter =
-                request.reviewerId().equals(loan.ownerId())
-                && request.reviewedUserId().equals(loan.renterId());
+                request.reviewerId().equals(loanResponse.ownerId())
+                && request.reviewedUserId().equals(loanResponse.renterId());
 
         boolean renterReviewsOwner =
-                request.reviewerId().equals(loan.renterId())
-                && request.reviewedUserId().equals(loan.ownerId());
+                request.reviewerId().equals(loanResponse.renterId())
+                && request.reviewedUserId().equals(loanResponse.ownerId());
 
         if (!ownerReviewsRenter && !renterReviewsOwner) {
             throw new InvalidFeedbackParticipantsException(
@@ -61,7 +67,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             );
         }
 
-        if (feedbackRepository.existsByLoanIdAndReviewerId(
+        if (feedbackRepository.existsByLoan_IdAndReviewer_Id(
                 request.loanId(),
                 request.reviewerId()
         )) {
@@ -70,25 +76,33 @@ public class FeedbackServiceImpl implements FeedbackService {
             );
         }
 
+        Loan loan = loanService.getLoanReferenceById(request.loanId());
+        User reviewer = userService.getUserReferenceById(request.reviewerId());
+        User reviewedUser = userService.getUserReferenceById(request.reviewedUserId());
+
         Feedback feedback = new Feedback(
                 UUID.randomUUID(),
-                request.loanId(),
-                request.reviewerId(),
-                request.reviewedUserId(),
+                loan,
+                reviewer,
+                reviewedUser,
                 request.rating(),
                 request.comment(),
                 Instant.now()
         );
 
         Feedback savedFeedback = feedbackRepository.save(feedback);
-        System.out.println("Feedback with id " + savedFeedback.id() + " was created");
+
+        System.out.println(
+                "Feedback with id " + savedFeedback.getId() + " was created"
+        );
+
         return FeedbackResponse.from(savedFeedback);
     }
 
     @Override
     public FeedbackResponse getById(UUID id) {
 
-        Feedback feedback = feedbackRepository.findById(id)
+        Feedback feedback = feedbackRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new NotFoundException(
                         "Feedback with id " + id + " not found"
                 ));
@@ -103,17 +117,17 @@ public class FeedbackServiceImpl implements FeedbackService {
             UUID reviewedUserId
     ) {
 
-        return feedbackRepository.findAll()
+        return feedbackRepository.findAllWithRelations()
                 .stream()
                 .filter(feedback ->
                         loanId == null
-                        || feedback.loanId().equals(loanId))
+                        || feedback.getLoan().getId().equals(loanId))
                 .filter(feedback ->
                         reviewerId == null
-                        || feedback.reviewerId().equals(reviewerId))
+                        || feedback.getReviewer().getId().equals(reviewerId))
                 .filter(feedback ->
                         reviewedUserId == null
-                        || feedback.reviewedUserId().equals(reviewedUserId))
+                        || feedback.getReviewedUser().getId().equals(reviewedUserId))
                 .map(FeedbackResponse::from)
                 .toList();
     }

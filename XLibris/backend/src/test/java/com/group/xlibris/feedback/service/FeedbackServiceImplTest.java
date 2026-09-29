@@ -1,18 +1,21 @@
 package com.group.xlibris.feedback.service;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.feedback.DuplicateFeedbackException;
+import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
+import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
+import com.group.xlibris.feedback.SelfFeedbackException;
 import com.group.xlibris.feedback.dto.FeedbackRequest;
 import com.group.xlibris.feedback.dto.FeedbackResponse;
 import com.group.xlibris.feedback.internal.Feedback;
-import com.group.xlibris.feedback.DuplicateFeedbackException;
-import com.group.xlibris.feedback.SelfFeedbackException;
-import com.group.xlibris.feedback.FeedbackBeforeLoanReturnedException;
-import com.group.xlibris.feedback.InvalidFeedbackParticipantsException;
+import com.group.xlibris.feedback.internal.FeedbackRepository;
+import com.group.xlibris.feedback.internal.FeedbackServiceImpl;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.LoanStatus;
 import com.group.xlibris.loan.dto.LoanResponse;
-import com.group.xlibris.feedback.internal.FeedbackRepository;
-import com.group.xlibris.feedback.internal.FeedbackServiceImpl;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,33 +40,29 @@ class FeedbackServiceImplTest {
     @Mock
     private LoanService loanService;
 
+    @Mock
+    private UserService userService;
+
     private FeedbackServiceImpl feedbackService;
 
     private UUID feedbackId;
     private UUID loanId;
     private UUID reviewerId;
     private UUID reviewedUserId;
-    private Feedback feedback;
 
     @BeforeEach
     void setUp() {
 
-        feedbackService = new FeedbackServiceImpl(feedbackRepository, loanService);
+        feedbackService = new FeedbackServiceImpl(
+                feedbackRepository,
+                loanService,
+                userService
+        );
 
         feedbackId = UUID.randomUUID();
         loanId = UUID.randomUUID();
         reviewerId = UUID.randomUUID();
         reviewedUserId = UUID.randomUUID();
-
-        feedback = new Feedback(
-                feedbackId,
-                loanId,
-                reviewerId,
-                reviewedUserId,
-                5,
-                "Great experience",
-                Instant.now()
-        );
     }
 
     @Test
@@ -77,13 +76,30 @@ class FeedbackServiceImplTest {
                 "Great experience"
         );
 
+        Loan loan = mock(Loan.class);
+        User reviewer = mock(User.class);
+        User reviewedUser = mock(User.class);
+
+        when(reviewer.getId()).thenReturn(reviewerId);
+        when(reviewedUser.getId()).thenReturn(reviewedUserId);
+        when(loan.getId()).thenReturn(loanId);
+
         when(loanService.getLoanById(loanId))
                 .thenReturn(returnedLoan());
 
-        when(feedbackRepository.existsByLoanIdAndReviewerId(
+        when(feedbackRepository.existsByLoan_IdAndReviewer_Id(
                 loanId,
                 reviewerId
         )).thenReturn(false);
+
+        when(loanService.getLoanReferenceById(loanId))
+                .thenReturn(loan);
+
+        when(userService.getUserReferenceById(reviewerId))
+                .thenReturn(reviewer);
+
+        when(userService.getUserReferenceById(reviewedUserId))
+                .thenReturn(reviewedUser);
 
         when(feedbackRepository.save(any(Feedback.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -101,7 +117,7 @@ class FeedbackServiceImplTest {
         assertNotNull(response.createdAt());
 
         verify(feedbackRepository)
-                .existsByLoanIdAndReviewerId(
+                .existsByLoan_IdAndReviewer_Id(
                         loanId,
                         reviewerId
                 );
@@ -109,7 +125,17 @@ class FeedbackServiceImplTest {
         verify(feedbackRepository)
                 .save(any(Feedback.class));
 
-        verify(loanService).getLoanById(loanId);
+        verify(loanService)
+                .getLoanById(loanId);
+
+        verify(loanService)
+                .getLoanReferenceById(loanId);
+
+        verify(userService)
+                .getUserReferenceById(reviewerId);
+
+        verify(userService)
+                .getUserReferenceById(reviewedUserId);
     }
 
     @Test
@@ -131,10 +157,13 @@ class FeedbackServiceImplTest {
         verify(
                 feedbackRepository,
                 never()
-        ).existsByLoanIdAndReviewerId(any(), any());
+        ).existsByLoan_IdAndReviewer_Id(any(), any());
 
         verify(feedbackRepository, never())
                 .save(any());
+
+        verifyNoInteractions(loanService);
+        verifyNoInteractions(userService);
     }
 
     @Test
@@ -151,7 +180,7 @@ class FeedbackServiceImplTest {
         when(loanService.getLoanById(loanId))
                 .thenReturn(returnedLoan());
 
-        when(feedbackRepository.existsByLoanIdAndReviewerId(
+        when(feedbackRepository.existsByLoan_IdAndReviewer_Id(
                 loanId,
                 reviewerId
         )).thenReturn(true);
@@ -162,19 +191,33 @@ class FeedbackServiceImplTest {
         );
 
         verify(feedbackRepository)
-                .existsByLoanIdAndReviewerId(
+                .existsByLoan_IdAndReviewer_Id(
                         loanId,
                         reviewerId
                 );
 
         verify(feedbackRepository, never())
                 .save(any());
+
+        verify(loanService, never())
+                .getLoanReferenceById(any());
+
+        verifyNoInteractions(userService);
     }
 
     @Test
     void shouldGetFeedbackByIdSuccessfully() {
 
-        when(feedbackRepository.findById(feedbackId))
+        Feedback feedback = createFeedback(
+                feedbackId,
+                loanId,
+                reviewerId,
+                reviewedUserId,
+                5,
+                "Great experience"
+        );
+
+        when(feedbackRepository.findByIdWithRelations(feedbackId))
                 .thenReturn(Optional.of(feedback));
 
         FeedbackResponse response =
@@ -189,13 +232,13 @@ class FeedbackServiceImplTest {
         assertEquals("Great experience", response.comment());
 
         verify(feedbackRepository)
-                .findById(feedbackId);
+                .findByIdWithRelations(feedbackId);
     }
 
     @Test
     void shouldThrowNotFoundWhenFeedbackMissing() {
 
-        when(feedbackRepository.findById(feedbackId))
+        when(feedbackRepository.findByIdWithRelations(feedbackId))
                 .thenReturn(Optional.empty());
 
         assertThrows(
@@ -204,26 +247,34 @@ class FeedbackServiceImplTest {
         );
 
         verify(feedbackRepository)
-                .findById(feedbackId);
+                .findByIdWithRelations(feedbackId);
     }
 
     @Test
     void shouldGetAllFeedbacksSuccessfully() {
 
-        Feedback secondFeedback = new Feedback(
+        Feedback firstFeedback = createFeedback(
+                feedbackId,
+                loanId,
+                reviewerId,
+                reviewedUserId,
+                5,
+                "Great experience"
+        );
+
+        Feedback secondFeedback = createFeedback(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 4,
-                "Good experience",
-                Instant.now()
+                "Good experience"
         );
 
-        when(feedbackRepository.findAll())
+        when(feedbackRepository.findAllWithRelations())
                 .thenReturn(
                         List.of(
-                                feedback,
+                                firstFeedback,
                                 secondFeedback
                         )
                 );
@@ -237,26 +288,35 @@ class FeedbackServiceImplTest {
 
         assertEquals(2, responses.size());
 
-        verify(feedbackRepository).findAll();
+        verify(feedbackRepository)
+                .findAllWithRelations();
     }
 
     @Test
     void shouldFilterFeedbacksByLoanId() {
 
-        Feedback secondFeedback = new Feedback(
+        Feedback firstFeedback = createFeedback(
+                feedbackId,
+                loanId,
+                reviewerId,
+                reviewedUserId,
+                5,
+                "Great experience"
+        );
+
+        Feedback secondFeedback = createFeedback(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 3,
-                "Okay",
-                Instant.now()
+                "Okay"
         );
 
-        when(feedbackRepository.findAll())
+        when(feedbackRepository.findAllWithRelations())
                 .thenReturn(
                         List.of(
-                                feedback,
+                                firstFeedback,
                                 secondFeedback
                         )
                 );
@@ -274,26 +334,35 @@ class FeedbackServiceImplTest {
                 responses.getFirst().loanId()
         );
 
-        verify(feedbackRepository).findAll();
+        verify(feedbackRepository)
+                .findAllWithRelations();
     }
 
     @Test
     void shouldFilterFeedbacksByReviewerId() {
 
-        Feedback secondFeedback = new Feedback(
+        Feedback firstFeedback = createFeedback(
+                feedbackId,
+                loanId,
+                reviewerId,
+                reviewedUserId,
+                5,
+                "Great experience"
+        );
+
+        Feedback secondFeedback = createFeedback(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 3,
-                "Okay",
-                Instant.now()
+                "Okay"
         );
 
-        when(feedbackRepository.findAll())
+        when(feedbackRepository.findAllWithRelations())
                 .thenReturn(
                         List.of(
-                                feedback,
+                                firstFeedback,
                                 secondFeedback
                         )
                 );
@@ -311,26 +380,35 @@ class FeedbackServiceImplTest {
                 responses.getFirst().reviewerId()
         );
 
-        verify(feedbackRepository).findAll();
+        verify(feedbackRepository)
+                .findAllWithRelations();
     }
 
     @Test
     void shouldFilterFeedbacksByReviewedUserId() {
 
-        Feedback secondFeedback = new Feedback(
+        Feedback firstFeedback = createFeedback(
+                feedbackId,
+                loanId,
+                reviewerId,
+                reviewedUserId,
+                5,
+                "Great experience"
+        );
+
+        Feedback secondFeedback = createFeedback(
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
                 3,
-                "Okay",
-                Instant.now()
+                "Okay"
         );
 
-        when(feedbackRepository.findAll())
+        when(feedbackRepository.findAllWithRelations())
                 .thenReturn(
                         List.of(
-                                feedback,
+                                firstFeedback,
                                 secondFeedback
                         )
                 );
@@ -348,7 +426,8 @@ class FeedbackServiceImplTest {
                 responses.getFirst().reviewedUserId()
         );
 
-        verify(feedbackRepository).findAll();
+        verify(feedbackRepository)
+                .findAllWithRelations();
     }
 
     @Test
@@ -383,6 +462,14 @@ class FeedbackServiceImplTest {
 
         verify(feedbackRepository, never())
                 .save(any());
+
+        verify(feedbackRepository, never())
+                .existsByLoan_IdAndReviewer_Id(any(), any());
+
+        verify(loanService, never())
+                .getLoanReferenceById(any());
+
+        verifyNoInteractions(userService);
     }
 
     @Test
@@ -396,13 +483,30 @@ class FeedbackServiceImplTest {
                 "Great renter"
         );
 
+        Loan loan = mock(Loan.class);
+        User owner = mock(User.class);
+        User renter = mock(User.class);
+
+        when(loan.getId()).thenReturn(loanId);
+        when(owner.getId()).thenReturn(reviewedUserId);
+        when(renter.getId()).thenReturn(reviewerId);
+
         when(loanService.getLoanById(loanId))
                 .thenReturn(returnedLoan());
 
-        when(feedbackRepository.existsByLoanIdAndReviewerId(
+        when(feedbackRepository.existsByLoan_IdAndReviewer_Id(
                 loanId,
                 reviewedUserId
         )).thenReturn(false);
+
+        when(loanService.getLoanReferenceById(loanId))
+                .thenReturn(loan);
+
+        when(userService.getUserReferenceById(reviewedUserId))
+                .thenReturn(owner);
+
+        when(userService.getUserReferenceById(reviewerId))
+                .thenReturn(renter);
 
         when(feedbackRepository.save(any(Feedback.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -440,13 +544,47 @@ class FeedbackServiceImplTest {
         );
 
         verify(feedbackRepository, never())
-                .existsByLoanIdAndReviewerId(any(), any());
+                .existsByLoan_IdAndReviewer_Id(any(), any());
 
         verify(feedbackRepository, never())
                 .save(any());
+
+        verify(loanService, never())
+                .getLoanReferenceById(any());
+
+        verifyNoInteractions(userService);
+    }
+
+    private Feedback createFeedback(
+            UUID id,
+            UUID loanId,
+            UUID reviewerId,
+            UUID reviewedUserId,
+            Integer rating,
+            String comment
+    ) {
+
+        Loan loan = mock(Loan.class);
+        User reviewer = mock(User.class);
+        User reviewedUser = mock(User.class);
+
+        lenient().when(loan.getId()).thenReturn(loanId);
+        lenient().when(reviewer.getId()).thenReturn(reviewerId);
+        lenient().when(reviewedUser.getId()).thenReturn(reviewedUserId);
+
+        return new Feedback(
+                id,
+                loan,
+                reviewer,
+                reviewedUser,
+                rating,
+                comment,
+                Instant.now()
+        );
     }
 
     private LoanResponse returnedLoan() {
+
         return new LoanResponse(
                 loanId,
                 UUID.randomUUID(),
