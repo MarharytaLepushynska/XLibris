@@ -8,6 +8,9 @@ import com.group.xlibris.report.ReportAction;
 import com.group.xlibris.report.ReportStatus;
 import com.group.xlibris.report.ReportType;
 import com.group.xlibris.report.internal.ReportRepository;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,9 @@ public class ReportControllerTest {
     @Autowired
     private ReportRepository reportRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private final UUID pendingReportId = UUID.fromString("550e8400-e29b-41d4-a716-446655441000");
     private final UUID inReviewReportId = UUID.fromString("550e8400-e29b-41d4-a716-446655441001");
 
@@ -51,6 +57,24 @@ public class ReportControllerTest {
     @BeforeEach
     void resetMap() {
         reportRepository.deleteAll();
+        userRepository.deleteAll();
+
+        User reporter = new User(reporterId, "Artem", "Lviv", null, "r1@gmail.com",
+                "+380998876443", Instant.now(), Role.USER, 1.0, 0.9, 0, 0, 0);
+
+        User reporter2 = new User(reporterId2, "Marta", "Kyiv", null, "r2@gmail.com",
+                "+380998876444", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+
+        User targetUser = new User(targetUserId, "Ivan", "Rivne", null, "t1@gmail.com",
+                "+380998876445", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+
+        User targetUser2 = new User(targetUserId2, "Oleg", "Odesa", null, "t2@gmail.com",
+                "+380998876446", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+
+        userRepository.save(reporter);
+        userRepository.save(reporter2);
+        userRepository.save(targetUser);
+        userRepository.save(targetUser2);
 
         Report pendingReport = new Report(
                 pendingReportId,
@@ -60,8 +84,8 @@ public class ReportControllerTest {
                 URI.create("https://example.com/proof.jpg"),
                 Instant.now(),
                 null,
-                reporterId,
-                targetUserId,
+                reporter,
+                targetUser,
                 ReportStatus.PENDING,
                 null,
                 null
@@ -75,8 +99,8 @@ public class ReportControllerTest {
                 URI.create("https://example.com/proof.jpg"),
                 Instant.now(),
                 null,
-                reporterId2,
-                targetUserId2,
+                reporter2,
+                targetUser2,
                 ReportStatus.IN_REVIEW,
                 null,
                 null

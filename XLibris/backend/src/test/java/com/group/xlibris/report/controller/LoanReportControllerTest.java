@@ -1,11 +1,21 @@
 package com.group.xlibris.report.controller;
 
+import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorRepository;
+import com.group.xlibris.book.Book;
+import com.group.xlibris.book.BookRepository;
+import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreRepository;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.report.dto.LoanReportRequest;
 import com.group.xlibris.report.internal.Report;
 import com.group.xlibris.report.ReportType;
 import com.group.xlibris.report.internal.ReportRepository;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,20 +51,56 @@ public class LoanReportControllerTest {
     @Autowired
     private ReportRepository reportRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
+
     private final UUID loanId = UUID.fromString("550e8400-e29b-41d4-a716-446655444000");
     private final UUID bookId = UUID.fromString("550e8400-e29b-41d4-a716-446655445000");
     private final UUID ownerId = UUID.fromString("550e8400-e29b-41d4-a716-446655446000");
     private final UUID renterId = UUID.fromString("550e8400-e29b-41d4-a716-446655447000");
+    private final UUID authorId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
+    private final UUID genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655448002");
 
     @BeforeEach
     void resetMaps() {
         loanRepository.deleteAll();
+        reportRepository.deleteAll();
+        bookRepository.deleteAll();
+        userRepository.deleteAll();
+        authorRepository.deleteAll();
+        genreRepository.deleteAll();
+
+        User owner = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+                "+380998876446", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+
+        User renter = new User(renterId, "Ivan", "Rivne", null, "i@gmail.com",
+                "+380111111111", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+
+        userRepository.save(owner);
+        userRepository.save(renter);
+
+        Author author = new Author(authorId, "JK Rowling");
+        Genre genre = new Genre(genreId, "Horror");
+        authorRepository.save(author);
+        genreRepository.save(genre);
+
+        Book book = new Book(bookId, "Test Book", "desc", null, BookStatus.BORROWED, owner, author, genre);
+        bookRepository.save(book);
 
         Loan loan = new Loan(
                 loanId,
-                bookId,
-                ownerId,
-                renterId,
+                book,
+                owner,
+                renter,
                 Instant.now(),
                 Instant.now().plusSeconds(86400 * 14),
                 null
@@ -62,10 +108,10 @@ public class LoanReportControllerTest {
         loanRepository.save(loan);
 
         Report existingReport = Report.forLoan(
-                loan.getId(),
-                loan.getOwnerId(),
-                loan.getRenterId(),
-                ownerId,
+                loan,
+                owner,
+                renter,
+                owner,
                 "Book is damaged",
                 ReportType.DAMAGED_BOOK,
                 "Damaged pages by coffee",

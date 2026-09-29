@@ -4,6 +4,7 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.LoanStatus;
 import com.group.xlibris.loan.LoanService;
+import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.report.*;
 import com.group.xlibris.report.internal.ReportServiceImpl;
 import com.group.xlibris.report.internal.command.*;
@@ -11,6 +12,8 @@ import com.group.xlibris.report.dto.ReportFilterCriteria;
 import com.group.xlibris.report.dto.ReportResponse;
 import com.group.xlibris.report.internal.Report;
 import com.group.xlibris.report.internal.ReportRepository;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +41,9 @@ class ReportServiceImplTest {
     private LoanService loanService;
 
     @Mock
+    private UserService userService;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
     private ReportServiceImpl reportService;
@@ -50,9 +56,13 @@ class ReportServiceImplTest {
     private Report pendingReport;
     private LoanResponse mockLoanResponse;
 
+    private User owner;
+    private User targetUser;
+    private User renter;
+
     @BeforeEach
     void setUp() {
-        reportService = new ReportServiceImpl(reportRepository, loanService, eventPublisher);
+        reportService = new ReportServiceImpl(reportRepository, loanService, userService, eventPublisher);
 
         reportId = UUID.randomUUID();
         loanId = UUID.randomUUID();
@@ -60,16 +70,30 @@ class ReportServiceImplTest {
         renterId = UUID.randomUUID();
         targetUserId = UUID.randomUUID();
 
+         owner = new User(ownerId, "Artem", "Lviv",
+                null, "a@gmail.com", "+380998876443",
+                Instant.now(), com.group.xlibris.user.Role.USER, 1.0,
+                0.9, 0, 0, 0);
+
+         targetUser = new User(targetUserId, "Marta", "Kyiv",
+                null, "m@gmail.com", "+380998876446",
+                Instant.now(), com.group.xlibris.user.Role.USER, 2.0,
+                1.9, 4, 5, 1);
+
+         renter = new User(renterId, "Ivan", "Rivne",
+                null, "i@gmail.com", "+380998876447",
+                Instant.now(), com.group.xlibris.user.Role.USER, 1.0, 1.0, 0, 0, 0);
+
         pendingReport = new Report(
                 reportId,
                 "Damaged pages",
                 ReportType.DAMAGED_BOOK,
                 "Several pages are torn",
-                URI.create("https://example.com/proof.jpg"),
+                URI.create("https:/example.com/proof.jpg"),
                 Instant.now(),
                 null,
-                ownerId,
-                targetUserId,
+                owner,
+                targetUser,
                 ReportStatus.PENDING,
                 null,
                 null
@@ -114,27 +138,27 @@ class ReportServiceImplTest {
     @Test
     void shouldGetAllReportsSuccessfully() {
         ReportFilterCriteria criteria = new ReportFilterCriteria(ReportStatus.PENDING, null, ownerId, null);
-        when(reportRepository.findAll(ReportStatus.PENDING, null, ownerId, null))
+        when(reportRepository.findReportsByCriteria(ReportStatus.PENDING, null, ownerId, null))
                 .thenReturn(List.of(pendingReport));
 
         List<ReportResponse> responses = reportService.getAllReports(criteria);
 
         assertEquals(1, responses.size());
         assertEquals(reportId, responses.getFirst().id());
-        verify(reportRepository).findAll(ReportStatus.PENDING, null, ownerId, null);
+        verify(reportRepository).findReportsByCriteria(ReportStatus.PENDING, null, ownerId, null);
         verifyNoInteractions(eventPublisher);
     }
 
     @Test
     void shouldGetAllReportsForLoanSuccessfully() {
         when(loanService.getLoanById(loanId)).thenReturn(mockLoanResponse);
-        when(reportRepository.findAll(null, loanId, null, null)).thenReturn(List.of(pendingReport));
+        when(reportRepository.findReportsByCriteria(null, loanId, null, null)).thenReturn(List.of(pendingReport));
 
         List<ReportResponse> responses = reportService.getAllReportsForLoan(loanId);
 
         assertEquals(1, responses.size());
         verify(loanService).getLoanById(loanId);
-        verify(reportRepository).findAll(null, loanId, null, null);
+        verify(reportRepository).findReportsByCriteria(null, loanId, null, null);
         verifyNoInteractions(eventPublisher);
     }
 
@@ -148,7 +172,12 @@ class ReportServiceImplTest {
                 ownerId
         );
 
+        Loan loan = mock(Loan.class);
+
         when(loanService.getLoanById(loanId)).thenReturn(mockLoanResponse);
+        when(loanService.getLoanReferenceById(loanId)).thenReturn(loan);
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
+        when(userService.getUserReferenceById(renterId)).thenReturn(renter);
         when(reportRepository.save(any(Report.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ReportResponse response = reportService.createReportForLoan(loanId, command);
@@ -167,6 +196,9 @@ class ReportServiceImplTest {
     @Test
     void shouldThrowNotLoanParticipantExceptionWhenReporterIsNotParticipant() {
         UUID outsiderId = UUID.randomUUID();
+        User outsiderUser = new User(outsiderId, "Oleg", "Odesa", null, "o@gmail.com",
+                "+380112233445", Instant.now(), com.group.xlibris.user.Role.USER, 1.0, 1.0, 0, 0, 0);
+
         CreateLoanReportCommand command = new CreateLoanReportCommand(
                 "Some issue",
                 ReportType.DAMAGED_BOOK,
@@ -175,7 +207,13 @@ class ReportServiceImplTest {
                 outsiderId
         );
 
+        Loan loan = mock(Loan.class);
+
         when(loanService.getLoanById(loanId)).thenReturn(mockLoanResponse);
+        when(loanService.getLoanReferenceById(loanId)).thenReturn(loan);
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
+        when(userService.getUserReferenceById(renterId)).thenReturn(renter);
+        when(userService.getUserReferenceById(outsiderId)).thenReturn(outsiderUser);
 
         assertThrows(NotLoanParticipantException.class, () -> reportService.createReportForLoan(loanId, command));
         verify(reportRepository, never()).save(any());
@@ -193,6 +231,8 @@ class ReportServiceImplTest {
                 targetUserId
         );
 
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
+        when(userService.getUserReferenceById(targetUserId)).thenReturn(targetUser);
         when(reportRepository.save(any(Report.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ReportResponse response = reportService.createReportStandalone(command);
@@ -217,6 +257,8 @@ class ReportServiceImplTest {
                 ownerId,
                 ownerId
         );
+
+        when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
 
         assertThrows(SelfReportException.class, () -> reportService.createReportStandalone(command));
         verify(reportRepository, never()).save(any());
