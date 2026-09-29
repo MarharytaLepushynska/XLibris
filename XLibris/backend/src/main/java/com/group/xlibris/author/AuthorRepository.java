@@ -1,20 +1,10 @@
 package com.group.xlibris.author;
 
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.UUID;
 
-public interface AuthorRepository {
-
-    Author save(Author author);
-
-    Optional<Author> findById(UUID id);
-
-    List<Author> findAll();
-
-    boolean existsById(UUID id);
-
-    void deleteById(UUID id);
-
-    void deleteAll();
+@Repository
+public interface AuthorRepository extends JpaRepository<Author, UUID> {
 }
