@@ -1,7 +1,6 @@
 package com.group.xlibris.bookRequest.internal;
 
 import com.group.xlibris.book.Book;
-import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookService;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 

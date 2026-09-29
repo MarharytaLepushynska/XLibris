@@ -9,24 +9,24 @@ import java.util.UUID;
 
 @Service
 public class LoanUserCheck implements UserLoanCheck {
-    private final LoanService loanService;
+    private final LoanRepository loanRepository;
 
-    public LoanUserCheck(LoanService loanService) {
-        this.loanService = loanService;
+    public LoanUserCheck(LoanRepository loanRepository) {
+        this.loanRepository = loanRepository;
     }
 
     @Override
     public boolean canViewContacts(UUID targetUserId, UUID viewerId) {
-       return !loanService.getAllLoans(targetUserId, viewerId, null).isEmpty();
+       return !loanRepository.findLoansByCriteria(targetUserId, viewerId).isEmpty();
     }
 
     @Override
     public boolean hasActiveLoans(UUID userId) {
-        return (loanService.getAllLoans(userId, null, null)
+        return (loanRepository.findLoansByCriteria(userId, null)
                 .stream()
-                .anyMatch(l -> l.status() != LoanStatus.RETURNED) ||
-                loanService.getAllLoans(null, userId, null)
+                .anyMatch(l -> l.getStatus() != LoanStatus.RETURNED) ||
+                loanRepository.findLoansByCriteria(null, userId)
                         .stream()
-                        .anyMatch(l -> l.status() != LoanStatus.RETURNED));
+                        .anyMatch(l -> l.getStatus() != LoanStatus.RETURNED));
     }
 }
