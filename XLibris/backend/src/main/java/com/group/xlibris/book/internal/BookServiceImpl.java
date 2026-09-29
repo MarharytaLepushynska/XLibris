@@ -62,7 +62,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book getBookReferenceById(UUID id) {
-        return null; // поки заглушка, щоб не було помилки в loan
+        return bookRepository.getReferenceById(id);
     }
 
     @Override
