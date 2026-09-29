@@ -7,6 +7,7 @@ import com.group.xlibris.genre.GenreNotFoundException;
 import com.group.xlibris.genre.GenreRepository;
 import com.group.xlibris.genre.GenreService;
 import com.group.xlibris.genre.internal.strategy.GenreStrategy;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -79,6 +80,7 @@ public class GenreServiceImpl implements GenreService {
     }
 
     @Override
+    @Transactional
     public void deleteGenre(UUID id) {
         if (!genreRepository.existsById(id)) {
             throw new GenreNotFoundException(id);
