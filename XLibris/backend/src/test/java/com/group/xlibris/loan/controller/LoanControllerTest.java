@@ -21,6 +21,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class LoanControllerTest {
     @Autowired
     private MockMvc mvc;
@@ -68,7 +70,7 @@ public class LoanControllerTest {
     private final UUID renterId2 = UUID.fromString("550e8400-e29b-41d4-a716-446655447001");
 
     private final UUID authorId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
-    private final UUID genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655448001");
+    private final UUID genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655448002");
 
     private final UUID newBookId = UUID.fromString("550e8400-e29b-41d4-a716-446655445002");
     private final UUID newOwnerId = UUID.fromString("550e8400-e29b-41d4-a716-446655446002");
@@ -118,9 +120,9 @@ public class LoanControllerTest {
         Book book2 = new Book(bookId2, "Test Book 2", "desc", null, BookStatus.BORROWED, user2, author, genre);
         Book newBook = new Book(newBookId, "Test Book 3", "desc", null, BookStatus.AVAILABLE, newOwner, author, genre);
 
+        bookRepository.save(newBook);
         bookRepository.save(book);
         bookRepository.save(book2);
-        bookRepository.save(newBook);
 
         Loan loan = new Loan(activeLoanId, book, user, renter, Instant.now(), Instant.now().plusSeconds(86400 * 14), null);
         Loan loan2 = new Loan(overdueLoanId, book2, user2, renter2, Instant.now().minusSeconds(86400 * 14), Instant.now(), null);

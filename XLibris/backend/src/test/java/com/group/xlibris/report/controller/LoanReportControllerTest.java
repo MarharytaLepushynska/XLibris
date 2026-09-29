@@ -24,6 +24,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
@@ -37,6 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 public class LoanReportControllerTest {
 
     @Autowired
@@ -73,11 +75,6 @@ public class LoanReportControllerTest {
     @BeforeEach
     void resetMaps() {
         loanRepository.deleteAll();
-        reportRepository.deleteAll();
-        bookRepository.deleteAll();
-        userRepository.deleteAll();
-        authorRepository.deleteAll();
-        genreRepository.deleteAll();
 
         User owner = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
                 "+380998876446", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
