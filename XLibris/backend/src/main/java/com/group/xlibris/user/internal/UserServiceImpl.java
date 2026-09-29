@@ -6,6 +6,9 @@ import com.group.xlibris.user.*;
 import com.group.xlibris.user.dto.UserContactInfo;
 import com.group.xlibris.user.dto.UserResponse;
 import com.group.xlibris.common.AccessDeniedException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
@@ -30,10 +33,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUsers(String name, int page, int size) {
-        return userRepository.findAll().stream()
-                .filter(u -> name == null || u.getName().toLowerCase().contains(name.toLowerCase()))
-                .skip((long) page * size)
-                .limit(size)
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        List<User> users = name == null
+                ? userRepository.findAll(pageable).getContent()
+                : userRepository.findByNameContainingIgnoreCase(name, pageable);
+
+        return users.stream()
                 .map(UserResponse::from)
                 .toList();
     }
