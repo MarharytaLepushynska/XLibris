@@ -1,6 +1,7 @@
 package com.group.xlibris.bookRequest.controller;
 
 import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookRepository;
@@ -10,6 +11,7 @@ import com.group.xlibris.bookRequest.internal.BookRequestEntity;
 import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.bookRequest.internal.BookRequestRepository;
 import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreRepository;
 import com.group.xlibris.user.Role;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.internal.UserRepository;
@@ -48,6 +50,12 @@ class BookRequestControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
 
     private UUID requestId;
     private UUID bookId;

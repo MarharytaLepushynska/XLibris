@@ -1,6 +1,7 @@
 package com.group.xlibris.bookRequest.internal;
 
 import com.group.xlibris.book.Book;
+import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.BookService;
@@ -17,8 +18,11 @@ import com.group.xlibris.common.AccessDeniedException;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Pageable;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -55,8 +59,8 @@ public class BookRequestServiceImpl implements BookRequestService {
         Book reqBook = bookService.getEntityById(command.bookId());
         User owner = reqBook.getOwner();
 
-        boolean existsAlready = getOpenRequests(command.bookId()).stream()
-                .anyMatch(r -> r.getRequester().getId().equals(command.requesterId()));
+        boolean existsAlready = repository.existsByBook_IdAndRequester_IdAndStatusIn(command.bookId(), command.requesterId(),
+                List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED));
         if (existsAlready) {
             throw new DuplicateBookRequestException("Request for this book was already created");
         }
@@ -83,12 +87,9 @@ public class BookRequestServiceImpl implements BookRequestService {
 
     @Override
     public List<BookRequestResponse> getAll(UUID bookId, UUID requesterId, BookRequestStatus status, int page, int size) {
-        return repository.findAll().stream()
-                .filter(r -> bookId == null || r.getBook().getId().equals(bookId))
-                .filter(r -> requesterId == null || r.getRequester().getId().equals(requesterId))
-                .filter(r -> status == null || r.getStatus().equals(status))
-                .skip((long) page*size)
-                .limit(size)
+        Pageable pageble = PageRequest.of(page, size, Sort.by("createdAt").ascending());
+        return repository.findWithDetails(bookId, requesterId, status, pageble)
+                .stream()
                 .map(BookRequestResponse::from)
                 .toList();
     }
@@ -141,12 +142,8 @@ public class BookRequestServiceImpl implements BookRequestService {
     }
 
     private List<BookRequestEntity> getOpenRequests(UUID bookId) {
-        return repository.findAll().stream()
-                .filter(r -> r.getBook().getId().equals(bookId))
-                .filter(r -> r.getStatus().isOpen())
-                .sorted(Comparator.comparing(BookRequestEntity::getCreatedAt)
-                        .thenComparing(BookRequestEntity::getId))
-                .toList();
+        return repository.findByBook_IdAndStatusInOrderByCreatedAtAsc(bookId, List.of(BookRequestStatus.PENDING,
+                BookRequestStatus.APPROVED));
     }
 
     private void checkFirstInQueue(BookRequestEntity request) {
