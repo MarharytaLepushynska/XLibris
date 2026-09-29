@@ -12,6 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -80,18 +84,14 @@ class UserServiceImplTest {
 
     @Test
     void shouldFilterUsersByNameSuccessfully() {
-        User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
-                2.0, 1.9, 4, 5, 1);
-
-        when(userRepository.findAll()).thenReturn(List.of(user, user2));
-
+        Pageable pageable = PageRequest.of(0, 20, Sort.by("name").ascending());
+        when(userRepository.findByNameContainingIgnoreCase("tem", pageable)).thenReturn(List.of(user));
         List<UserResponse> responses = userService.getAllUsers("tem", 0, 20);
 
         assertEquals(1, responses.size());
-        assertEquals("Artem", responses.get(0).name());
+        assertEquals("Artem", responses.getFirst().name());
 
-        verify(userRepository).findAll();
+        verify(userRepository).findByNameContainingIgnoreCase("tem", pageable);
     }
 
     @Test
@@ -99,17 +99,21 @@ class UserServiceImplTest {
         User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
                 "+380998876446", Instant.now(), Role.USER,
                 2.0, 1.9, 4, 5, 1);
+        Pageable firstPage = PageRequest.of(0, 1, Sort.by("name").ascending());
+        Pageable secondPage = PageRequest.of(1, 1, Sort.by("name").ascending());
 
-        when(userRepository.findAll()).thenReturn(List.of(user, user2));
+        when(userRepository.findAll(firstPage)).thenReturn(new PageImpl<>(List.of(user), firstPage, 2));
+        when(userRepository.findAll(secondPage)).thenReturn(new PageImpl<>(List.of(user2), secondPage, 2));
 
         List<UserResponse> responsesPage1 = userService.getAllUsers(null, 0, 1);
         List<UserResponse> responsesPage2 = userService.getAllUsers(null, 1, 1);
 
         assertEquals(1, responsesPage1.size());
         assertEquals(1, responsesPage2.size());
-        assertNotEquals(responsesPage1.get(0).id(), responsesPage2.get(0).id());
+        assertNotEquals(responsesPage1.getFirst().id(), responsesPage2.getFirst().id());
 
-        verify(userRepository, times(2)).findAll();
+        verify(userRepository).findAll(firstPage);
+        verify(userRepository).findAll(secondPage);
     }
 
     @Test

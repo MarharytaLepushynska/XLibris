@@ -94,7 +94,8 @@ class BookRequestServiceImplTest {
         when(bookService.getBookById(book.getId())).thenReturn(new BookResponse(book.getId(),
                 "Kapitoshka", "some", null, BookStatus.AVAILABLE,
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
-        when(repository.findAll()).thenReturn(List.of());
+        when(repository.existsByBook_IdAndRequester_IdAndStatusIn(book.getId(), borrowerId,
+                List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(false);
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userService.getEntityById(borrowerId)).thenReturn(user2);
         when(bookService.getEntityById(book.getId())).thenReturn(book);
@@ -115,7 +116,8 @@ class BookRequestServiceImplTest {
                 ownerId, authorId, genreId));
         when(userService.getEntityById(borrowerId)).thenReturn(user2);
         when(bookService.getEntityById(book.getId())).thenReturn(book);
-        when(repository.findAll()).thenReturn(List.of());
+        when(repository.existsByBook_IdAndRequester_IdAndStatusIn(book.getId(), borrowerId,
+                List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(false);
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         BookRequestResponse result = service.create(new CreateBookRequestCommand(book.getId(), borrowerId, 14));
@@ -132,7 +134,8 @@ class BookRequestServiceImplTest {
         when(bookService.getBookById(book.getId())).thenReturn(new BookResponse(book.getId(),
                 "Kapitoshka", "some", null, BookStatus.AVAILABLE,
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
-        when(repository.findAll()).thenReturn(List.of(request));
+        when(repository.existsByBook_IdAndRequester_IdAndStatusIn(book.getId(), borrowerId,
+                List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(true);
         when(userService.getEntityById(borrowerId)).thenReturn(user2);
         when(bookService.getEntityById(book.getId())).thenReturn(book);
 
@@ -151,7 +154,8 @@ class BookRequestServiceImplTest {
 
         when(userService.getEntityById(borrowerId)).thenReturn(user2);
         when(bookService.getEntityById(book.getId())).thenReturn(book);
-        when(repository.findAll()).thenReturn(List.of(request));
+        when(repository.existsByBook_IdAndRequester_IdAndStatusIn(book.getId(), borrowerId,
+                List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(true);
 
         assertThrows(DuplicateBookRequestException.class, () -> service.create(
                 new CreateBookRequestCommand(book.getId(), borrowerId, 14)));
@@ -166,7 +170,8 @@ class BookRequestServiceImplTest {
         when(bookService.getBookById(book.getId())).thenReturn(new BookResponse(book.getId(),
                 "Kapitoshka", "some", null, BookStatus.AVAILABLE,
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
-        when(repository.findAll()).thenReturn(List.of(request));
+        when(repository.existsByBook_IdAndRequester_IdAndStatusIn(book.getId(), borrowerId,
+                List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(false);
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userService.getEntityById(borrowerId)).thenReturn(user2);
         when(bookService.getEntityById(book.getId())).thenReturn(book);
@@ -219,7 +224,7 @@ class BookRequestServiceImplTest {
                 book.getTitle(), book.getDescription(), book.getPhotoURL(), BookStatus.AVAILABLE,
                 ownerId, authorId, genreId));
 
-        when(repository.findAll()).thenReturn(List.of(request));
+        when(repository.findByBook_IdAndStatusInOrderByCreatedAtAsc(book.getId(), List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(List.of(request));
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         BookRequestResponse result = service.updateStatus(new UpdateBookRequestCommand(request.getId(), ownerId, BookRequestStatus.APPROVED));
@@ -241,7 +246,7 @@ class BookRequestServiceImplTest {
         when(bookService.getBookById(book.getId())).thenReturn(new BookResponse(book.getId(),
                 "Kapitoshka", "some", null, BookStatus.AVAILABLE,
                 ownerId, UUID.randomUUID(), UUID.randomUUID()));
-        when(repository.findAll()).thenReturn(List.of(request));
+        when(repository.findByBook_IdAndStatusInOrderByCreatedAtAsc(book.getId(), List.of(BookRequestStatus.PENDING, BookRequestStatus.APPROVED))).thenReturn(List.of(request));
         when(repository.save(any(BookRequestEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
         BookRequestResponse result = service.updateStatus(new UpdateBookRequestCommand(request.getId(), actor, BookRequestStatus.FULFILLED));

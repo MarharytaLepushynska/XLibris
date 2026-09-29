@@ -99,6 +99,8 @@ class BookRequestControllerTest {
 
         Author author = new Author(authorId, "JK Rowling");
         Genre genre = new Genre(genreId, "Horror");
+        authorRepository.save(author);
+        genreRepository.save(genre);
 
         Book book = new Book(
                 bookId,
