@@ -1,5 +1,10 @@
 package com.group.xlibris.user;
 
+import com.group.xlibris.author.Author;
+import com.group.xlibris.book.Book;
+import com.group.xlibris.book.BookRepository;
+import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.genre.Genre;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
 import com.group.xlibris.user.dto.AdminUserUpdateRequest;
@@ -38,14 +43,28 @@ class UserControllerTest {
     @Autowired
     private LoanRepository loanRepository;
 
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
+    private com.group.xlibris.author.AuthorRepository authorRepository;
+
+    @Autowired
+    private com.group.xlibris.genre.GenreRepository genreRepository;
+
     @BeforeEach
     void resetMap() {
         userRepository.deleteAll();
         loanRepository.deleteAll();
+        bookRepository.deleteAll();
 
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
         UUID adminId = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
+        UUID bookId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+        UUID genreId = UUID.randomUUID();
+
         User entity = new User(id, "Artem", "Lviv", null, "a@gmail.com",
                 "+380998876445", Instant.now(), Role.USER,
                 1.0, 0.9, 0, 0, 0);
@@ -62,7 +81,18 @@ class UserControllerTest {
         userRepository.save(entity2);
         userRepository.save(admin);
 
-        loanRepository.save(Loan.create(UUID.randomUUID(), id, id2, Instant.now().plusSeconds(1_209_600)));
+        Author author = new Author(authorId, "Milan Kundera");
+        authorRepository.save(author);
+
+        Genre genre = new Genre(genreId, "Novel");
+        genreRepository.save(genre);
+
+        Book book = new Book(bookId, "Identity",
+                "Identity (French: L'Identité) is a novel by Franco-Czech writer Milan Kundera, published in 1998",
+                null, BookStatus.AVAILABLE, entity, author, genre);
+        bookRepository.save(book);
+
+        loanRepository.save(Loan.create(book, entity, entity2, Instant.now().plusSeconds(1_209_600)));
     }
 
     @Test

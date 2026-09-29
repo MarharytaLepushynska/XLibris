@@ -1,6 +1,8 @@
 package com.group.xlibris.report.internal;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.loan.internal.Loan;
+import com.group.xlibris.user.User;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.report.ReportService;
@@ -14,6 +16,7 @@ import com.group.xlibris.report.internal.command.CreateLoanReportCommand;
 import com.group.xlibris.report.internal.command.CreateReportCommand;
 import com.group.xlibris.report.internal.command.ResolveReportCommand;
 import com.group.xlibris.report.internal.command.UpdateReportCommand;
+import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +28,13 @@ import java.util.UUID;
 public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
     private final LoanService loanService;
+    private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
 
-    public ReportServiceImpl(ReportRepository reportRepository, LoanService loanService, ApplicationEventPublisher eventPublisher) {
+    public ReportServiceImpl(ReportRepository reportRepository, LoanService loanService, UserService userService, ApplicationEventPublisher eventPublisher) {
         this.reportRepository = reportRepository;
         this.loanService = loanService;
+        this.userService = userService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -42,7 +47,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<ReportResponse> getAllReports(ReportFilterCriteria criteria) {
-        return reportRepository.findAll(criteria.status(), criteria.loanId(), criteria.reporterId(), criteria.targetUserId())
+        return reportRepository.findReportsByCriteria(
+                        criteria.status(), criteria.loanId(),
+                        criteria.reporterId(), criteria.targetUserId())
                 .stream()
                 .map(ReportResponse::from)
                 .toList();
@@ -56,10 +63,16 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ReportResponse createReportForLoan(UUID loanId, CreateLoanReportCommand command) {
-        LoanResponse loan = loanService.getLoanById(loanId);
+        LoanResponse loanDto = loanService.getLoanById(loanId);
+
+        Loan loanProxy = loanService.getLoanReferenceById(loanId);
+        User ownerProxy = userService.getUserReferenceById(loanDto.ownerId());
+        User renterProxy = userService.getUserReferenceById(loanDto.renterId());
+        User reporterProxy = userService.getUserReferenceById(command.reporterId());
+
         Report report = Report.forLoan(
-                loan.id(), loan.ownerId(), loan.renterId(),
-                command.reporterId(), command.title(), command.type(),
+                loanProxy, ownerProxy, renterProxy, reporterProxy,
+                command.title(), command.type(),
                 command.description(), command.evidenceUrl());
         Report savedReport = reportRepository.save(report);
 
@@ -67,9 +80,9 @@ public class ReportServiceImpl implements ReportService {
 
         eventPublisher.publishEvent(new ReportCreatedEvent(
                 savedReport.getId(),
-                savedReport.getReporterId(),
-                savedReport.getTargetUserId(),
-                savedReport.getLoanId(),
+                savedReport.getReporter().getId(),
+                savedReport.getTargetUser().getId(),
+                savedReport.getLoan().getId(),
                 savedReport.getType(),
                 savedReport.getTitle(),
                 savedReport.getCreatedAt()
@@ -82,17 +95,20 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ReportResponse createReportStandalone(CreateReportCommand command) {
+        User reporterProxy = userService.getUserReferenceById(command.reporterId());
+        User targetUserProxy = userService.getUserReferenceById(command.targetUserId());
+
         Report report = Report.standalone(
                 command.title(), command.type(), command.description(),
-                command.evidenceUrl(), command.reporterId(), command.targetUserId());
+                command.evidenceUrl(), reporterProxy, targetUserProxy);
         Report savedReport = reportRepository.save(report);
 
         System.out.println("Report with id " + savedReport.getId() + " was created");
 
         eventPublisher.publishEvent(new ReportCreatedEvent(
                 savedReport.getId(),
-                savedReport.getReporterId(),
-                savedReport.getTargetUserId(),
+                savedReport.getReporter().getId(),
+                savedReport.getTargetUser().getId(),
                 null,
                 savedReport.getType(),
                 savedReport.getTitle(),
@@ -147,8 +163,8 @@ public class ReportServiceImpl implements ReportService {
         if (saved.getStatus() == ReportStatus.REJECTED) {
             eventPublisher.publishEvent(new ReportRejectedEvent(
                     saved.getId(),
-                    saved.getReporterId(),
-                    saved.getTargetUserId(),
+                    saved.getReporter().getId(),
+                    saved.getTargetUser().getId(),
                     saved.getModeratorComment(),
                     Instant.now()
             ));
@@ -157,8 +173,8 @@ public class ReportServiceImpl implements ReportService {
         } else if (saved.getStatus() == ReportStatus.RESOLVED) {
             eventPublisher.publishEvent(new ReportResolvedEvent(
                     saved.getId(),
-                    saved.getReporterId(),
-                    saved.getTargetUserId(),
+                    saved.getReporter().getId(),
+                    saved.getTargetUser().getId(),
                     saved.getModeratorVerdict(),
                     saved.getModeratorComment(),
                     Instant.now()

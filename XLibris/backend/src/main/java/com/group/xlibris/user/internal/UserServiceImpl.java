@@ -32,6 +32,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserReferenceById(UUID id) {
+        return userRepository.getReferenceById(id);
+    }
+
+    @Override
     public List<UserResponse> getAllUsers(String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
         List<User> users = name == null

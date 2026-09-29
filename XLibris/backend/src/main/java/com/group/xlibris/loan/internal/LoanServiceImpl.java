@@ -1,11 +1,15 @@
 package com.group.xlibris.loan.internal;
 
+import com.group.xlibris.book.Book;
+import com.group.xlibris.book.BookService;
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.loan.LoanCreatedEvent;
 import com.group.xlibris.loan.LoanReturnedEvent;
 import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.dto.LoanResponse;
 import com.group.xlibris.loan.LoanStatus;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +19,14 @@ import java.util.UUID;
 @Service
 public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
+    private final UserService userService;
+    private final BookService bookService;
     private final ApplicationEventPublisher eventPublisher;
 
-    public LoanServiceImpl(LoanRepository loanRepository, ApplicationEventPublisher eventPublisher) {
+    public LoanServiceImpl(LoanRepository loanRepository, UserService userService, BookService bookService, ApplicationEventPublisher eventPublisher) {
         this.loanRepository = loanRepository;
+        this.userService = userService;
+        this.bookService = bookService;
         this.eventPublisher = eventPublisher;
     }
 
@@ -30,8 +38,13 @@ public class LoanServiceImpl implements LoanService {
     }
 
     @Override
+    public Loan getLoanReferenceById(UUID id) {
+        return loanRepository.getReferenceById(id);
+    }
+
+    @Override
     public List<LoanResponse> getAllLoans(UUID ownerId, UUID renterId, LoanStatus status) {
-        List<Loan> loans = loanRepository.findByOwnerAndRenter(ownerId, renterId);
+        List<Loan> loans = loanRepository.findLoansByCriteria(ownerId, renterId);
 
         return loans.stream()
                 .filter(loan -> status == null || loan.getStatus() == status)
@@ -41,16 +54,19 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public LoanResponse createLoan(CreateLoanCommand command) {
-        Loan loan = Loan.create(command.bookId(), command.ownerId(), command.renterId(), command.expectedReturnDate());
-        Loan saved = loanRepository.save(loan);
+        Book bookProxy = bookService.getBookReferenceById(command.bookId());
+        User ownerProxy = userService.getUserReferenceById(command.ownerId());
+        User renterProxy = userService.getUserReferenceById(command.renterId());
 
+        Loan loan = Loan.create(bookProxy, ownerProxy, renterProxy, command.expectedReturnDate());
+        Loan saved = loanRepository.save(loan);
         System.out.println("Loan with id " + saved.getId() + " was created");
 
         eventPublisher.publishEvent(new LoanCreatedEvent(
                 saved.getId(),
-                saved.getBookId(),
-                saved.getOwnerId(),
-                saved.getRenterId(),
+                saved.getBook().getId(),
+                saved.getOwner().getId(),
+                saved.getRenter().getId(),
                 saved.getStartDate(),
                 saved.getExpectedReturnDate()
         ));
@@ -68,13 +84,13 @@ public class LoanServiceImpl implements LoanService {
 
         Loan saved = loanRepository.save(loan);
 
-        System.out.println("Loan for book " + saved.getBookId() + " was marked as returned");
+        System.out.println("Loan for book " + saved.getBook().getId() + " was marked as returned");
 
         eventPublisher.publishEvent(new LoanReturnedEvent(
                 saved.getId(),
-                saved.getBookId(),
-                saved.getOwnerId(),
-                saved.getRenterId(),
+                saved.getBook().getId(),
+                saved.getOwner().getId(),
+                saved.getRenter().getId(),
                 saved.getActualReturnDate()
         ));
 

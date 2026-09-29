@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public interface UserService {
     UserResponse getUserById(UUID id);
+    User getUserReferenceById(UUID id);
     List<UserResponse> getAllUsers(String name, int page, int size);
     UserContactInfo getContactInfoById(UUID targetUserId, UUID viewerId);
     UserResponse createUser(CreateUserCommand command);
