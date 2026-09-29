@@ -45,7 +45,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookResponse> getAllBooks() {
-        return bookRepository.findAll()
+        return bookRepository.findAllWithAuthorAndGenre()
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -69,8 +69,13 @@ public class BookServiceImpl implements BookService {
     public BookResponse createBook(BookRequest request) {
         UUID id = UUID.randomUUID();
         User owner = userService.getEntityById(request.ownerId());
-        Author author = authorService.getEntityById(request.authorId());
-        Genre genre = genreService.getEntityById(request.genreId());
+        Author author = request.authorId() == null
+                ? null
+                : authorService.getEntityById(request.authorId());
+
+        Genre genre = request.genreId() == null
+                ? null
+                : genreService.getEntityById(request.genreId());
 
         Book book = new Book(
                 id,
@@ -99,8 +104,13 @@ public class BookServiceImpl implements BookService {
                         ));
 
         User owner = userService.getEntityById(request.ownerId());
-        Author author = authorService.getEntityById(request.authorId());
-        Genre genre = genreService.getEntityById(request.genreId());
+        Author author = request.authorId() == null
+                ? null
+                : authorService.getEntityById(request.authorId());
+
+        Genre genre = request.genreId() == null
+                ? null
+                : genreService.getEntityById(request.genreId());
 
         book.setTitle(request.title());
         book.setDescription(request.description());
@@ -245,8 +255,8 @@ public class BookServiceImpl implements BookService {
                 book.getPhotoURL(),
                 book.getStatus(),
                 book.getOwner().getId(),
-                book.getAuthor().getId(),
-                book.getGenre().getId()
+                book.getAuthor() == null ? null : book.getAuthor().getId(),
+                book.getGenre() == null ? null : book.getGenre().getId()
         );
     }
 }

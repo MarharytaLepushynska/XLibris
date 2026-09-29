@@ -1,20 +1,38 @@
 package com.group.xlibris.book;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-public interface BookRepository {
+@Repository
+public interface BookRepository extends JpaRepository<Book, UUID> {
 
-    Book save(Book book);
+    List<Book> findByTitleContainingIgnoreCase(String title);
 
-    Optional<Book> findById(UUID id);
+    @Query("""
+            SELECT b FROM Book b
+            WHERE LOWER(b.author.name)
+            LIKE LOWER(CONCAT('%', :authorName, '%'))
+            """)
+    List<Book> searchByAuthor(@Param("authorName") String authorName);
 
-    List<Book> findAll();
+    @Query("""
+        SELECT b FROM Book b
+        LEFT JOIN FETCH b.author
+        LEFT JOIN FETCH b.genre
+        """)
+    List<Book> findAllWithAuthorAndGenre();
 
-    boolean existsById(UUID id);
+    @Modifying
+    @Query("UPDATE Book b SET b.author = null WHERE b.author.id = :authorId")
+    void clearAuthor(@Param("authorId") UUID authorId);
 
-    void deleteById(UUID id);
-
-    void deleteAll();
+    @Modifying
+    @Query("UPDATE Book b SET b.genre = null WHERE b.genre.id = :genreId")
+    void clearGenre(@Param("genreId") UUID genreId);
 }

@@ -6,6 +6,7 @@ import com.group.xlibris.author.dto.AuthorResponse;
 import com.group.xlibris.author.AuthorService;
 import com.group.xlibris.author.AuthorNotFoundException;
 import com.group.xlibris.author.AuthorRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -67,6 +68,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Transactional
     public void deleteAuthor(UUID id) {
         if (!authorRepository.existsById(id)) {
             throw new AuthorNotFoundException(id);
