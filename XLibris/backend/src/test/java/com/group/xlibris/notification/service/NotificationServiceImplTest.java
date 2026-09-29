@@ -1,12 +1,14 @@
 package com.group.xlibris.notification.service;
 
 import com.group.xlibris.common.NotFoundException;
+import com.group.xlibris.notification.NotificationType;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
 import com.group.xlibris.notification.internal.Notification;
-import com.group.xlibris.notification.NotificationType;
 import com.group.xlibris.notification.internal.NotificationRepository;
 import com.group.xlibris.notification.internal.NotificationServiceImpl;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,24 +30,37 @@ class NotificationServiceImplTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private UserService userService;
+
     private NotificationServiceImpl notificationService;
 
     private UUID notificationId;
     private UUID userId;
+    private User user;
     private Notification notification;
 
     @BeforeEach
     void setUp() {
 
         notificationService =
-                new NotificationServiceImpl(notificationRepository);
+                new NotificationServiceImpl(
+                        notificationRepository,
+                        userService
+                );
 
         notificationId = UUID.randomUUID();
         userId = UUID.randomUUID();
 
+        user = mock(User.class);
+
+        lenient()
+                .when(user.getId())
+                .thenReturn(userId);
+
         notification = new Notification(
                 notificationId,
-                userId,
+                user,
                 NotificationType.LOAN_STATUS_CHANGED,
                 "Loan status changed",
                 Instant.now()
@@ -60,6 +75,9 @@ class NotificationServiceImplTest {
                 NotificationType.LOAN_STATUS_CHANGED,
                 "Loan status changed"
         );
+
+        when(userService.getUserReferenceById(userId))
+                .thenReturn(user);
 
         when(notificationRepository.save(any(Notification.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -80,12 +98,18 @@ class NotificationServiceImplTest {
         );
         assertNotNull(response.createdAt());
 
+        verify(userService)
+                .getUserReferenceById(userId);
+
         verify(notificationRepository)
                 .save(any(Notification.class));
     }
 
     @Test
     void shouldCreateSystemNotificationSuccessfully() {
+
+        when(userService.getUserReferenceById(userId))
+                .thenReturn(user);
 
         when(notificationRepository.save(any(Notification.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
@@ -110,6 +134,9 @@ class NotificationServiceImplTest {
         );
         assertNotNull(response.createdAt());
 
+        verify(userService)
+                .getUserReferenceById(userId);
+
         verify(notificationRepository)
                 .save(any(Notification.class));
     }
@@ -117,7 +144,7 @@ class NotificationServiceImplTest {
     @Test
     void shouldGetNotificationByIdSuccessfully() {
 
-        when(notificationRepository.findById(notificationId))
+        when(notificationRepository.findByIdWithUser(notificationId))
                 .thenReturn(Optional.of(notification));
 
         NotificationResponse response =
@@ -136,13 +163,13 @@ class NotificationServiceImplTest {
         );
 
         verify(notificationRepository)
-                .findById(notificationId);
+                .findByIdWithUser(notificationId);
     }
 
     @Test
     void shouldThrowNotFoundWhenNotificationMissing() {
 
-        when(notificationRepository.findById(notificationId))
+        when(notificationRepository.findByIdWithUser(notificationId))
                 .thenReturn(Optional.empty());
 
         assertThrows(
@@ -151,21 +178,28 @@ class NotificationServiceImplTest {
         );
 
         verify(notificationRepository)
-                .findById(notificationId);
+                .findByIdWithUser(notificationId);
     }
 
     @Test
     void shouldGetAllNotificationsSuccessfully() {
 
+        UUID secondUserId = UUID.randomUUID();
+
+        User secondUser = mock(User.class);
+
+        when(secondUser.getId())
+                .thenReturn(secondUserId);
+
         Notification secondNotification = new Notification(
                 UUID.randomUUID(),
-                UUID.randomUUID(),
+                secondUser,
                 NotificationType.REPORT_STATUS_CHANGED,
                 "Report status changed",
                 Instant.now()
         );
 
-        when(notificationRepository.findAll())
+        when(notificationRepository.findAllWithUser())
                 .thenReturn(
                         List.of(
                                 notification,
@@ -178,29 +212,20 @@ class NotificationServiceImplTest {
 
         assertEquals(2, responses.size());
 
-        verify(notificationRepository).findAll();
+        verify(notificationRepository)
+                .findAllWithUser();
+
+        verify(
+                notificationRepository,
+                never()
+        ).findByUserIdWithUser(any());
     }
 
     @Test
     void shouldFilterNotificationsByUserId() {
 
-        UUID secondUserId = UUID.randomUUID();
-
-        Notification secondNotification = new Notification(
-                UUID.randomUUID(),
-                secondUserId,
-                NotificationType.REPORT_STATUS_CHANGED,
-                "Report status changed",
-                Instant.now()
-        );
-
-        when(notificationRepository.findAll())
-                .thenReturn(
-                        List.of(
-                                notification,
-                                secondNotification
-                        )
-                );
+        when(notificationRepository.findByUserIdWithUser(userId))
+                .thenReturn(List.of(notification));
 
         List<NotificationResponse> responses =
                 notificationService.getAll(userId);
@@ -211,6 +236,12 @@ class NotificationServiceImplTest {
                 responses.getFirst().userId()
         );
 
-        verify(notificationRepository).findAll();
+        verify(notificationRepository)
+                .findByUserIdWithUser(userId);
+
+        verify(
+                notificationRepository,
+                never()
+        ).findAllWithUser();
     }
 }

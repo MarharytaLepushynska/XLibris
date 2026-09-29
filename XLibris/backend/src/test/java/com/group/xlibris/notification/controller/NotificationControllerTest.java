@@ -1,9 +1,12 @@
 package com.group.xlibris.notification.controller;
 
+import com.group.xlibris.notification.NotificationType;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.internal.Notification;
-import com.group.xlibris.notification.NotificationType;
 import com.group.xlibris.notification.internal.NotificationRepository;
+import com.group.xlibris.user.Role;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +37,9 @@ class NotificationControllerTest {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     private UUID notificationId;
     private UUID userId;
 
@@ -41,6 +47,7 @@ class NotificationControllerTest {
     void resetRepository() {
 
         notificationRepository.deleteAll();
+        userRepository.deleteAll();
 
         notificationId =
                 UUID.fromString("550e8400-e29b-41d4-a716-446655440500");
@@ -54,9 +61,24 @@ class NotificationControllerTest {
         UUID userId2 =
                 UUID.fromString("550e8400-e29b-41d4-a716-446655440601");
 
+        User user1 = createUser(
+                userId,
+                "User One",
+                "user1@example.com"
+        );
+
+        User user2 = createUser(
+                userId2,
+                "User Two",
+                "user2@example.com"
+        );
+
+        userRepository.save(user1);
+        userRepository.save(user2);
+
         Notification notification1 = new Notification(
                 notificationId,
-                userId,
+                user1,
                 NotificationType.LOAN_STATUS_CHANGED,
                 "Loan status changed",
                 Instant.now()
@@ -64,7 +86,7 @@ class NotificationControllerTest {
 
         Notification notification2 = new Notification(
                 notificationId2,
-                userId2,
+                user2,
                 NotificationType.REPORT_STATUS_CHANGED,
                 "Report status changed",
                 Instant.now()
@@ -78,6 +100,14 @@ class NotificationControllerTest {
     void shouldCreateNotification() throws Exception {
 
         UUID newUserId = UUID.randomUUID();
+
+        User newUser = createUser(
+                newUserId,
+                "New User",
+                "new.user@example.com"
+        );
+
+        userRepository.save(newUser);
 
         NotificationRequest request = new NotificationRequest(
                 newUserId,
@@ -110,6 +140,8 @@ class NotificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id")
                         .value(notificationId.toString()))
+                .andExpect(jsonPath("$.userId")
+                        .value(userId.toString()))
                 .andExpect(jsonPath("$.type")
                         .value("LOAN_STATUS_CHANGED"))
                 .andExpect(jsonPath("$.message")
@@ -207,5 +239,28 @@ class NotificationControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title")
                         .value("Invalid request body"));
+    }
+
+    private User createUser(
+            UUID id,
+            String name,
+            String email
+    ) {
+
+        return new User(
+                id,
+                name,
+                "Kyiv",
+                null,
+                email,
+                "+380501234567",
+                Instant.now(),
+                Role.USER,
+                0.0,
+                0.0,
+                0,
+                0,
+                0
+        );
     }
 }

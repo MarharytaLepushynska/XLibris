@@ -2,9 +2,11 @@ package com.group.xlibris.notification.internal;
 
 import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.notification.NotificationService;
+import com.group.xlibris.notification.NotificationType;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.dto.NotificationResponse;
-import com.group.xlibris.notification.NotificationType;
+import com.group.xlibris.user.User;
+import com.group.xlibris.user.UserService;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,11 +17,14 @@ import java.util.UUID;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserService userService;
 
     public NotificationServiceImpl(
-            NotificationRepository notificationRepository
+            NotificationRepository notificationRepository,
+            UserService userService
     ) {
         this.notificationRepository = notificationRepository;
+        this.userService = userService;
     }
 
     @Override
@@ -39,16 +44,26 @@ public class NotificationServiceImpl implements NotificationService {
             String message
     ) {
 
+        User user =
+                userService.getUserReferenceById(userId);
+
         Notification notification = new Notification(
                 UUID.randomUUID(),
-                userId,
+                user,
                 type,
                 message,
                 Instant.now()
         );
 
-        Notification savedNotification = notificationRepository.save(notification);
-        System.out.println("Notification with id " + savedNotification.id() + " was created");
+        Notification savedNotification =
+                notificationRepository.save(notification);
+
+        System.out.println(
+                "Notification with id "
+                + savedNotification.getId()
+                + " was created"
+        );
+
         return NotificationResponse.from(savedNotification);
     }
 
@@ -56,7 +71,7 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse getById(UUID id) {
 
         Notification notification =
-                notificationRepository.findById(id)
+                notificationRepository.findByIdWithUser(id)
                         .orElseThrow(() ->
                                 new NotFoundException(
                                         "Notification with id "
@@ -71,12 +86,18 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationResponse> getAll(UUID userId) {
 
-        return notificationRepository.findAll()
+        List<Notification> notifications;
+
+        if (userId == null) {
+            notifications =
+                    notificationRepository.findAllWithUser();
+        } else {
+            notifications =
+                    notificationRepository.findByUserIdWithUser(userId);
+        }
+
+        return notifications
                 .stream()
-                .filter(notification ->
-                        userId == null
-                        || notification.userId().equals(userId)
-                )
                 .map(NotificationResponse::from)
                 .toList();
     }
