@@ -175,6 +175,36 @@ class BookServiceImplTest {
     }
 
     @Test
+    void createBook_shouldAllowNullAuthorAndGenre() {
+        BookRequest requestWithoutAuthorAndGenre = new BookRequest(
+                bookId,
+                "Test Book",
+                "Test description",
+                "photo.jpg",
+                ownerId,
+                null,
+                null
+        );
+
+        when(userService.getEntityById(ownerId)).thenReturn(user);
+
+        when(bookRepository.save(any(Book.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookResponse response = bookService.createBook(requestWithoutAuthorAndGenre);
+
+        assertThat(response).isNotNull();
+        assertThat(response.ownerId()).isEqualTo(ownerId);
+        assertThat(response.authorId()).isNull();
+        assertThat(response.genreId()).isNull();
+
+        verify(userService).getEntityById(ownerId);
+        verify(authorService, never()).getEntityById(any());
+        verify(genreService, never()).getEntityById(any());
+        verify(bookRepository).save(any(Book.class));
+    }
+
+    @Test
     void getAllBooks_shouldReturnAllBooks() {
 
         Book secondBook = new Book(
@@ -188,7 +218,7 @@ class BookServiceImplTest {
                 genre
         );
 
-        when(bookRepository.findAll())
+        when(bookRepository.findAllWithAuthorAndGenre())
                 .thenReturn(List.of(book, secondBook));
 
         List<BookResponse> response = bookService.getAllBooks();
@@ -214,7 +244,7 @@ class BookServiceImplTest {
         assertThat(response.get(1).status())
                 .isEqualTo(BookStatus.BLOCKED);
 
-        verify(bookRepository).findAll();
+        verify(bookRepository).findAllWithAuthorAndGenre();
     }
 
     @Test
@@ -495,6 +525,8 @@ class BookServiceImplTest {
         verify(bookRepository, never()).findById(bookId);
         verify(bookRepository, never()).save(any(Book.class));
     }
+
+
 
     @Test
     void shouldBlockAndPublishEvent() {

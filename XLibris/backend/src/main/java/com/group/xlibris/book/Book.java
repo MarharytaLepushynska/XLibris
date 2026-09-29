@@ -40,11 +40,13 @@ public class Book {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User owner;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "author_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "author_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Author author;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "genre_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "genre_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Genre genre;
 }
