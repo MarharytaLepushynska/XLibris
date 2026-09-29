@@ -93,7 +93,7 @@ public class NotificationServiceImpl implements NotificationService {
                     notificationRepository.findAllWithUser();
         } else {
             notifications =
-                    notificationRepository.findByUserIdWithUser(userId);
+                    notificationRepository.findByUser_Id(userId);
         }
 
         return notifications

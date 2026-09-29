@@ -218,13 +218,14 @@ class NotificationServiceImplTest {
         verify(
                 notificationRepository,
                 never()
-        ).findByUserIdWithUser(any());
+        ).findByUser_Id(any());
+
     }
 
     @Test
     void shouldFilterNotificationsByUserId() {
 
-        when(notificationRepository.findByUserIdWithUser(userId))
+        when(notificationRepository.findByUser_Id(userId))
                 .thenReturn(List.of(notification));
 
         List<NotificationResponse> responses =
@@ -237,7 +238,7 @@ class NotificationServiceImplTest {
         );
 
         verify(notificationRepository)
-                .findByUserIdWithUser(userId);
+                .findByUser_Id(userId);
 
         verify(
                 notificationRepository,

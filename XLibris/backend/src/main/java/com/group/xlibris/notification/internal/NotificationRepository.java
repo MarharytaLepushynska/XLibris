@@ -13,6 +13,8 @@ import java.util.UUID;
 public interface NotificationRepository
         extends JpaRepository<Notification, UUID> {
 
+    List<Notification> findByUser_Id(UUID userId);
+
     @Query("""
             SELECT n
             FROM Notification n
@@ -28,15 +30,5 @@ public interface NotificationRepository
             """)
     Optional<Notification> findByIdWithUser(
             @Param("id") UUID id
-    );
-
-    @Query("""
-            SELECT n
-            FROM Notification n
-            JOIN FETCH n.user
-            WHERE n.user.id = :userId
-            """)
-    List<Notification> findByUserIdWithUser(
-            @Param("userId") UUID userId
     );
 }
