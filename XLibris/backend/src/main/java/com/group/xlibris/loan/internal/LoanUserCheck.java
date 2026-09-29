@@ -1,6 +1,5 @@
 package com.group.xlibris.loan.internal;
 
-import com.group.xlibris.loan.LoanService;
 import com.group.xlibris.loan.LoanStatus;
 import com.group.xlibris.user.UserLoanCheck;
 import org.springframework.stereotype.Service;
