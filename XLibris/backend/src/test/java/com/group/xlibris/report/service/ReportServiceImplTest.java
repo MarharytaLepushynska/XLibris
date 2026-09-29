@@ -174,6 +174,7 @@ class ReportServiceImplTest {
 
         Loan loan = mock(Loan.class);
 
+        when(loan.getId()).thenReturn(loanId);
         when(loanService.getLoanById(loanId)).thenReturn(mockLoanResponse);
         when(loanService.getLoanReferenceById(loanId)).thenReturn(loan);
         when(userService.getUserReferenceById(ownerId)).thenReturn(owner);
