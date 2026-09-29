@@ -1,12 +1,17 @@
 package com.group.xlibris.user;
 
 import com.group.xlibris.author.Author;
+import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.BookStatus;
+import com.group.xlibris.bookRequest.internal.BookRequestRepository;
+import com.group.xlibris.feedback.internal.FeedbackRepository;
 import com.group.xlibris.genre.Genre;
+import com.group.xlibris.genre.GenreRepository;
 import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.loan.internal.LoanRepository;
+import com.group.xlibris.report.internal.ReportRepository;
 import com.group.xlibris.user.dto.AdminUserUpdateRequest;
 import com.group.xlibris.user.dto.UserRequest;
 import com.group.xlibris.user.internal.UserRepository;
@@ -47,17 +52,29 @@ class UserControllerTest {
     private BookRepository bookRepository;
 
     @Autowired
-    private com.group.xlibris.author.AuthorRepository authorRepository;
+    private AuthorRepository authorRepository;
 
     @Autowired
-    private com.group.xlibris.genre.GenreRepository genreRepository;
+    private GenreRepository genreRepository;
+
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+
+    @Autowired
+    private ReportRepository reportRepository;
+
+    @Autowired
+    private BookRequestRepository bookRequestRepository;
 
     @BeforeEach
     void resetMap() {
+        feedbackRepository.deleteAll();
+        reportRepository.deleteAll();
+        bookRequestRepository.deleteAll();
+
         loanRepository.deleteAll();
         bookRepository.deleteAll();
         userRepository.deleteAll();
-
         authorRepository.deleteAll();
         genreRepository.deleteAll();
 
