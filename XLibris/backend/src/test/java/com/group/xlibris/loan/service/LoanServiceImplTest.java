@@ -69,7 +69,6 @@ class LoanServiceImplTest {
         expectedReturnDate = Instant.now().plusSeconds(86400 * 14);
 
         book = mock(Book.class);
-        when(book.getId()).thenReturn(bookId);
 
         owner = new User(ownerId, "Artem", "Lviv", null, "a@gmail.com",
                 "+380998876443", Instant.now(), Role.USER, 1.0, 0.9, 0, 0, 0);
