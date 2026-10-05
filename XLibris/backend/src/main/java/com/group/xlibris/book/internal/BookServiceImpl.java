@@ -14,6 +14,8 @@ import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
 
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.UUID;
 
 @Service
 public class BookServiceImpl implements BookService {
+    private static final Logger log = LoggerFactory.getLogger(BookServiceImpl.class);
 
     private final BookRepository bookRepository;
     private final List<BookStateTransitionStrategy> strategies;
@@ -45,6 +48,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookResponse> getAllBooks() {
+
+        log.debug("Fetching all books");
+
         return bookRepository.findAllWithAuthorAndGenre()
                 .stream()
                 .map(this::toResponse)
@@ -53,6 +59,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookResponse getBookById(UUID id) {
+
+        log.debug("Finding book by id={}", id);
+
         Book book = bookRepository.findById(id)
                 .orElseThrow(() ->
                         new NotFoundException("Book (id = " + id + ") was not found"));
@@ -90,7 +99,7 @@ public class BookServiceImpl implements BookService {
 
         Book savedBook = bookRepository.save(book);
 
-        System.out.println("Book with id " + savedBook.getId() + " was created");
+        log.info("Book with id={} was created", savedBook.getId());
 
         return toResponse(savedBook);
     }
@@ -138,7 +147,7 @@ public class BookServiceImpl implements BookService {
 
         bookRepository.deleteById(id);
 
-        System.out.println("Book with id " + id + " was deleted");
+        log.info("Book with id={} was deleted", id);
     }
 
     private Book getBook(UUID id) {
@@ -164,7 +173,7 @@ public class BookServiceImpl implements BookService {
         bookRepository.save(book);
         eventPublisher.publishEvent(new BookBlockedEvent(id));
 
-        System.out.println("Event for Book with id " + id + " was published");
+        log.info("Event for Book with id={} was published", id);
     }
 
     @Override
@@ -180,6 +189,8 @@ public class BookServiceImpl implements BookService {
 
         book.setStatus(BookStatus.AVAILABLE);
         bookRepository.save(book);
+
+        log.info("Book with id={} was unblocked", id);
     }
 
     @Override
@@ -206,12 +217,17 @@ public class BookServiceImpl implements BookService {
         strategy.apply(book);
         bookRepository.save(book);
 
-        System.out.println("Status of Book with id " + id + " was changed from " + previousStatus + " to " + book.getStatus());
+        log.info(
+                "Status of Book with id={} was changed from {} to {}",
+                id,
+                previousStatus,
+                book.getStatus()
+        );
 
         if (targetStatus == BookStatus.BLOCKED) {
             eventPublisher.publishEvent(new BookBlockedEvent(id));
 
-            System.out.println("Event for Book with id " + id + " was published");
+            log.info("Event for Book with id={} was published", id);
 
         }
 
