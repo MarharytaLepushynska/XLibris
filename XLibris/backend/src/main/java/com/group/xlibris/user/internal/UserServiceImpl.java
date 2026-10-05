@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.List;
@@ -20,6 +22,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserLoanCheck userLoanCheck;
 
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
     public UserServiceImpl(UserRepository userRepository, UserLoanCheck userLoanCheck) {
         this.userRepository = userRepository;
         this.userLoanCheck = userLoanCheck;
@@ -27,6 +31,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUserById(UUID id) {
+
+        log.debug("Finding user by id={}", id);
+
         User user = findUserOrThrow(id);
         return UserResponse.from(user);
     }
@@ -38,6 +45,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUsers(String name, int page, int size) {
+
+        log.debug("Fetching users: name={}, page={}, size={}", name, page, size);
+
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
         List<User> users = name == null
                 ? userRepository.findAll(pageable).getContent()
@@ -50,6 +60,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserContactInfo getContactInfoById(UUID targetUserId, UUID viewerId) {
+
+        log.debug("Checking contact information access: targetUserId={}, viewerId={}", targetUserId, viewerId);
+
         User user = findUserOrThrow(targetUserId);
         if (!userLoanCheck.canViewContacts(targetUserId, viewerId)) {
             throw new ContactAccessDeniedException("No confirmed loan");
@@ -62,7 +75,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse createUser(CreateUserCommand command) {
         User user = User.create(command);
         User saved = userRepository.save(user);
-        System.out.println("User with id " + user.getId() + "was created");
+        log.info("User with id={} was created", saved.getId());
         return UserResponse.from(saved);
     }
 
@@ -79,7 +92,7 @@ public class UserServiceImpl implements UserService {
         User user = findUserOrThrow(id);
         user.updateDetails(command);
         User updated = userRepository.save(user);
-        System.out.println("User information with id " + updated.getId() + " was updated");
+        log.info("User information with id={} was updated", updated.getId());
         return UserResponse.from(updated);
     }
 
@@ -97,7 +110,7 @@ public class UserServiceImpl implements UserService {
         User user = findUserOrThrow(id);
         user.updateDetails(command);
         User updated = userRepository.save(user);
-        System.out.println("User information with id " + updated.getId() + " was updated by admin");
+        log.info("User information with id={} was updated by admin", updated.getId());
         return UserResponse.from(updated);
     }
 
@@ -117,7 +130,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.deleteById(id);
-        System.out.println("User with id " + id + " was deleted");
+        log.info("User with id={} was deleted", id);
     }
 
     private User findUserOrThrow(UUID id) {
