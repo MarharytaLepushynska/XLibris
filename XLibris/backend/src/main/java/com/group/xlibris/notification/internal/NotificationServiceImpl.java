@@ -8,6 +8,8 @@ import com.group.xlibris.notification.dto.NotificationResponse;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +17,8 @@ import java.util.UUID;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(NotificationServiceImpl.class);
 
     private final NotificationRepository notificationRepository;
     private final UserService userService;
@@ -58,17 +62,15 @@ public class NotificationServiceImpl implements NotificationService {
         Notification savedNotification =
                 notificationRepository.save(notification);
 
-        System.out.println(
-                "Notification with id "
-                + savedNotification.getId()
-                + " was created"
-        );
+        log.info("Notification with id={} was created", savedNotification.getId());
 
         return NotificationResponse.from(savedNotification);
     }
 
     @Override
     public NotificationResponse getById(UUID id) {
+
+        log.debug("Finding notification by id={}", id);
 
         Notification notification =
                 notificationRepository.findByIdWithUser(id)
@@ -85,6 +87,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<NotificationResponse> getAll(UUID userId) {
+
+        log.debug("Fetching notifications: userId={}", userId);
 
         List<Notification> notifications;
 
