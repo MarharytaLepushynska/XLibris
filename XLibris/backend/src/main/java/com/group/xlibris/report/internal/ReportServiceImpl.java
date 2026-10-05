@@ -19,6 +19,8 @@ import com.group.xlibris.report.internal.command.UpdateReportCommand;
 import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,6 +33,8 @@ public class ReportServiceImpl implements ReportService {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
 
+    private static final Logger log = LoggerFactory.getLogger(ReportServiceImpl.class);
+
     public ReportServiceImpl(ReportRepository reportRepository, LoanService loanService, UserService userService, ApplicationEventPublisher eventPublisher) {
         this.reportRepository = reportRepository;
         this.loanService = loanService;
@@ -40,6 +44,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ReportResponse getReportById(UUID id) {
+
+        log.debug("Finding report by id={}", id);
+
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Report (" + id + ") was not found"));
         return ReportResponse.from(report);
@@ -47,6 +54,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<ReportResponse> getAllReports(ReportFilterCriteria criteria) {
+
+        log.debug("Fetching reports: status={}, loanId={}, reporterId={}, targetUserId={}", criteria.status(), criteria.loanId(), criteria.reporterId(), criteria.targetUserId());
+
         return reportRepository.findReportsByCriteria(
                         criteria.status(), criteria.loanId(),
                         criteria.reporterId(), criteria.targetUserId())
@@ -76,7 +86,7 @@ public class ReportServiceImpl implements ReportService {
                 command.description(), command.evidenceUrl());
         Report savedReport = reportRepository.save(report);
 
-        System.out.println("Report with id " + savedReport.getId() + " was created");
+        log.info("Report with id={} was created", savedReport.getId());
 
         eventPublisher.publishEvent(new ReportCreatedEvent(
                 savedReport.getId(),
@@ -88,7 +98,7 @@ public class ReportServiceImpl implements ReportService {
                 savedReport.getCreatedAt()
         ));
 
-        System.out.println("Event for creating report was published");
+        log.info("Event for creating report was published");
 
         return ReportResponse.from(savedReport);
     }
@@ -103,7 +113,7 @@ public class ReportServiceImpl implements ReportService {
                 command.evidenceUrl(), reporterProxy, targetUserProxy);
         Report savedReport = reportRepository.save(report);
 
-        System.out.println("Report with id " + savedReport.getId() + " was created");
+        log.info("Report with id={} was created", savedReport.getId());
 
         eventPublisher.publishEvent(new ReportCreatedEvent(
                 savedReport.getId(),
@@ -115,7 +125,7 @@ public class ReportServiceImpl implements ReportService {
                 savedReport.getCreatedAt()
         ));
 
-        System.out.println("Event for creating report was published");
+        log.info("Event for creating report was published");
 
         return ReportResponse.from(savedReport);
     }
@@ -132,7 +142,7 @@ public class ReportServiceImpl implements ReportService {
                 command.evidenceUrl()
         );
 
-        System.out.println("Report information with id " + id + " was updated");
+        log.info("Report information with id={} was updated", id);
 
         return ReportResponse.from(reportRepository.save(report));
     }
@@ -145,7 +155,7 @@ public class ReportServiceImpl implements ReportService {
         report.assignToReview();
         Report saved = reportRepository.save(report);
 
-        System.out.println("Status of Report with id " + id + " was changed from " + previousStatus + " to " + saved.getStatus());
+        log.info("Status of Report with id={} was changed from {} to {}", id, previousStatus, saved.getStatus());
 
         return ReportResponse.from(saved);
     }
@@ -158,7 +168,7 @@ public class ReportServiceImpl implements ReportService {
         report.resolve(command.resolution(), command.moderatorComment(), command.moderatorVerdict());
         Report saved = reportRepository.save(report);
 
-        System.out.println("Status of Report with id " + id + " was changed from " + previousStatus + " to " + saved.getStatus());
+        log.info("Status of Report with id={} was changed from {} to {}", id, previousStatus, saved.getStatus());
 
         if (saved.getStatus() == ReportStatus.REJECTED) {
             eventPublisher.publishEvent(new ReportRejectedEvent(
@@ -169,7 +179,7 @@ public class ReportServiceImpl implements ReportService {
                     Instant.now()
             ));
 
-            System.out.println("Event for rejecting report was published");
+            log.info("Event for rejecting report was published");
         } else if (saved.getStatus() == ReportStatus.RESOLVED) {
             eventPublisher.publishEvent(new ReportResolvedEvent(
                     saved.getId(),
@@ -180,7 +190,7 @@ public class ReportServiceImpl implements ReportService {
                     Instant.now()
             ));
 
-            System.out.println("Event for resolving report was published");
+            log.info("Event for resolving report was published");
         }
 
         return ReportResponse.from(saved);
@@ -193,6 +203,6 @@ public class ReportServiceImpl implements ReportService {
         }
         reportRepository.deleteById(id);
 
-        System.out.println("Report with id " + id + " was deleted");
+        log.info("Report with id={} was deleted", id);
     }
 }
