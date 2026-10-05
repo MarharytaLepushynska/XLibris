@@ -14,6 +14,8 @@ import com.group.xlibris.loan.internal.Loan;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,6 +27,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final LoanService loanService;
     private final UserService userService;
+
+    private static final Logger log = LoggerFactory.getLogger(FeedbackServiceImpl.class);
 
     public FeedbackServiceImpl(
             FeedbackRepository feedbackRepository,
@@ -92,15 +96,15 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         Feedback savedFeedback = feedbackRepository.save(feedback);
 
-        System.out.println(
-                "Feedback with id " + savedFeedback.getId() + " was created"
-        );
+        log.info("Feedback with id={} was created", savedFeedback.getId());
 
         return FeedbackResponse.from(savedFeedback);
     }
 
     @Override
     public FeedbackResponse getById(UUID id) {
+
+        log.debug("Finding feedback by id={}", id);
 
         Feedback feedback = feedbackRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new NotFoundException(
@@ -116,6 +120,8 @@ public class FeedbackServiceImpl implements FeedbackService {
             UUID reviewerId,
             UUID reviewedUserId
     ) {
+
+        log.debug("Finding all feedbacks with loanId={}, reviewerId={}, reviewedUserId={}", loanId, reviewerId, reviewedUserId);
 
         return feedbackRepository.findAllWithRelations()
                 .stream()
