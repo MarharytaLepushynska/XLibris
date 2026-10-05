@@ -20,6 +20,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.data.domain.Pageable;
 import java.time.Instant;
@@ -32,6 +34,8 @@ public class BookRequestServiceImpl implements BookRequestService {
     private final BookService bookService;
     private final ApplicationEventPublisher eventPublisher;
     private final UserService userService;
+
+    private static final Logger log = LoggerFactory.getLogger(BookRequestServiceImpl.class);
 
     public BookRequestServiceImpl(BookRequestRepository repository,
                                   BookService bookService,
@@ -74,17 +78,23 @@ public class BookRequestServiceImpl implements BookRequestService {
                 null
         );
         BookRequestEntity saved = repository.save(entity);
-        System.out.println("Book request with id " + saved.getBook().getId() + " was created");
+        log.info("Book request for book with id={} was created", saved.getBook().getId());
         return BookRequestResponse.from(saved);
     }
 
     @Override
     public BookRequestResponse getById(UUID id) {
+
+        log.debug("Finding book request by id={}", id);
+
         return BookRequestResponse.from(findOrThrow(id));
     }
 
     @Override
     public List<BookRequestResponse> getAll(UUID bookId, UUID requesterId, BookRequestStatus status, int page, int size) {
+
+        log.debug("Fetching book requests: bookId={}, requesterId={}, status={}, page={}, size={}", bookId, requesterId, status, page, size);
+
         Pageable pageble = PageRequest.of(page, size, Sort.by("createdAt").ascending());
         return repository.findWithDetails(bookId, requesterId, status, pageble)
                 .stream()
@@ -123,7 +133,7 @@ public class BookRequestServiceImpl implements BookRequestService {
             throw new NotFoundException("Book request (id= " + id + ") was not found");
         }
         repository.deleteById(id);
-        System.out.println("Book request with id " + id + " was deleted");
+        log.info("Book request with id={} was deleted", id);
     }
 
     @Override
@@ -131,7 +141,7 @@ public class BookRequestServiceImpl implements BookRequestService {
         for (BookRequestEntity request : getOpenRequests(bookId)) {
             saveStatus(request, BookRequestStatus.CANCELLED);
         }
-        System.out.println("Book requests for book with id " + bookId + " were cancelled");
+        log.info("Book requests for book with id={} were cancelled", bookId);
     }
 
     private BookRequestEntity findOrThrow(UUID id) {
@@ -168,12 +178,12 @@ public class BookRequestServiceImpl implements BookRequestService {
         request.setStatus(target);
         request.setRespondedAt(Instant.now());
         BookRequestEntity saved = repository.save(request);
-        System.out.println("Staus of book request with id " + request.getBook().getId() + " was changed from " + request.getStatus() + " to " + target );
+        log.info("Status of book request with id={} was changed from {} to {}", request.getId(), previous, target);
 
         eventPublisher.publishEvent(new BookRequestStatusChangedEvent(
                 saved.getId(), saved.getBook().getId(), saved.getRequester().getId(), saved.getOwner().getId(),
                 saved.getDesiredDurationDays(), previous, saved.getStatus()));
-        System.out.println("Event for changing book request status was published");
+        log.info("Event for changing book request status was published");
         return BookRequestResponse.from(saved);
     }
 }

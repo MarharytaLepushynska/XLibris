@@ -206,11 +206,7 @@ public class BookServiceImpl implements BookService {
                 .findFirst()
                 .orElseThrow(() ->
                         new InvalidBookStateTransitionException(
-                                "Cannot change book status from "
-                                        + book.getStatus()
-                                        + " to "
-                                        + targetStatus
-                        ));
+                                "Cannot change book status from " + book.getStatus() + " to " + targetStatus));
 
         BookStatus previousStatus = book.getStatus();
 
