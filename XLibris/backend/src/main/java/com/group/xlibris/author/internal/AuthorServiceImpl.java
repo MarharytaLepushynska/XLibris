@@ -8,12 +8,16 @@ import com.group.xlibris.author.AuthorNotFoundException;
 import com.group.xlibris.author.AuthorRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 
+
 @Service
 public class AuthorServiceImpl implements AuthorService {
+    private static final Logger log = LoggerFactory.getLogger(AuthorServiceImpl.class);
 
     private final AuthorRepository authorRepository;
 
@@ -23,6 +27,9 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public List<AuthorResponse> getAllAuthors() {
+
+        log.debug("Fetching all authors");
+
         return authorRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -31,6 +38,9 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public AuthorResponse getAuthorById(UUID id) {
+
+        log.debug("Finding author by id={}", id);
+
         Author author = authorRepository.findById(id)
                 .orElseThrow(() -> new AuthorNotFoundException(id));
 
@@ -48,7 +58,7 @@ public class AuthorServiceImpl implements AuthorService {
 
         Author savedAuthor = authorRepository.save(author);
 
-        System.out.println("Author with id " + savedAuthor.getId() + " was created");
+        log.info("Author with id={} was created", savedAuthor.getId());
 
         return toResponse(savedAuthor);
     }
@@ -62,7 +72,7 @@ public class AuthorServiceImpl implements AuthorService {
 
         Author updatedAuthor = authorRepository.save(existingAuthor);
 
-        System.out.println("Author information with id " + updatedAuthor.getId() + " was updated");
+        log.info("Author information with id={} was updated", updatedAuthor.getId());
 
         return toResponse(updatedAuthor);
     }
@@ -76,7 +86,7 @@ public class AuthorServiceImpl implements AuthorService {
 
         authorRepository.deleteById(id);
 
-        System.out.println("Author with id " + id + " was deleted");
+        log.info("Author with id={} was deleted", id);
     }
 
     @Override
