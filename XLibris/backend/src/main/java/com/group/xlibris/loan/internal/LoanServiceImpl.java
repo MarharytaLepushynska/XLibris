@@ -12,6 +12,8 @@ import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +25,8 @@ public class LoanServiceImpl implements LoanService {
     private final BookService bookService;
     private final ApplicationEventPublisher eventPublisher;
 
+    private static final Logger log = LoggerFactory.getLogger(LoanServiceImpl.class);
+
     public LoanServiceImpl(LoanRepository loanRepository, UserService userService, BookService bookService, ApplicationEventPublisher eventPublisher) {
         this.loanRepository = loanRepository;
         this.userService = userService;
@@ -32,6 +36,9 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public LoanResponse getLoanById(UUID id) {
+
+        log.debug("Finding loan by id={}", id);
+
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Loan (id = " + id + ") was not found"));
         return LoanResponse.from(loan);
@@ -44,6 +51,9 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public List<LoanResponse> getAllLoans(UUID ownerId, UUID renterId, LoanStatus status) {
+
+        log.debug("Fetching loans: ownerId={}, renterId={}, status={}", ownerId, renterId, status);
+
         List<Loan> loans = loanRepository.findLoansByCriteria(ownerId, renterId);
 
         return loans.stream()
@@ -60,7 +70,7 @@ public class LoanServiceImpl implements LoanService {
 
         Loan loan = Loan.create(bookProxy, ownerProxy, renterProxy, command.expectedReturnDate());
         Loan saved = loanRepository.save(loan);
-        System.out.println("Loan with id " + saved.getId() + " was created");
+        log.info("Loan with id={} was created", saved.getId());
 
         eventPublisher.publishEvent(new LoanCreatedEvent(
                 saved.getId(),
@@ -71,7 +81,7 @@ public class LoanServiceImpl implements LoanService {
                 saved.getExpectedReturnDate()
         ));
 
-        System.out.println("Event for loan creation was published");
+        log.info("Event for loan creation was published");
 
         return LoanResponse.from(saved);
     }
@@ -84,7 +94,7 @@ public class LoanServiceImpl implements LoanService {
 
         Loan saved = loanRepository.save(loan);
 
-        System.out.println("Loan for book " + saved.getBook().getId() + " was marked as returned");
+        log.info("Loan for book with id={} was marked as returned", saved.getBook().getId());
 
         eventPublisher.publishEvent(new LoanReturnedEvent(
                 saved.getId(),
@@ -94,7 +104,7 @@ public class LoanServiceImpl implements LoanService {
                 saved.getActualReturnDate()
         ));
 
-        System.out.println("Event for loan return was published");
+        log.info("Event for loan return was published");
 
         return LoanResponse.from(saved);
     }
@@ -106,6 +116,6 @@ public class LoanServiceImpl implements LoanService {
         }
         loanRepository.deleteById(id);
 
-        System.out.println("Loan with id " + id + " was deleted");
+        log.info("Loan with id={} was deleted", id);
     }
 }
