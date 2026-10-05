@@ -28,7 +28,7 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public List<AuthorResponse> getAllAuthors() {
 
-        log.debug("Fetching all authors");
+        log.debug("Finding all authors");
 
         return authorRepository.findAll()
                 .stream()

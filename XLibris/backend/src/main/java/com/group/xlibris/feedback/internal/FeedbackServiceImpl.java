@@ -121,7 +121,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             UUID reviewedUserId
     ) {
 
-        log.debug("Finding all feedbacks with loanId={}, reviewerId={}, reviewedUserId={}", loanId, reviewerId, reviewedUserId);
+        log.debug("Fetching all feedbacks with loanId={}, reviewerId={}, reviewedUserId={}", loanId, reviewerId, reviewedUserId);
 
         return feedbackRepository.findAllWithRelations()
                 .stream()

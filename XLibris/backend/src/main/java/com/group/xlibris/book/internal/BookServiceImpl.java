@@ -49,7 +49,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<BookResponse> getAllBooks() {
 
-        log.debug("Fetching all books");
+        log.debug("Finding all books");
 
         return bookRepository.findAllWithAuthorAndGenre()
                 .stream()

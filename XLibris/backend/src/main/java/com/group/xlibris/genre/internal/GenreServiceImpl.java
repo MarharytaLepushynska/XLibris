@@ -9,12 +9,16 @@ import com.group.xlibris.genre.GenreService;
 import com.group.xlibris.genre.internal.strategy.GenreStrategy;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class GenreServiceImpl implements GenreService {
+
+    private static final Logger log = LoggerFactory.getLogger(GenreServiceImpl.class);
 
     private final GenreRepository genreRepository;
     private final List<GenreStrategy> strategies;
@@ -29,6 +33,9 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public List<GenreResponse> getAllGenres() {
+
+        log.debug("Fetching all genres");
+
         return genreRepository.findAll()
                 .stream()
                 .map(this::toResponse)
@@ -37,6 +44,9 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public GenreResponse getGenreById(UUID id) {
+
+        log.debug("Finding genre by id={}", id);
+
         Genre genre = genreRepository.findById(id)
                 .orElseThrow(() -> new GenreNotFoundException(id));
 
@@ -56,7 +66,7 @@ public class GenreServiceImpl implements GenreService {
 
         Genre savedGenre = genreRepository.save(genre);
 
-        System.out.println("Genre with id " + savedGenre.getId() + " was created");
+        log.info("Genre with id={} was created", savedGenre.getId());
 
         return toResponse(savedGenre);
     }
@@ -74,7 +84,7 @@ public class GenreServiceImpl implements GenreService {
 
         Genre updatedGenre = genreRepository.save(existingGenre);
 
-        System.out.println("Genre information with id " + updatedGenre.getId() + " was updated");
+        log.info("Genre information with id={} was updated", updatedGenre.getId());
 
         return toResponse(updatedGenre);
     }
@@ -88,7 +98,7 @@ public class GenreServiceImpl implements GenreService {
 
         genreRepository.deleteById(id);
 
-        System.out.println("Genre with id " + id + " was deleted");
+        log.info("Genre with id={} was deleted", id);
     }
 
     @Override
