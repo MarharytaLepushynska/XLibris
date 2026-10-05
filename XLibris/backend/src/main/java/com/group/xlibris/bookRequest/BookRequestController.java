@@ -59,7 +59,9 @@ public class BookRequestController {
     @Operation(summary = "Create book request", description = "Submits a new request to borrow a specific book")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Book request successfully created"),
-            @ApiResponse(responseCode = "400", description = "Validation error, duplicate request, or invalid book state")
+            @ApiResponse(responseCode = "400", description = "Validation error or invalid request data"),
+            @ApiResponse(responseCode = "422", description = "Invalid book state (for example, book is blocked)"),
+            @ApiResponse(responseCode = "409", description = "Request for this book was already created")
     })
     public ResponseEntity<BookRequestResponse> create(@Valid @RequestBody BookRequestCreate request,
                                                     @PathVariable UUID bookId) {
@@ -76,7 +78,9 @@ public class BookRequestController {
     @Operation(summary = "Update book request status", description = "Transitions the status of an existing book request")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Book request status successfully updated"),
-            @ApiResponse(responseCode = "400", description = "Invalid state transition, access denied, or invalid book state"),
+            @ApiResponse(responseCode = "400", description = "Validation error"),
+            @ApiResponse(responseCode = "403", description = "Access denied for this action"),
+            @ApiResponse(responseCode = "422", description = "Invalid state transition or book state"),
             @ApiResponse(responseCode = "404", description = "Book request not found")
     })
     public ResponseEntity<BookRequestResponse> updateStatus (@PathVariable UUID id, @Valid @RequestBody BookRequestUpdateStatus request) {
