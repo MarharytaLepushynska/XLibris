@@ -7,3 +7,9 @@ logging:
   level:
     root: INFO
     com.group.xlibris: INFO
+
+xlibris:
+  validator:
+    enabled: true
+    title: "Validation failed"
+    detail: "Request contains invalid fields"

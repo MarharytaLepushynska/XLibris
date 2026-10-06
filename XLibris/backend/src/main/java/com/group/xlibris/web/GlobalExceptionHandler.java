@@ -19,6 +19,7 @@ import com.group.xlibris.report.NotLoanParticipantException;
 import com.group.xlibris.report.SelfReportException;
 import com.group.xlibris.user.ContactAccessDeniedException;
 import com.group.xlibris.user.UserHasActiveLoansException;
+import com.group.xlibris.validator.ValidatorService;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -29,12 +30,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final ValidatorService validatorService;
+
+    public GlobalExceptionHandler(ValidatorService validatorService) {
+        this.validatorService = validatorService;
+    }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ProblemDetail> handleNotFound(
@@ -75,25 +80,8 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException exception
     ) {
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                "Request contains invalid fields"
-        );
-
-        problem.setTitle("Validation failed");
-
-        Map<String, String> errors = new LinkedHashMap<>();
-
-        exception.getBindingResult()
-                .getFieldErrors()
-                .forEach(error ->
-                        errors.put(
-                                error.getField(),
-                                error.getDefaultMessage()
-                        )
-                );
-
-        problem.setProperty("errors", errors);
+        ProblemDetail problem =
+                validatorService.createValidationProblem(exception);
 
         return ResponseEntity
                 .badRequest()
