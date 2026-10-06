@@ -1,0 +1,302 @@
+{
+  "info": {
+    "_postman_id": "3c8e3a35-9b94-4ce2-b39a-b9d30808060a",
+    "name": "XLibris",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "40843977"
+  },
+  "item": [
+    {
+      "name": "Create Owner",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Власника створено\", function () {\n    pm.response.to.have.status(201);\n});\n\nif (pm.response.code === 201) {\n    const user = pm.response.json();\n    pm.collectionVariables.set(\"ownerId\", user.id);\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Owner\",\n  \"city\": \"Kyiv\",\n  \"photoURL\": null,\n  \"email\": \"owner@example.com\",\n  \"phone\": \"+380991234567\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Borrower",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Другого користувача створено\", function () {\n    pm.response.to.have.status(201);\n});\n\nif (pm.response.code === 201) {\n    const user = pm.response.json();\n    pm.collectionVariables.set(\"requesterId\", user.id);\n\n    pm.test(\"Користувачі мають різні ID\", function () {\n        pm.expect(user.id)\n            .not.to.eql(pm.collectionVariables.get(\"ownerId\"));\n    });\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Requester\",\n  \"city\": \"Kyiv\",\n  \"photoURL\": null,\n  \"email\": \"requester@example.com\",\n  \"phone\": \"+380981234567\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Genre",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Жанр створено\", function () {\n    pm.response.to.have.status(201);\n});\n\nif (pm.response.code === 201) {\n    pm.collectionVariables.set(\"genreId\", pm.response.json().id);\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test {{$guid}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/genres",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "genres"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Author",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Автора створено\", function () {\n    pm.response.to.have.status(201);\n});\n\nif (pm.response.code === 201) {\n    pm.collectionVariables.set(\"authorId\", pm.response.json().id);\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Author\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/authors",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "authors"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Book",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Книгу створено\", function () {\n    pm.response.to.have.status(201);\n});\n\nif (pm.response.code === 201) {\n    const book = pm.response.json();\n    pm.collectionVariables.set(\"bookId\", book.id);\n\n    pm.test(\"Книга належить першому користувачу\", function () {\n        pm.expect(book.ownerId)\n            .to.eql(pm.collectionVariables.get(\"ownerId\"));\n    });\n\n    pm.test(\"Книга доступна\", function () {\n        pm.expect(book.status).to.eql(\"AVAILABLE\");\n    });\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"ToreadToreadors from Vasiukivka\",\n  \"description\": \"Book for testing\",\n  \"photoURL\": null,\n  \"ownerId\": \"{{ownerId}}\",\n  \"authorId\": \"{{authorId}}\",\n  \"genreId\": \"{{genreId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/books",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "books"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Заявку створено\", function () {\n    pm.response.to.have.status(201);\n});\n\nif (pm.response.code === 201) {\n    const request = pm.response.json();\n    pm.collectionVariables.set(\"bookRequestId\", request.id);\n\n    pm.test(\"Заявка має правильні зв'язки та статус\", function () {\n        pm.expect(request.bookId)\n            .to.eql(pm.collectionVariables.get(\"bookId\"));\n\n        pm.expect(request.ownerId)\n            .to.eql(pm.collectionVariables.get(\"ownerId\"));\n\n        pm.expect(request.requesterId)\n            .to.eql(pm.collectionVariables.get(\"requesterId\"));\n\n        pm.expect(request.desiredDurationDays).to.eql(14);\n        pm.expect(request.status).to.eql(\"PENDING\");\n    });\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"requesterId\": \"{{requesterId}}\",\n  \"desiredDurationDays\": 14\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/book-requests/{{bookId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "book-requests",
+            "{{bookId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Заявку знайдено\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Збережена заявка відповідає значенням\", function () {\n    const request = pm.response.json();\n\n    pm.expect(request.id)\n        .to.eql(pm.collectionVariables.get(\"bookRequestId\"));\n\n    pm.expect(request.bookId)\n        .to.eql(pm.collectionVariables.get(\"bookId\"));\n\n    pm.expect(request.ownerId)\n        .to.eql(pm.collectionVariables.get(\"ownerId\"));\n\n    pm.expect(request.requesterId)\n        .to.eql(pm.collectionVariables.get(\"requesterId\"));\n\n    pm.expect(request.status).to.eql(\"PENDING\");\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/book-requests/{{bookRequestId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "book-requests",
+            "{{bookRequestId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    },
+    {
+      "key": "ownerId",
+      "value": ""
+    },
+    {
+      "key": "requesterId",
+      "value": ""
+    },
+    {
+      "key": "genreId",
+      "value": ""
+    },
+    {
+      "key": "authorId",
+      "value": ""
+    },
+    {
+      "key": "bookId",
+      "value": ""
+    },
+    {
+      "key": "bookRequestId",
+      "value": ""
+    }
+  ]
+}
