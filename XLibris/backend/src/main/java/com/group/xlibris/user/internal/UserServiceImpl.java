@@ -33,7 +33,6 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserById(UUID id) {
 
         log.debug("Finding user by id={}", id);
-        log.info("Masking test: email={}, phone={}", "test@example.com", "+380991234567");
         User user = findUserOrThrow(id);
         return UserResponse.from(user);
     }
