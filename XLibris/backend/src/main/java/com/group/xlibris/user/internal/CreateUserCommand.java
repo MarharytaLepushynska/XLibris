@@ -5,6 +5,7 @@ public record CreateUserCommand(
         String city,
         String photoURL,
         String email,
-        String phone
+        String phone,
+        String password
 ) {
 }

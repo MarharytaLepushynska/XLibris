@@ -4,8 +4,11 @@ import com.group.xlibris.user.internal.CreateUserCommand;
 import com.group.xlibris.user.internal.UpdateUserCommand;
 import com.group.xlibris.user.internal.UserUpdateAdminCommand;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -42,6 +45,9 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @Column(nullable = false)
+    private String password;
+
     private Double ownerRating;
     private Double borrowerRating;
     private int successfulOwnerLoans;
@@ -58,6 +64,7 @@ public class User {
                 command.phone(),
                 Instant.now(),
                 Role.USER,
+                command.password(),
                 0.0, 0.0, 0, 0, 0
         );
     }
@@ -84,4 +91,7 @@ public class User {
         this.overdueReturnsCount = command.overdueReturnsCount();
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }

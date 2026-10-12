@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
 public class LoanReportControllerTest {
@@ -79,10 +79,10 @@ public class LoanReportControllerTest {
         reportRepository.deleteAll();
 
         User owner = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+                "+380998876446", Instant.now(), Role.USER, "TestPassword", 2.0, 1.9, 4, 5, 1);
 
         User renter = new User(renterId, "Ivan", "Rivne", null, "i@gmail.com",
-                "+380111111111", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+                "+380111111111", Instant.now(), Role.USER, "TestPassword", 1.0, 1.0, 0, 0, 0);
 
         userRepository.save(owner);
         userRepository.save(renter);

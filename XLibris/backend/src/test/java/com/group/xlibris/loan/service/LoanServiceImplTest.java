@@ -71,10 +71,10 @@ class LoanServiceImplTest {
         book = mock(Book.class);
 
         owner = new User(ownerId, "Artem", "Lviv", null, "a@gmail.com",
-                "+380998876443", Instant.now(), Role.USER, 1.0, 0.9, 0, 0, 0);
+                "+380998876443", Instant.now(), Role.USER, "TestPassword", 1.0, 0.9, 0, 0, 0);
 
         renter = new User(renterId, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+                "+380998876446", Instant.now(), Role.USER, "TestPassword",2.0, 1.9, 4, 5, 1);
 
         loan = new Loan(
                 loanId,

@@ -72,17 +72,17 @@ class ReportServiceImplTest {
 
          owner = new User(ownerId, "Artem", "Lviv",
                 null, "a@gmail.com", "+380998876443",
-                Instant.now(), com.group.xlibris.user.Role.USER, 1.0,
+                Instant.now(), com.group.xlibris.user.Role.USER, "TestPassword", 1.0,
                 0.9, 0, 0, 0);
 
          targetUser = new User(targetUserId, "Marta", "Kyiv",
                 null, "m@gmail.com", "+380998876446",
-                Instant.now(), com.group.xlibris.user.Role.USER, 2.0,
+                Instant.now(), com.group.xlibris.user.Role.USER, "TestPassword", 2.0,
                 1.9, 4, 5, 1);
 
          renter = new User(renterId, "Ivan", "Rivne",
                 null, "i@gmail.com", "+380998876447",
-                Instant.now(), com.group.xlibris.user.Role.USER, 1.0, 1.0, 0, 0, 0);
+                Instant.now(), com.group.xlibris.user.Role.USER, "TestPassword", 1.0, 1.0, 0, 0, 0);
 
         pendingReport = new Report(
                 reportId,
@@ -198,7 +198,7 @@ class ReportServiceImplTest {
     void shouldThrowNotLoanParticipantExceptionWhenReporterIsNotParticipant() {
         UUID outsiderId = UUID.randomUUID();
         User outsiderUser = new User(outsiderId, "Oleg", "Odesa", null, "o@gmail.com",
-                "+380112233445", Instant.now(), com.group.xlibris.user.Role.USER, 1.0, 1.0, 0, 0, 0);
+                "+380112233445", Instant.now(), com.group.xlibris.user.Role.USER, "TestPassword",1.0, 1.0, 0, 0, 0);
 
         CreateLoanReportCommand command = new CreateLoanReportCommand(
                 "Some issue",

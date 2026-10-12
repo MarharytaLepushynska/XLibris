@@ -74,10 +74,10 @@ class BookRequestServiceImplTest {
         genreId = UUID.fromString("550e8400-e29b-41d4-a716-446655440006");
 
         user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "TestPassword",
                 2.0, 1.9, 4, 5, 1);
         user2 = new User(borrowerId, "Max", "Lviv", null, "max@gmail.com",
-                "+380998876447", Instant.now(), Role.USER,
+                "+380998876447", Instant.now(), Role.USER, "TestPassword",
                 4.0, 2.9, 5, 6, 0);
 
         author = new Author(authorId, "JK Rowling");

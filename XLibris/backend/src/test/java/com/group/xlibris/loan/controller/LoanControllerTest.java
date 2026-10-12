@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
 public class LoanControllerTest {
@@ -85,23 +85,23 @@ public class LoanControllerTest {
         genreRepository.deleteAll();
 
         User user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "TestPassword",
                 2.0, 1.9, 4, 5, 1);
 
         User user2 = new User(ownerId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "TestPassword",
                 2.0, 1.9, 4, 5, 1);
         User renter = new User(renterId, "Ivan", "Rivne", null, "i@gmail.com",
-                "+380111111111", Instant.now(), Role.USER, 0.0, 1.9, 4, 5, 1);
+                "+380111111111", Instant.now(), Role.USER, "TestPassword",0.0, 1.9, 4, 5, 1);
 
         User renter2 = new User(renterId2, "Oleg", "Odesa", null, "o@gmail.com",
-                "+380222222222", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+                "+380222222222", Instant.now(), Role.USER, "TestPassword", 2.0, 1.9, 4, 5, 1);
 
         User newOwner = new User(newOwnerId, "Anna", "Lviv", null, "a@gmail.com",
-                "+380333333333", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+                "+380333333333", Instant.now(), Role.USER, "TestPassword", 1.0, 1.0, 0, 0, 0);
 
         User newRenter = new User(newRenterId, "Petro", "Kharkiv", null, "p@gmail.com",
-                "+380444444444", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+                "+380444444444", Instant.now(), Role.USER, "TestPassword", 1.0, 1.0, 0, 0, 0);
 
         userRepository.save(user);
         userRepository.save(user2);

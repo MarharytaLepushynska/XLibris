@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class BookControllerTest {
 
@@ -66,7 +66,7 @@ class BookControllerTest {
         authorId = UUID.randomUUID();
         genreId = UUID.randomUUID();
         user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "TestPassword",
                 2.0, 1.9, 4, 5, 1);
 
         author = new Author(authorId, "JK Rowling");

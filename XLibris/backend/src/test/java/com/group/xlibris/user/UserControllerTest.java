@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class UserControllerTest {
 
@@ -66,6 +67,9 @@ class UserControllerTest {
     @Autowired
     private BookRequestRepository bookRequestRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @BeforeEach
     void resetMap() {
         feedbackRepository.deleteAll();
@@ -86,15 +90,15 @@ class UserControllerTest {
         UUID genreId = UUID.randomUUID();
 
         User entity = new User(id, "Artem", "Lviv", null, "a@gmail.com",
-                "+380998876445", Instant.now(), Role.USER,
+                "+380998876445", Instant.now(), Role.USER, passwordEncoder.encode("TestPass123"),
                 1.0, 0.9, 0, 0, 0);
 
         User entity2 = new User(id2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, passwordEncoder.encode("TestPass123"),
                 2.0, 1.9, 4, 5, 1);
 
         User admin = new User(adminId, "Admin", "Kyiv", null, "a@gmail.com",
-                "+380998876446", Instant.now(), Role.ADMIN,
+                "+380998876446", Instant.now(), Role.ADMIN, passwordEncoder.encode("TestPass123"),
                 null, null, 0, 0, 0);
 
         userRepository.save(entity);
@@ -118,7 +122,7 @@ class UserControllerTest {
     @Test
     void shouldCreateUser() throws Exception {
         UserRequest request = new UserRequest(null, "Margo", "Kyiv",
-                null, "ma@gmail.com", "+380661184556");
+                null, "ma@gmail.com", "+380661184556", "TestPassword");
 
         mvc.perform(post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -160,7 +164,7 @@ class UserControllerTest {
     void shouldUpdateUser() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UserRequest request = new UserRequest(id, "Dmitro", "Berlin",
-                null, "d@gmail.com", "+380998876445");
+                null, "d@gmail.com", "+380998876445", null);
 
         mvc.perform(put("/api/users/{id}", id)
                         .param("requesterId", String.valueOf(id))
@@ -207,7 +211,7 @@ class UserControllerTest {
     @Test
     void shouldReturnProblemDetailWithArgValidationError() throws Exception {
         UserRequest request = new UserRequest(null, "", "Kyiv",
-                null, "ma@gmail.com", "+380661184556");
+                null, "ma@gmail.com", "+380661184556", "TestPassword");
 
         mvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -232,7 +236,7 @@ class UserControllerTest {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
         UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UserRequest request = new UserRequest(id2, "Dmitro", "Berlin",
-                null, "d@gmail.com", "+380998876445");
+                null, "d@gmail.com", "+380998876445", null);
 
         mvc.perform(put("/api/users/{id}", id)
                         .param("requesterId", String.valueOf(id))

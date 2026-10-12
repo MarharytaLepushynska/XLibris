@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -36,6 +37,9 @@ class UserServiceImplTest {
     @Mock
     private UserLoanCheck userLoanCheck;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     private UserServiceImpl userService;
 
     private UUID userId;
@@ -45,14 +49,14 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(userRepository, userLoanCheck);
+        userService = new UserServiceImpl(userRepository, userLoanCheck, passwordEncoder);
 
         userId = UUID.randomUUID();
         userId2 = UUID.randomUUID();
         adminId = UUID.randomUUID();
 
         user = new User(userId, "Artem", "Lviv", null, "a@gmail.com",
-                "+380998876443", Instant.now(), Role.USER,
+                "+380998876443", Instant.now(), Role.USER, "encodedPassword",
                 1.0, 0.9, 0, 0, 0);
     }
 
@@ -97,7 +101,7 @@ class UserServiceImplTest {
     @Test
     void shouldApplyPaginationSuccessfully() {
         User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "encodedPassword",
                 2.0, 1.9, 4, 5, 1);
         Pageable firstPage = PageRequest.of(0, 1, Sort.by("name").ascending());
         Pageable secondPage = PageRequest.of(1, 1, Sort.by("name").ascending());
@@ -141,11 +145,14 @@ class UserServiceImplTest {
 
     @Test
     void shouldCreateUserSuccessfully() {
-        CreateUserCommand command = new CreateUserCommand("Max", "Kyiv", null,"m@gamil.com", "+380663546524");
+        CreateUserCommand command = new CreateUserCommand("Max", "Kyiv", null,
+                "m@gamil.com", "+380663546524", "TestPassword");
 
+        when(passwordEncoder.encode("TestPassword")).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse response = userService.createUser(command);
+        verify(passwordEncoder).encode("TestPassword");
         assertEquals("Max", response.name());
         verify(userRepository).save(any(User.class));
     }
@@ -183,7 +190,7 @@ class UserServiceImplTest {
     @Test
     void shouldAdminUpdateSuccessfully() {
         User admin = new User(adminId, "Admin", "Kyiv", null, "a@gmail.com",
-                "+380998876446", Instant.now(), Role.ADMIN,
+                "+380998876446", Instant.now(), Role.ADMIN, "encodedPassword",
                 null, null, 0, 0, 0);
 
         UserUpdateAdminCommand command = new UserUpdateAdminCommand(userId, "Ivan", "Rivne", null, "i@gmail.com",
@@ -206,7 +213,7 @@ class UserServiceImplTest {
     @Test
     void shouldDenyAdminUpdateWhenNotAdmin() {
         User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "encodedPassword",
                 2.0, 1.9, 4, 5, 1);
 
         UserUpdateAdminCommand command = new UserUpdateAdminCommand(userId, "Ivan", "Rivne", null, "i@gmail.com",
@@ -230,7 +237,7 @@ class UserServiceImplTest {
     @Test
     void AdminShouldDeleteUserSuccessfully() {
         User admin = new User(adminId, "Admin", "Kyiv", null, "a@gmail.com",
-                "+380998876446", Instant.now(), Role.ADMIN,
+                "+380998876446", Instant.now(), Role.ADMIN, "encodedPassword",
                 null, null, 0, 0, 0);
 
         when(userRepository.existsById(userId)).thenReturn(true);
@@ -243,7 +250,7 @@ class UserServiceImplTest {
     @Test
     void shouldThrowAccessDeniedExceptionWhenDeleteOtherUser() {
         User user2 = new User(userId2, "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "encodedPassword",
                 2.0, 1.9, 4, 5, 1);
         when(userRepository.existsById(userId)).thenReturn(true);
         when(userRepository.findById(userId2)).thenReturn(Optional.of(user2));

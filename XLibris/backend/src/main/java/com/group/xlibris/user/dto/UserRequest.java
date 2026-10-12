@@ -37,7 +37,13 @@ public record UserRequest(
 
         @Schema(description = "Phone number in Ukrainian format", example = "+380501234567")
         @Pattern(regexp = "^\\+380\\d{9}$", groups = { OnCreate.class, OnUpdate.class })
-        String phone
+        String phone,
+
+        @Schema(description = "Password of the user, no less than 8 symbols", example = "rhB5nM4f")
+        @NotBlank(groups = OnCreate.class)
+        @Size(min = 8, groups = OnCreate.class)
+        @Null(groups = OnUpdate.class)
+        String password
 ) {
         public CreateUserCommand toCommand() {
                 return new CreateUserCommand(
@@ -45,7 +51,8 @@ public record UserRequest(
                         this.city,
                         this.photoURL,
                         this.email,
-                        this.phone
+                        this.phone,
+                        this.password
                 );
         }
 

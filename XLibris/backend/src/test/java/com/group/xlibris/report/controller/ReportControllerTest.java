@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
 public class ReportControllerTest {
@@ -62,16 +62,16 @@ public class ReportControllerTest {
         userRepository.deleteAll();
 
         User reporter = new User(reporterId, "Artem", "Lviv", null, "r1@gmail.com",
-                "+380998876443", Instant.now(), Role.USER, 1.0, 0.9, 0, 0, 0);
+                "+380998876443", Instant.now(), Role.USER, "TestPassword", 1.0, 0.9, 0, 0, 0);
 
         User reporter2 = new User(reporterId2, "Marta", "Kyiv", null, "r2@gmail.com",
-                "+380998876444", Instant.now(), Role.USER, 2.0, 1.9, 4, 5, 1);
+                "+380998876444", Instant.now(), Role.USER, "TestPassword", 2.0, 1.9, 4, 5, 1);
 
         User targetUser = new User(targetUserId, "Ivan", "Rivne", null, "t1@gmail.com",
-                "+380998876445", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+                "+380998876445", Instant.now(), Role.USER, "TestPassword", 1.0, 1.0, 0, 0, 0);
 
         User targetUser2 = new User(targetUserId2, "Oleg", "Odesa", null, "t2@gmail.com",
-                "+380998876446", Instant.now(), Role.USER, 1.0, 1.0, 0, 0, 0);
+                "+380998876446", Instant.now(), Role.USER, "TestPassword", 1.0, 1.0, 0, 0, 0);
 
         userRepository.save(reporter);
         userRepository.save(reporter2);

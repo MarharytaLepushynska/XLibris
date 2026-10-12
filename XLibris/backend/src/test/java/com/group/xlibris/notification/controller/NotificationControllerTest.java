@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 @Transactional
 class NotificationControllerTest {
@@ -257,6 +257,7 @@ class NotificationControllerTest {
                 "+380501234567",
                 Instant.now(),
                 Role.USER,
+                "TestPassword",
                 0.0,
                 0.0,
                 0,

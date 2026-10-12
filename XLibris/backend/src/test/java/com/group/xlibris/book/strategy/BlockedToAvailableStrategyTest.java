@@ -50,7 +50,7 @@ class BlockedToAvailableStrategyTest {
     void apply_shouldChangeBookStatusToAvailable() {
 
         User user = new User(UUID.randomUUID(), "Marta", "Kyiv", null, "m@gmail.com",
-                "+380998876446", Instant.now(), Role.USER,
+                "+380998876446", Instant.now(), Role.USER, "TestPassword",
                 2.0, 1.9, 4, 5, 1);
 
         Author author = new Author(UUID.randomUUID(), "JK Rowling");

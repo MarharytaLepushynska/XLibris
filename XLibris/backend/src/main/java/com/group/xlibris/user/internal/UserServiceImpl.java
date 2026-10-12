@@ -9,6 +9,7 @@ import com.group.xlibris.common.AccessDeniedException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +24,12 @@ public class UserServiceImpl implements UserService {
     private final UserLoanCheck userLoanCheck;
 
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserLoanCheck userLoanCheck) {
+    public UserServiceImpl(UserRepository userRepository, UserLoanCheck userLoanCheck, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userLoanCheck = userLoanCheck;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -73,8 +76,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse createUser(CreateUserCommand command) {
         User user = User.create(command);
+        user.setPassword(passwordEncoder.encode(command.password()));
         User saved = userRepository.save(user);
         log.info("User with id={} was created", saved.getId());
+        log.info("Demo encoded password: {}", passwordEncoder.encode("demo-password"));
         return UserResponse.from(saved);
     }
 
