@@ -1,5 +1,6 @@
 package com.group.xlibris.security.config;
 
+import org.springframework.http.HttpMethod;
 import tools.jackson.databind.ObjectMapper;
 import com.group.xlibris.security.error.ProblemDetailAccessDeniedHandler;
 import com.group.xlibris.security.error.ProblemDetailAuthenticationEntryPoint;
@@ -53,7 +54,56 @@ public class SecurityConfiguration {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        //TO-DO визначити які ролі мають доступ до яких ендпоінтів
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/books",
+                                "/api/v1/books/**",
+                                "/api/v1/authors",
+                                "/api/v1/authors/**",
+                                "/api/v1/genres",
+                                "/api/v1/genres/**")
+                        .permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/books")
+                        .hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/books/*")
+                        .hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/books/*")
+                        .hasRole("USER")
+
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/authors",
+                                "/api/v1/genres")
+                        .hasRole("USER")
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/authors/*",
+                                "/api/v1/genres/*")
+                        .hasRole("USER")
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/v1/authors/*",
+                                "/api/v1/genres/*")
+                        .hasRole("USER")
+
+                        .requestMatchers("/api/users/*/admin")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users")
+                        .hasAnyRole("MODERATOR", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/reports",
+                                "/api/reports/*")
+                        .hasRole("MODERATOR")
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/reports/*/review",
+                                "/api/reports/*/resolution")
+                        .hasRole("MODERATOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/reports/*")
+                        .hasRole("MODERATOR")
+
                         .anyRequest().authenticated())
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
