@@ -19,4 +19,5 @@ public interface UserService {
     UserResponse updateUserAdmin(UUID id, UUID callerId, UserUpdateAdminCommand command);
     void removeUser(UUID id, UUID callerId);
     User getEntityById(UUID id);
+    UUID getUserByEmail(String email);
 }

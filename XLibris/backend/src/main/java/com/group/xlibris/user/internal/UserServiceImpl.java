@@ -23,6 +23,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserLoanCheck userLoanCheck;
 
+
     private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     private final PasswordEncoder passwordEncoder;
 
@@ -140,6 +141,14 @@ public class UserServiceImpl implements UserService {
     private User findUserOrThrow(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User (id= " + id + ") was not found"));
+    }
+
+    @Override
+    public UUID getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::getId)
+                .orElseThrow(() ->
+                        new NotFoundException("User not found"));
     }
 
     @Override

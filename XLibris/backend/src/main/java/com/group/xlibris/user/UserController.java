@@ -14,6 +14,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -61,8 +63,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Access denied: no confirmed loan between participants"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<UserContactInfo> getContactInfoById(@PathVariable UUID id, @RequestParam UUID viewerId) {
-        //TODO: замінити коли буде автентифікація
+    public ResponseEntity<UserContactInfo> getContactInfoById(@PathVariable UUID id, @AuthenticationPrincipal UserDetails principal) {
+        UUID viewerId = userService.getUserByEmail(principal.getUsername());
         return ResponseEntity.ok(userService.getContactInfoById(id, viewerId));
     }
 
@@ -91,7 +93,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Access denied: users can only change their own information"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @RequestParam UUID requesterId, @Validated(OnUpdate.class) @RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @AuthenticationPrincipal UserDetails principal, @Validated(OnUpdate.class) @RequestBody UserRequest request) {
+        UUID requesterId = userService.getUserByEmail(principal.getUsername());
         return ResponseEntity.ok(userService.updateUser(id, request.toUpdateCommand(), requesterId));
     }
 
@@ -104,9 +107,9 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<UserResponse> updateAdmin(@PathVariable UUID id,
-                                                    @RequestParam UUID callerId,
+                                                    @AuthenticationPrincipal UserDetails principal,
                                                     @Valid @RequestBody AdminUserUpdateRequest request) {
-        //TODO: замінити коли буде автентифікація
+        UUID callerId = userService.getUserByEmail(principal.getUsername());
         return ResponseEntity.ok(userService.updateUserAdmin(id, callerId, request.toCommand()));
     }
 
@@ -118,7 +121,8 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Conflict: user has active loans and cannot be deleted"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<Void> deleteById(@PathVariable UUID id, @RequestParam UUID callerId) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id, @AuthenticationPrincipal UserDetails principal) {
+        UUID callerId = userService.getUserByEmail(principal.getUsername());
         userService.removeUser(id, callerId);
         return ResponseEntity.noContent().build();
     }
