@@ -29,11 +29,12 @@ import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 class UserControllerTest {
 
@@ -97,7 +98,7 @@ class UserControllerTest {
                 "+380998876446", Instant.now(), Role.USER, passwordEncoder.encode("TestPass123"),
                 2.0, 1.9, 4, 5, 1);
 
-        User admin = new User(adminId, "Admin", "Kyiv", null, "a@gmail.com",
+        User admin = new User(adminId, "Admin", "Kyiv", null, "admin@gmail.com",
                 "+380998876446", Instant.now(), Role.ADMIN, passwordEncoder.encode("TestPass123"),
                 null, null, 0, 0, 0);
 
@@ -135,7 +136,8 @@ class UserControllerTest {
     @Test
     void shouldGetUserById() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        mvc.perform(get("/api/users/{id}", id))
+        mvc.perform(get("/api/users/{id}", id)
+                        .with(user("a@gmail.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Artem"))
                 .andExpect(jsonPath("$.city").value("Lviv"));
@@ -143,7 +145,8 @@ class UserControllerTest {
 
     @Test
     void shouldGetAllUsers() throws Exception {
-        mvc.perform(get("/api/users"))
+        mvc.perform(get("/api/users")
+                        .with(user("admin@gmail.com").roles("ADMIN")))
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(3));
 
@@ -154,7 +157,7 @@ class UserControllerTest {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
         UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 
-        mvc.perform(get("/api/users/{id}/contact", id).param("viewerId", id2.toString()))
+        mvc.perform(get("/api/users/{id}/contact", id).with(user("m@gmail.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("a@gmail.com"))
                 .andExpect(jsonPath("$.phone").value("+380998876445"));
@@ -167,7 +170,7 @@ class UserControllerTest {
                 null, "d@gmail.com", "+380998876445", null);
 
         mvc.perform(put("/api/users/{id}", id)
-                        .param("requesterId", String.valueOf(id))
+                        .with(user("a@gmail.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -185,7 +188,7 @@ class UserControllerTest {
                 1.3, 4.5, 4, 3, 2);
 
         mvc.perform(put("/api/users/{id}/admin", id)
-                        .param("callerId", adminId.toString())
+                        .with(user("admin@gmail.com").roles("ADMIN"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -204,7 +207,7 @@ class UserControllerTest {
         loanRepository.deleteAll();
 
         mvc.perform(delete("/api/users/{id}", id)
-                        .param("callerId", id.toString()))
+                        .with(user("admin@gmail.com").roles("ADMIN")))
                 .andExpect(status().isNoContent());
     }
 
@@ -214,6 +217,7 @@ class UserControllerTest {
                 null, "ma@gmail.com", "+380661184556", "TestPassword");
 
         mvc.perform(post("/api/users")
+                        .with(user("a@gmail.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -239,7 +243,7 @@ class UserControllerTest {
                 null, "d@gmail.com", "+380998876445", null);
 
         mvc.perform(put("/api/users/{id}", id)
-                        .param("requesterId", String.valueOf(id))
+                        .with(user("admin@gmail.com").roles("ADMIN"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -249,7 +253,8 @@ class UserControllerTest {
     @Test
     void shouldReturnNotFoundEProblemDetail() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440003");
-        mvc.perform(get("/api/users/{id}", id))
+        mvc.perform(get("/api/users/{id}", id)
+                        .with(user("a@gmail.com")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Resource not found"));
     }
