@@ -1,5 +1,6 @@
 package com.group.xlibris.book;
 
+import com.group.xlibris.book.dto.BookCardView;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.common.BookRequestStatus;
@@ -32,5 +33,7 @@ public interface BookService {
     void markAvailableAfterReturn(UUID bookId);
 
     Book getEntityById(UUID id);
+
+    List<BookCardView> getAllBookCards();
 
 }

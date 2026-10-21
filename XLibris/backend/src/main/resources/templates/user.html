@@ -8,6 +8,8 @@
 <body>
 <h1>Ви зайшли на сторінку користувача!</h1>
 
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
 <div sec:authorize="hasRole('USER')">
     <p>Вітаємо, користувачу!</p>
 </div>

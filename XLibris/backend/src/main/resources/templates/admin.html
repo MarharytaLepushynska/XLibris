@@ -8,6 +8,8 @@
 <body>
 <h1>Ви зайшли на сторінку адміністратора!</h1>
 
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
 <div sec:authorize="hasRole('ADMIN')">
     <p>Вітаємо, адміністраторе!</p>
     <p>Вам доступні функції адміністратора.</p>

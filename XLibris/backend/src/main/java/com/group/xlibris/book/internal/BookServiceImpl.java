@@ -3,6 +3,7 @@ package com.group.xlibris.book.internal;
 import com.group.xlibris.author.Author;
 import com.group.xlibris.author.AuthorService;
 import com.group.xlibris.book.*;
+import com.group.xlibris.book.dto.BookCardView;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.common.BookRequestStatus;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -259,6 +261,15 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new NotFoundException("Book (id = " + id + ") was not found"));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookCardView> getAllBookCards() {
+        return bookRepository.findAllForCards()
+                .stream()
+                .map(this::toCardView)
+                .toList();
+    }
+
     private BookResponse toResponse(Book book) {
         return new BookResponse(
                 book.getId(),
@@ -269,6 +280,22 @@ public class BookServiceImpl implements BookService {
                 book.getOwner().getId(),
                 book.getAuthor() == null ? null : book.getAuthor().getId(),
                 book.getGenre() == null ? null : book.getGenre().getId()
+        );
+    }
+
+    private BookCardView toCardView(Book book) {
+        return new BookCardView(
+                book.getId(),
+                book.getTitle(),
+                book.getDescription(),
+                book.getGenre() == null
+                        ? null
+                        : book.getGenre().getName(),
+                book.getAuthor() == null
+                        ? null
+                        : book.getAuthor().getName(),
+                book.getOwner().getName(),
+                book.getStatus()
         );
     }
 }

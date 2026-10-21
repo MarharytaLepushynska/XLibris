@@ -8,6 +8,8 @@
 <body>
 <h1>Ви зайшли на сторінку модератора!</h1>
 
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
 <div sec:authorize="hasRole('MODERATOR')">
     <p>Вам доступні функції модератора.</p>
 </div>

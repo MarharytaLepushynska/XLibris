@@ -57,7 +57,9 @@
                         <dt>Genre</dt>
                         <dd>
                             <span class="genre-bedge"
-                                  th:text="${book.genre}">
+                                  th:text="${book.genreName != null
+                                    ? book.genreName
+                                    : 'Not specified'}">
                                 Fantasy
                             </span>
                         </dd>
@@ -65,14 +67,16 @@
 
                     <div>
                         <dt>Author</dt>
-                        <dd th:text="${book.author}">
+                        <dd th:text="${book.authorName != null
+                        ? book.authorName
+                        : 'Not specified'}">
                            Author name
                         </dd>
                     </div>
 
                     <div>
                         <dt>Owner</dt>
-                        <dd th:text="${book.owmer}">
+                        <dd th:text="${book.ownerName}">
                             Username
                         </dd>
                     </div>

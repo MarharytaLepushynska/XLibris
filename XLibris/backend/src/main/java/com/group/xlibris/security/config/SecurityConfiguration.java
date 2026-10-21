@@ -1,5 +1,6 @@
 package com.group.xlibris.security.config;
 
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import tools.jackson.databind.ObjectMapper;
 import com.group.xlibris.security.error.ProblemDetailAccessDeniedHandler;
@@ -28,6 +29,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfiguration {
 
     @Bean
+    @Order(1)
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             AuthenticationManager authenticationManager,
@@ -46,6 +48,7 @@ public class SecurityConfiguration {
         );
 
         return http
+                .securityMatcher("/api/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .sessionManagement(session -> session

@@ -35,4 +35,13 @@ public interface BookRepository extends JpaRepository<Book, UUID> {
     @Modifying
     @Query("UPDATE Book b SET b.genre = null WHERE b.genre.id = :genreId")
     void clearGenre(@Param("genreId") UUID genreId);
+
+    @Query("""
+        SELECT b FROM Book b
+        JOIN FETCH b.owner
+        LEFT JOIN FETCH b.author
+        LEFT JOIN FETCH b.genre
+        ORDER BY b.title, b.id
+        """)
+    List<Book> findAllForCards();
 }
