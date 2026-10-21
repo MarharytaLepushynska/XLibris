@@ -61,9 +61,11 @@
     background: var(--accent);
     color: var(--page-bg);
     font-weight: 700;
-    transition: background-color 0.2s ease;
+    transition: 0.2s;
 }
 
 .error-actions .button:hover {
     background: #af4a58;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgb(112 59 67 / 30%);
 }

@@ -1,0 +1,136 @@
+.login-page {
+    background: radial-gradient(circle at 0 0, #fffdf8, var(--page-bg) 55%);
+}
+
+.login-page .app-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.login-page .main-content {
+    width: 100%;
+    max-width: 420px;
+    padding: 0;
+}
+
+.login-container {
+    position: relative;
+    padding: 56px 40px 44px 54px;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    background: linear-gradient(90deg,
+    var(--available) 0 14px, rgb(0 0 0 / 12%) 14px 16px, var(--card-bg) 16px);
+    box-shadow: 0 12px 32px rgb(118 84 60 / 12%);
+}
+
+.bookmark {
+    position: absolute;
+    top: -2px;
+    right: 44px;
+    width: 34px;
+    height: 68px;
+    background: var(--accent);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+
+.login-header {
+    margin-bottom: 32px;
+}
+
+.logo-text {
+    display: block;
+    margin-bottom: 6px;
+    font: 700 34px Georgia, serif;
+    color: var(--accent);
+}
+
+.login-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--muted);
+}
+
+.alert {
+    margin-bottom: 24px;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.alert-error {
+    background: #fdf0f1;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.alert-success {
+    background: var(--badge-bg);
+    color: var(--available);
+    border: 1px solid var(--available);
+}
+
+.login-form {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.form-group input {
+    padding: 14px 16px;
+    border: 2px solid var(--divider);
+    border-radius: 12px;
+    background: var(--page-bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.form-group input::placeholder {
+    color: #9a8878;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--available);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 4px rgb(115 123 50 / 15%);
+}
+
+.button {
+    margin-top: 8px;
+    width: 100%;
+    border: 0;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: var(--page-bg);
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgb(112 59 67 / 25%);
+    transition: 0.2s;
+}
+
+.button:hover {
+    background: #af4a58;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgb(112 59 67 / 30%);
+}

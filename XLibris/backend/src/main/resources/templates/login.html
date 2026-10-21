@@ -4,30 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід — XLibris</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
 </head>
-<body>
-<h1>Вхід до XLibris</h1>
+<body class="login-page">
+<div class="app-layout">
+    <main class="main-content">
+        <div class="login-container">
+            <div class="bookmark" aria-hidden="true"></div>
 
-<p th:if="${param.error}">
-    Неправильний email або пароль.
-</p>
+            <div class="login-header">
+                <span class="logo-text">XLibris</span>
+                <h1 class="login-title">З поверненням</h1>
+            </div>
 
-<p th:if="${param.logout}">
-    Ви успішно вийшли із системи.
-</p>
+            <div th:if="${param.error}" class="alert alert-error">
+                Неправильний email або пароль.
+            </div>
 
-<form th:action="@{/login}" method="post">
-    <div>
-        <label for="username">Email:</label>
-        <input type="text" id="username" name="username" required>
-    </div>
+            <div th:if="${param.logout}" class="alert alert-success">
+                Ви успішно вийшли із системи.
+            </div>
 
-    <div>
-        <label for="password">Пароль:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
+            <form th:action="@{/login}" method="post" class="login-form">
+                <div class="form-group">
+                    <label for="username">Email:</label>
+                    <input type="text" id="username" name="username" required
+                           placeholder="For example: user@xlibris.com">
+                </div>
 
-    <button type="submit">Увійти</button>
-</form>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" required
+                           placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="button">Увійти</button>
+            </form>
+        </div>
+    </main>
+</div>
 </body>
 </html>
