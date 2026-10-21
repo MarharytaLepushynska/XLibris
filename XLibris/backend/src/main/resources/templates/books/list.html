@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All books</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/books.css}">>
+</head>
+<body>
+<div class="app-layout">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <main class="main-content">
+        <div class="page-heading">
+            <header th:replace="~{fragments/layout :: greeting}"></header>
+
+            <a class="add-button"
+            th:href="@{/books/add}"
+            sec:authorize="hasRole('USER')">
+                <span aria-hidden="true">+</span>
+                Add book
+            </a>
+        </div>
+
+        <h2 class="section-title">All books</h2>
+
+        <p class="empty-state" th:if="${#lists.isEmpty(books)}">
+            No books added yet
+        </p>
+
+        <section class="book-grid" aria-label="Book list">
+            <article class="book-card" th:each="book : ${books}">
+                <div class="book-card-top">
+                    <div class="book-cover" aria-hidden="true">
+                        <span>XLibris</span>
+                    </div>
+
+                    <div class="book-summary">
+                        <h3 class="book-title" th:text="${book.title}">
+                            Book name
+                        </h3>
+
+                        <p class="book-description"
+                           th:text="${#strings.isEmpty(book.description)
+                               ? 'Опис відсутній.'
+                               : book.description}">
+                            Book description
+                        </p>
+                    </div>
+                </div>
+
+                <dl class="book-details">
+                    <div>
+                        <dt>Genre</dt>
+                        <dd>
+                            <span class="genre-bedge"
+                                  th:text="${book.genre}">
+                                Fantasy
+                            </span>
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Author</dt>
+                        <dd th:text="${book.author}">
+                           Author name
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Owner</dt>
+                        <dd th:text="${book.owmer}">
+                            Username
+                        </dd>
+                    </div>
+                </dl>
+
+                <div class="book-staus" th:switch="${book.status.name()}">
+                    <p class="status status-available"
+                       th:case="'AVAILABLE'">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        Available
+                    </p>
+                    <p class="status status-borrowed"
+                       th:case="'BORROWED'">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        Borrowed
+                    </p>
+                    <p class="status status-blocked"
+                       th:case="'BLOCKED'">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        Blocked
+                    </p>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>
