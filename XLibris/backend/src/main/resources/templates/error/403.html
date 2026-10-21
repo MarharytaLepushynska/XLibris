@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 — Доступ заборонено | XLibris</title>
+</head>
+<body class="error-page">
+<div class="error-container">
+    <h1 class="error-code">403</h1>
+    <h2 class="error-title">Доступ заборонено</h2>
+
+    <p class="error-message">
+        На жаль, у вас недостатньо прав для перегляду цієї сторінки або виконання цієї дії.
+    </p>
+
+    <div class="error-actions">
+        <a th:href="@{/}" class="btn btn-primary">Повернутися на головну</a>
+    </div>
+</div>
+</body>
+</html>

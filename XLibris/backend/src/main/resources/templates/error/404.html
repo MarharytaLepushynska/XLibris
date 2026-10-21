@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 — Сторінку не знайдено | XLibris</title>
+</head>
+<body class="error-page">
+<div class="error-container">
+    <h1 class="error-code">404</h1>
+    <h2 class="error-title">Сторінку не знайдено</h2>
+
+    <p class="error-message">
+        Схоже, ви зайшли за посиланням, яке не існує, або сторінку було видалено.
+    </p>
+
+    <div class="error-actions">
+        <a th:href="@{/}" class="btn btn-primary">Повернутися на головну</a>
+    </div>
+</div>
+</body>
+</html>
