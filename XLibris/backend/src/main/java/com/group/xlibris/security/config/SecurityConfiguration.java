@@ -8,6 +8,7 @@ import com.group.xlibris.security.error.ProblemDetailAuthenticationEntryPoint;
 import com.group.xlibris.security.jwt.JwtAuthenticationFilter;
 import com.group.xlibris.security.jwt.JwtLoginFilter;
 import com.group.xlibris.security.jwt.JwtService;
+import org.springframework.core.annotation.Order;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
