@@ -1,0 +1,169 @@
+:root {
+    --page-bg: #faf5eb;
+    --card-bg: #fffdf8;
+    --sidebar-bg: #76543c;
+    --text: #342b25;
+    --muted: #735f50;
+    --border: #826046;
+    --divider: #dfccb0;
+    --accent: #703b43;
+    --badge-bg: #eee3cf;
+    --available: #737b32;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--page-bg);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+}
+
+.app-layout {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 32px 22px;
+    background: var(--sidebar-bg);
+    color: var(--page-bg);
+}
+
+.logo {
+    align-self: flex-start;
+    font-family: Georgia, serif;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.sidebar-nav {
+    display: grid;
+    gap: 12px;
+    margin-top: 80px;
+}
+
+.sidebar a:focus-visible,
+.sidebar button:focus-visible {
+    outline-color: var(--page-bg);
+}
+
+.nav-link {
+    padding: 15px 18px;
+    border-radius: 14px;
+    font-weight: 600;
+}
+
+.nav-link.active {
+    background: var(--badge-bg);
+    color: var(--text);
+}
+
+.logout-form {
+    margin-top: auto;
+}
+
+.logout-button {
+    width: 100%;
+    padding: 13px 18px;
+    border: 2px solid var(--divider);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--page-bg);
+    text-align: left;
+    font-weight: 600;
+}
+
+.logout-button:hover {
+    background: rgb(255 255 255 / 10%);
+}
+
+.main-content {
+    min-width: 0;
+    padding: 48px;
+}
+
+.page-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.greeting {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    min-width: 0;
+}
+
+.greeting h1 {
+    margin: 0;
+    color: var(--muted);
+    font-family: Georgia, serif;
+    font-size: clamp(28px, 3vw, 42px);
+    overflow-wrap: anywhere;
+}
+
+.role-badge {
+    padding: 7px 12px;
+    border-radius: 20px;
+    background: var(--badge-bg);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
+    padding: 15px 24px;
+    border-radius: 30px;
+    background: var(--accent);
+    color: var(--page-bg);
+    font-weight: 700;
+}
+
+.add-button:hover {
+    background: #5b2e35;
+}
+
+.add-button span {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.section-title {
+    margin: 0 0 24px;
+    color: var(--muted);
+    font-size: 22px;
+}
