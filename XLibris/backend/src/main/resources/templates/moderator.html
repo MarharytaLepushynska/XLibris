@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="uk" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>XLibris — Moderator</title>
+</head>
+<body>
+<h1>Ви зайшли на сторінку модератора!</h1>
+
+<div sec:authorize="hasRole('MODERATOR')">
+    <p>Вам доступні функції модератора.</p>
+</div>
+
+<div sec:authorize="hasRole('ADMIN')">
+    <p>Вам доступні функції адміністратора.</p>
+</div>
+</body>
+</html>

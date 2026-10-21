@@ -1,0 +1,16 @@
+
+<!DOCTYPE html>
+<html lang="uk" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>XLibris — Admin</title>
+</head>
+<body>
+<h1>Ви зайшли на сторінку адміністратора!</h1>
+
+<div sec:authorize="hasRole('ADMIN')">
+    <p>Вітаємо, адміністраторе!</p>
+    <p>Вам доступні функції адміністратора.</p>
+</div>
+</body>
+</html>
