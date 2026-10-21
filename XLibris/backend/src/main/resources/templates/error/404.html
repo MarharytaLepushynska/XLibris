@@ -4,19 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 — Сторінку не знайдено | XLibris</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/error.css}">
 </head>
 <body class="error-page">
-<div class="error-container">
-    <h1 class="error-code">404</h1>
-    <h2 class="error-title">Сторінку не знайдено</h2>
+<div class="app-layout">
+    <main class="main-content">
 
-    <p class="error-message">
-        Схоже, ви зайшли за посиланням, яке не існує, або сторінку було видалено.
-    </p>
+        <div class="error-container">
+            <h1 class="error-code">404</h1>
+            <h2 class="error-title">Сторінку не знайдено</h2>
 
-    <div class="error-actions">
-        <a th:href="@{/}" class="btn btn-primary">Повернутися на головну</a>
-    </div>
+            <p class="error-message">
+                Схоже, ви зайшли за посиланням, яке не існує, або сторінку було видалено.
+            </p>
+
+            <div class="error-actions">
+                <a th:href="@{/books}" class="button">Повернутися на головну</a>
+            </div>
+        </div>
+
+    </main>
 </div>
 </body>
 </html>
