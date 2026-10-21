@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+  <aside th:fragment="sidebar" class="sidebar">
+    <a class="logo" th:href="@{/books}">XLisbris</a>
+
+    <nav class="sidebar-nav" aria-label="Basic navigation">
+      <a class="nav-link active"
+         th:href="@{/books}"
+         aria-current="page">
+        Library
+      </a>
+    </nav>
+
+    <form class="logout-form"
+          th:action="@{/logout}"
+          method="post">
+      <button class="logout-button" type="submit">
+        Logout
+      </button>
+    </form>
+  </aside>
+
+  <header th:fragment="greeting" class="greeting">
+    <h1>
+      Hi,
+      <span sec:authentication="name">Username</span>!
+    </h1>
+
+    <span class="role-badge"
+          sec:authorize="hasRole('ADMIN')">
+      Admin
+    </span>
+
+    <span class="role-badge"
+          sec:authorize="hasRole('MODERATOR')">
+      Moderator
+    </span>
+  </header>
+
+</body>
+</html>
