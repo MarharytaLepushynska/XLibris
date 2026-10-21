@@ -3,16 +3,21 @@
 <html lang="uk" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>XLibris — Admin</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
 </head>
 <body>
-<h1>Ви зайшли на сторінку адміністратора!</h1>
+<div class="app-layout">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+    <main class="main-content">
+        <h1>Ви зайшли на сторінку адміністратора!</h1>
 
-<aside th:replace="~{fragments/layout :: sidebar}"></aside>
-
-<div sec:authorize="hasRole('ADMIN')">
-    <p>Вітаємо, адміністраторе!</p>
-    <p>Вам доступні функції адміністратора.</p>
+        <div sec:authorize="hasRole('ADMIN')">
+            <p>Вітаємо, адміністраторе!</p>
+            <p>Вам доступні функції адміністратора.</p>
+        </div>
+    </main>
 </div>
 </body>
 </html>
