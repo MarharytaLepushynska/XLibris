@@ -1,0 +1,101 @@
+
+.edit-form-card {
+    max-width: 760px;
+    padding: 32px;
+    border: 2px solid var(--border);
+    border-radius: 24px;
+    background: var(--card-bg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--divider);
+    border-radius: 12px;
+    background: white;
+    color: var(--text);
+    font: inherit;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 130px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.field-error {
+    margin: 0;
+    color: #b42318;
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.cancel-button,
+.save-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.cancel-button {
+    border: 1px solid var(--divider);
+    background: var(--badge-bg);
+    color: var(--text);
+}
+
+.save-button {
+    border: none;
+    background: var(--accent);
+    color: var(--page-bg);
+}
+
+.save-button:hover {
+    background: #5b2e35;
+}
+
+@media (max-width: 700px) {
+    .edit-form-card {
+        padding: 20px;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .cancel-button,
+    .save-button {
+        flex: 1;
+    }
+}

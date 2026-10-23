@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>All books</title>
     <link rel="stylesheet" th:href="@{/css/common.css}">
-    <link rel="stylesheet" th:href="@{/css/books.css}">>
+    <link rel="stylesheet" th:href="@{/css/books.css}">
 </head>
 <body>
 <div class="app-layout">
@@ -26,6 +26,11 @@
         </div>
 
         <h2 class="section-title">All books</h2>
+
+        <div th:if="${successMessage}"
+             class="success-message"
+             th:text="${successMessage}">
+        </div>
 
         <p class="empty-state" th:if="${#lists.isEmpty(books)}">
             No books added yet
@@ -56,7 +61,7 @@
                     <div>
                         <dt>Genre</dt>
                         <dd>
-                            <span class="genre-bedge"
+                            <span class="genre-badge"
                                   th:text="${book.genreName != null
                                     ? book.genreName
                                     : 'Not specified'}">
@@ -99,6 +104,12 @@
                         Blocked
                     </p>
                 </div>
+
+                <a th:if="${editableBookIds.contains(book.id)}"
+                   th:href="@{/books/{id}/edit(id=${book.id})}"
+                   class="edit-button">
+                    Edit book
+                </a>
             </article>
         </section>
     </main>

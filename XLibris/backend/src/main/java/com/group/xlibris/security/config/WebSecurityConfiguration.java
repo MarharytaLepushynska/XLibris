@@ -24,6 +24,7 @@ public class WebSecurityConfiguration {
                         .requestMatchers("/user").hasRole("USER")
                         .requestMatchers("/moderator").hasRole("MODERATOR")
                         .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers("/books/*/edit").hasRole("USER")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

@@ -130,3 +130,25 @@
     text-align: center;
 }
 
+.success-message {
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+    background: #e8eddf;
+    color: #52683b;
+    font-weight: 600;
+}
+
+.edit-button {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 30px;
+    background: var(--accent);
+    color: var(--page-bg);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.edit-button:hover {
+    background: #5b2e35;
+}
