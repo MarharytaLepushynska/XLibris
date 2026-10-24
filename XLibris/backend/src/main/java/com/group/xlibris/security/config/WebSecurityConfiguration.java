@@ -3,6 +3,7 @@ package com.group.xlibris.security.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -24,6 +25,8 @@ public class WebSecurityConfiguration {
                         .requestMatchers("/user").hasRole("USER")
                         .requestMatchers("/moderator").hasRole("MODERATOR")
                         .requestMatchers("/admin").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,  "/books/new").hasRole("USER")
+                        .requestMatchers(HttpMethod.POST, "/books").hasRole("USER")
                         .requestMatchers("/books/*/edit").hasRole("USER")
                         .anyRequest().authenticated())
                 .formLogin(form -> form

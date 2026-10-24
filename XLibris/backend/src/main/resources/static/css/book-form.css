@@ -1,3 +1,10 @@
+.form-title {
+    margin-bottom: 16px;
+    color: var(--muted);
+    font-family: Georgia, serif;
+    font-size: clamp(28px, 3vw, 42px);
+    overflow-wrap: anywhere;
+}
 
 .edit-form-card {
     max-width: 760px;

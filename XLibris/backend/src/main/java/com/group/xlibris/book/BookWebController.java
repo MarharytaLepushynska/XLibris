@@ -2,14 +2,13 @@ package com.group.xlibris.book;
 
 import com.group.xlibris.author.AuthorService;
 import com.group.xlibris.book.dto.BookResponse;
-import com.group.xlibris.book.dto.EditBookForm;
+import com.group.xlibris.book.dto.BookForm;
 import com.group.xlibris.genre.GenreService;
 import com.group.xlibris.book.dto.BookRequest;
 import com.group.xlibris.user.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.UUID;
@@ -56,7 +55,6 @@ public class BookWebController {
     }
 
 
-
     @GetMapping("/books/{id}/edit")
     public String showEditForm(
             @PathVariable UUID id,
@@ -75,7 +73,7 @@ public class BookWebController {
             );
         }
 
-        EditBookForm form = new EditBookForm();
+        BookForm form = new BookForm();
 
         form.setTitle(book.title());
         form.setDescription(book.description());
@@ -85,18 +83,16 @@ public class BookWebController {
 
         model.addAttribute("form", form);
         model.addAttribute("bookId", id);
-        model.addAttribute("authors", authorService.getAllAuthors());
-        model.addAttribute("genres", genreService.getAllGenres());
+        addFormLookups(model);
 
         return "books/edit";
     }
 
 
-
     @PostMapping("/books/{id}/edit")
     public String updateBook(
             @PathVariable UUID id,
-            @Valid @ModelAttribute("form") EditBookForm form,
+            @Valid @ModelAttribute("form") BookForm form,
             BindingResult bindingResult,
             Authentication authentication,
             Model model,
@@ -108,8 +104,7 @@ public class BookWebController {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("bookId", id);
-            model.addAttribute("authors", authorService.getAllAuthors());
-            model.addAttribute("genres", genreService.getAllGenres());
+            addFormLookups(model);
 
             return "books/edit";
         }
@@ -134,6 +129,7 @@ public class BookWebController {
 
         return "redirect:/books";
     }
+
     private void checkEditPermission(
             BookResponse book,
             Authentication authentication) {
@@ -146,5 +142,51 @@ public class BookWebController {
                     "You can only edit your own books"
             );
         }
+    }
+
+    @GetMapping("/books/new")
+    public String showCreateForm(Model model) {
+        model.addAttribute("form", new BookForm());
+        addFormLookups(model);
+        return "books/add";
+    }
+
+    @PostMapping("/books")
+    public String createBook(
+            @Valid @ModelAttribute("form") BookForm form,
+            BindingResult bindingResult,
+            Authentication authentication,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            addFormLookups(model);
+            return "books/add";
+        }
+
+        UUID currentUserId = userService.getUserByEmail(authentication.getName());
+
+        BookRequest request = new BookRequest(
+                null,
+                form.getTitle(),
+                form.getDescription(),
+                form.getPhotoURL(),
+                currentUserId,
+                form.getAuthorId(),
+                form.getGenreId()
+        );
+
+        bookService.createBook(request);
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "Book created successfully!"
+        );
+        return "redirect:/books";
+    }
+
+    private void addFormLookups(Model model) {
+        model.addAttribute("authors", authorService.getAllAuthors());
+        model.addAttribute("genres", genreService.getAllGenres());
     }
 }
