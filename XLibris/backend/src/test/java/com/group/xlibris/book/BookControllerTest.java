@@ -9,6 +9,7 @@ import com.group.xlibris.user.Role;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.internal.UserRepository;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ class BookControllerTest {
         ownerId = UUID.randomUUID();
         authorId = UUID.randomUUID();
         genreId = UUID.randomUUID();
-        user = new User(ownerId, "Marta", "Kyiv", null, "m@gmail.com",
+        user = new User(ownerId, "Marta", "Kyiv", null,  "m-" + ownerId + "@gmail.com",
                 "+380998876446", Instant.now(), Role.USER, "TestPassword",
                 2.0, 1.9, 4, 5, 1);
 
@@ -184,6 +185,7 @@ class BookControllerTest {
         );
 
         mockMvc.perform(put("/api/v1/books/{id}", bookId)
+                        .principal(new UsernamePasswordAuthenticationToken(user.getEmail(),null))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

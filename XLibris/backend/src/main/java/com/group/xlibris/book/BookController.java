@@ -5,12 +5,14 @@ import com.group.xlibris.book.dto.BookResponse;
 import com.group.xlibris.common.OnCreate;
 import com.group.xlibris.common.OnUpdate;
 
+import com.group.xlibris.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +25,11 @@ import java.util.UUID;
 public class BookController {
 
     private final BookService bookService;
+    private final UserService userService;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, UserService userService) {
         this.bookService = bookService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -61,19 +65,29 @@ public class BookController {
                 .body(bookService.createBook(request));
     }
 
+
     @PutMapping("/{id}")
-    @Operation(summary = "Update book", description = "Updates details of an existing book")
+    @Operation(summary = "Update book",
+            description = "Updates details of a book owned by the current user"
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Book successfully updated"),
-            @ApiResponse(responseCode = "400", description = "Validation error or invalid input data"),
-            @ApiResponse(responseCode = "404", description = "Book not found")
+            @ApiResponse(responseCode = "200",
+                    description = "Book successfully updated"),
+            @ApiResponse(responseCode = "403",
+                    description = "User is not the book owner"),
+            @ApiResponse(responseCode = "404",
+                    description = "Book not found")
     })
     public ResponseEntity<BookResponse> updateBook(
             @PathVariable UUID id,
-            @Validated(OnUpdate.class) @RequestBody BookRequest request) {
+            @Validated(OnUpdate.class) @RequestBody BookRequest request,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(bookService.updateBook(id, request));
+        UUID currentUserId = userService.getUserByEmail(authentication.getName());
+
+        return ResponseEntity.ok(bookService.updateBook(id, request, currentUserId));
     }
+
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete book", description = "Removes a book from the system by id")

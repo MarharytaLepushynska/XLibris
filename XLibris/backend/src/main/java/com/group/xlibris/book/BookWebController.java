@@ -124,7 +124,8 @@ public class BookWebController {
                 form.getGenreId()
         );
 
-        bookService.updateBook(id, request);
+        UUID currentUserId = userService.getUserByEmail(authentication.getName());
+        bookService.updateBook(id, request, currentUserId);
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",

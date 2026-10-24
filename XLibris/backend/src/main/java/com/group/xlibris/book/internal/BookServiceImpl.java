@@ -15,6 +15,7 @@ import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.AccessDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
@@ -106,15 +107,34 @@ public class BookServiceImpl implements BookService {
         return toResponse(savedBook);
     }
 
+
     @Override
-    public BookResponse updateBook(UUID id, BookRequest request) {
+    @Transactional
+    public BookResponse updateBook(
+            UUID id,
+            BookRequest request,
+            UUID currentUserId) {
+
         Book book = bookRepository.findById(id)
                 .orElseThrow(() ->
                         new NotFoundException(
                                 "Book (id = " + id + ") was not found"
                         ));
 
-        User owner = userService.getEntityById(request.ownerId());
+        if (currentUserId == null ||
+            !book.getOwner().getId().equals(currentUserId)) {
+            throw new AccessDeniedException(
+                    "You can only edit your own books"
+            );
+        }
+
+        if (request.ownerId() != null &&
+            !request.ownerId().equals(currentUserId)) {
+            throw new AccessDeniedException(
+                    "Book owner cannot be changed"
+            );
+        }
+
         Author author = request.authorId() == null
                 ? null
                 : authorService.getEntityById(request.authorId());
@@ -126,15 +146,12 @@ public class BookServiceImpl implements BookService {
         book.setTitle(request.title());
         book.setDescription(request.description());
         book.setPhotoURL(request.photoURL());
-        book.setOwner(owner);
         book.setAuthor(author);
         book.setGenre(genre);
 
         Book updatedBook = bookRepository.save(book);
 
-        System.out.println(
-                "Book information with id " + updatedBook.getId() + " was updated"
-        );
+        log.info("Book with id={} was updated", updatedBook.getId());
 
         return toResponse(updatedBook);
     }

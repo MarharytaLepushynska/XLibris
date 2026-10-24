@@ -10,6 +10,7 @@ import com.group.xlibris.book.BookStatus;
 import com.group.xlibris.book.InvalidBookStateTransitionException;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.internal.strategy.BookStateTransitionStrategy;
+import org.springframework.security.access.AccessDeniedException;
 import com.group.xlibris.common.BookRequestStatus;
 import com.group.xlibris.common.NotFoundException;
 
@@ -255,11 +256,10 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(userService.getEntityById(ownerId)).thenReturn(user);
         when(authorService.getEntityById(authorId)).thenReturn(author);
         when(genreService.getEntityById(genreId)).thenReturn(genre);
 
-        BookResponse response = bookService.updateBook(bookId, request);
+        BookResponse response = bookService.updateBook(bookId, request, ownerId);
 
         assertThat(response).isNotNull();
         assertThat(response.id()).isEqualTo(bookId);
@@ -284,11 +284,10 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(userService.getEntityById(ownerId)).thenReturn(user);
         when(authorService.getEntityById(authorId)).thenReturn(author);
         when(genreService.getEntityById(genreId)).thenReturn(genre);
 
-        BookResponse response = bookService.updateBook(bookId, request);
+        BookResponse response = bookService.updateBook(bookId, request, ownerId);
 
         assertThat(response.status())
                 .isEqualTo(BookStatus.BORROWED);
@@ -307,11 +306,10 @@ class BookServiceImplTest {
 
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        when(userService.getEntityById(ownerId)).thenReturn(user);
         when(authorService.getEntityById(authorId)).thenReturn(author);
         when(genreService.getEntityById(genreId)).thenReturn(genre);
 
-        BookResponse response = bookService.updateBook(bookId, request);
+        BookResponse response = bookService.updateBook(bookId, request, ownerId);
 
         assertThat(response.status())
                 .isEqualTo(BookStatus.BLOCKED);
@@ -327,7 +325,7 @@ class BookServiceImplTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-                bookService.updateBook(bookId, request))
+                bookService.updateBook(bookId, request, ownerId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Book");
 
@@ -536,4 +534,46 @@ class BookServiceImplTest {
         verify(bookRepository).save(book);
         verify(eventPublisher).publishEvent(new BookBlockedEvent(bookId));
     }
+
+
+    @Test
+    void updateBook_shouldRejectAnotherUser() {
+        UUID anotherUserId = UUID.randomUUID();
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        assertThatThrownBy(() ->
+                bookService.updateBook(
+                        bookId, request, anotherUserId))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(bookRepository, never()).save(any(Book.class));
+    }
+
+    @Test
+    void updateBook_shouldRejectOwnerChange() {
+        UUID anotherUserId = UUID.randomUUID();
+
+        BookRequest modifiedRequest = new BookRequest(
+                bookId,
+                "Updated title",
+                "Updated description",
+                null,
+                anotherUserId,
+                authorId,
+                genreId
+        );
+
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
+
+        assertThatThrownBy(() ->
+                bookService.updateBook(
+                        bookId, modifiedRequest, ownerId))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(bookRepository, never()).save(any(Book.class));
+    }
+
 }

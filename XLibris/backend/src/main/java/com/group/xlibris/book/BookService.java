@@ -18,7 +18,7 @@ public interface BookService {
 
     BookResponse createBook(BookRequest request);
 
-    BookResponse updateBook(UUID id, BookRequest request);
+    BookResponse updateBook(UUID id, BookRequest request, UUID currentUserId);
 
     void deleteBook(UUID id);
 
