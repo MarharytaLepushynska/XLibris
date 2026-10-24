@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>All books</title>
+    <title>Всі книги</title>
     <link rel="stylesheet" th:href="@{/css/common.css}">
     <link rel="stylesheet" th:href="@{/css/books.css}">
 </head>
@@ -21,7 +21,7 @@
             th:href="@{/books/add}"
             sec:authorize="hasRole('USER')">
                 <span aria-hidden="true">+</span>
-                Add book
+                Додати книгу
             </a>
         </div>
 
@@ -33,7 +33,7 @@
         </div>
 
         <p class="empty-state" th:if="${#lists.isEmpty(books)}">
-            No books added yet
+            Ще немає книг
         </p>
 
         <section class="book-grid" aria-label="Book list">
@@ -45,44 +45,44 @@
 
                     <div class="book-summary">
                         <h3 class="book-title" th:text="${book.title}">
-                            Book name
+                            Назва
                         </h3>
 
                         <p class="book-description"
                            th:text="${#strings.isEmpty(book.description)
                                ? 'Опис відсутній.'
                                : book.description}">
-                            Book description
+                            Опис книги
                         </p>
                     </div>
                 </div>
 
                 <dl class="book-details">
                     <div>
-                        <dt>Genre</dt>
+                        <dt>Жанр</dt>
                         <dd>
                             <span class="genre-badge"
                                   th:text="${book.genreName != null
                                     ? book.genreName
-                                    : 'Not specified'}">
-                                Fantasy
+                                    : 'Не вказано'}">
+                                Жанр
                             </span>
                         </dd>
                     </div>
 
                     <div>
-                        <dt>Author</dt>
+                        <dt>Автор</dt>
                         <dd th:text="${book.authorName != null
                         ? book.authorName
-                        : 'Not specified'}">
-                           Author name
+                        : 'Не вказано'}">
+                           Автор
                         </dd>
                     </div>
 
                     <div>
                         <dt>Owner</dt>
                         <dd th:text="${book.ownerName}">
-                            Username
+                            Власник
                         </dd>
                     </div>
                 </dl>
@@ -91,24 +91,24 @@
                     <p class="status status-available"
                        th:case="'AVAILABLE'">
                         <span class="status-dot" aria-hidden="true"></span>
-                        Available
+                        Вільна
                     </p>
                     <p class="status status-borrowed"
                        th:case="'BORROWED'">
                         <span class="status-dot" aria-hidden="true"></span>
-                        Borrowed
+                        Позичена
                     </p>
                     <p class="status status-blocked"
                        th:case="'BLOCKED'">
                         <span class="status-dot" aria-hidden="true"></span>
-                        Blocked
+                        Заблокована
                     </p>
                 </div>
 
                 <a th:if="${editableBookIds.contains(book.id)}"
                    th:href="@{/books/{id}/edit(id=${book.id})}"
                    class="edit-button">
-                    Edit book
+                    Редагувати книгу
                 </a>
             </article>
         </section>
