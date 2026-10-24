@@ -18,7 +18,7 @@
             <header th:replace="~{fragments/layout :: greeting}"></header>
 
             <a class="add-button"
-            th:href="@{/books/add}"
+            th:href="@{/books/new}"
             sec:authorize="hasRole('USER')">
                 <span aria-hidden="true">+</span>
                 Додати книгу
