@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
+import java.nio.ByteBuffer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,57 +33,48 @@ class AuthorControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    void createAuthor() throws Exception {
-        AuthorRequest request = new AuthorRequest(
-                null,
-                "Test Author"
-        );
-
-        mockMvc.perform(post("/api/v1/authors")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("Test Author"));
-    }
+    @Autowired
+    private JdbcClient jdbcClient;
 
     @Test
-    void getAuthorById() throws Exception {
-        AuthorRequest request = new AuthorRequest(
-                null,
-                "Test Author"
-        );
+    void createAuthor_ShouldPersistAuthorInDatabase() throws Exception {
+        AuthorRequest request = new AuthorRequest(null, "Test Author");
 
         String response = mockMvc.perform(post("/api/v1/authors")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.name").value("Test Author"))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        String id = objectMapper.readTree(response)
-                .get("id")
-                .asText();
+        UUID id = UUID.fromString(
+                objectMapper.readTree(response).get("id").asText()
+        );
+
+        String name = jdbcClient.sql("SELECT name FROM authors WHERE id = :id")
+                .param("id", uuidToBytes(id))
+                .query(String.class)
+                .single();
+
+        assertEquals("Test Author", name);
+    }
+
+    @Test
+    void getAuthorById() throws Exception {
+        UUID id = createAuthorThroughApi("Test Author");
 
         mockMvc.perform(get("/api/v1/authors/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.name").value("Test Author"));
     }
 
     @Test
     void getAllAuthors() throws Exception {
-        AuthorRequest request = new AuthorRequest(
-                null,
-                "Test Author"
-        );
-
-        mockMvc.perform(post("/api/v1/authors")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+        createAuthorThroughApi("Test Author");
 
         mockMvc.perform(get("/api/v1/authors"))
                 .andExpect(status().isOk())
@@ -91,28 +85,9 @@ class AuthorControllerTest {
     }
 
     @Test
-    void updateAuthor() throws Exception {
-        AuthorRequest createRequest = new AuthorRequest(
-                null,
-                "Test Author"
-        );
-
-        String response = mockMvc.perform(post("/api/v1/authors")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        UUID id = UUID.fromString(
-                objectMapper.readTree(response).get("id").asText()
-        );
-
-        AuthorRequest updateRequest = new AuthorRequest(
-                id,
-                "Updated Test Author"
-        );
+    void updateAuthor_ShouldUpdateDatabaseRow() throws Exception {
+        UUID id = createAuthorThroughApi("Test Author");
+        AuthorRequest updateRequest = new AuthorRequest(id, "Updated Test Author");
 
         mockMvc.perform(put("/api/v1/authors/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,29 +95,28 @@ class AuthorControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id.toString()))
                 .andExpect(jsonPath("$.name").value("Updated Test Author"));
+
+        String name = jdbcClient.sql("SELECT name FROM authors WHERE id = :id")
+                .param("id", uuidToBytes(id))
+                .query(String.class)
+                .single();
+
+        assertEquals("Updated Test Author", name);
     }
 
     @Test
-    void deleteAuthor() throws Exception {
-        AuthorRequest request = new AuthorRequest(
-                null,
-                "Test Author"
-        );
-
-        String response = mockMvc.perform(post("/api/v1/authors")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String id = objectMapper.readTree(response)
-                .get("id")
-                .asText();
+    void deleteAuthor_ShouldRemoveDatabaseRow() throws Exception {
+        UUID id = createAuthorThroughApi("Test Author");
 
         mockMvc.perform(delete("/api/v1/authors/{id}", id))
                 .andExpect(status().isNoContent());
+
+        Long count = jdbcClient.sql("SELECT COUNT(*) FROM authors WHERE id = :id")
+                .param("id", uuidToBytes(id))
+                .query(Long.class)
+                .single();
+
+        assertEquals(0L, count);
 
         mockMvc.perform(get("/api/v1/authors/{id}", id))
                 .andExpect(status().isNotFound());
@@ -161,10 +135,7 @@ class AuthorControllerTest {
 
     @Test
     void shouldReturnProblemDetailWithValidationError() throws Exception {
-        AuthorRequest request = new AuthorRequest(
-                null,
-                ""
-        );
+        AuthorRequest request = new AuthorRequest(null, "");
 
         mockMvc.perform(post("/api/v1/authors")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -181,5 +152,28 @@ class AuthorControllerTest {
                         .content("{invalid json}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid request body"));
+    }
+
+    private byte[] uuidToBytes(UUID id) {
+        return ByteBuffer.allocate(16)
+                .putLong(id.getMostSignificantBits())
+                .putLong(id.getLeastSignificantBits())
+                .array();
+    }
+
+    private UUID createAuthorThroughApi(String name) throws Exception {
+        AuthorRequest request = new AuthorRequest(null, name);
+
+        String response = mockMvc.perform(post("/api/v1/authors")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        return UUID.fromString(
+                objectMapper.readTree(response).get("id").asText()
+        );
     }
 }
