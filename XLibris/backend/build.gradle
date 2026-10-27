@@ -48,7 +48,7 @@ dependencies {
     implementation 'org.springframework.modulith:spring-modulith-events-api'
 
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation 'org.testcontainers:testcontainers-mysql'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.springframework.boot:spring-boot-resttestclient'
     testImplementation 'com.microsoft.playwright:playwright:1.52.0'
