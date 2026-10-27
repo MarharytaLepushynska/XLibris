@@ -1,3 +1,4 @@
+
 package com.group.xlibris.book;
 
 import com.group.xlibris.author.Author;
@@ -8,24 +9,33 @@ import com.group.xlibris.genre.GenreRepository;
 import com.group.xlibris.user.Role;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.internal.UserRepository;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import tools.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import tools.jackson.databind.ObjectMapper;
+
+import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,10 +62,14 @@ class BookControllerTest {
     @Autowired
     private GenreRepository genreRepository;
 
+    @Autowired
+    private JdbcClient jdbcClient;
+
     private UUID bookId;
     private UUID ownerId;
     private UUID authorId;
     private UUID genreId;
+
     private User user;
     private Author author;
     private Genre genre;
@@ -66,17 +80,41 @@ class BookControllerTest {
         ownerId = UUID.randomUUID();
         authorId = UUID.randomUUID();
         genreId = UUID.randomUUID();
-        user = new User(ownerId, "Marta", "Kyiv", null,  "m-" + ownerId + "@gmail.com",
-                "+380998876446", Instant.now(), Role.USER, "TestPassword",
-                2.0, 1.9, 4, 5, 1);
+
+        user = new User(
+                ownerId,
+                "Marta",
+                "Kyiv",
+                null,
+                "m-" + ownerId + "@gmail.com",
+                "+380998876446",
+                Instant.now(),
+                Role.USER,
+                "TestPassword",
+                2.0,
+                1.9,
+                4,
+                5,
+                1
+        );
 
         author = new Author(authorId, "JK Rowling");
-
         genre = new Genre(genreId, "Horror");
 
         user = userRepository.save(user);
         author = authorRepository.save(author);
         genre = genreRepository.save(genre);
+    }
+
+    /**
+     * MySQL stores UUID values as BINARY(16).
+     * Convert UUID to the corresponding 16-byte representation for JDBC queries.
+     */
+    private byte[] uuidToBytes(UUID id) {
+        return ByteBuffer.allocate(16)
+                .putLong(id.getMostSignificantBits())
+                .putLong(id.getLeastSignificantBits())
+                .array();
     }
 
     @Test
@@ -92,13 +130,51 @@ class BookControllerTest {
                 genreId
         );
 
-        mockMvc.perform(post("/api/v1/books")
+        String response = mockMvc.perform(post("/api/v1/books")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Test Book"))
                 .andExpect(jsonPath("$.description").value("Test description"))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+                .andExpect(jsonPath("$.photoURL").value("photo.jpg"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()))
+                .andExpect(jsonPath("$.authorId").value(authorId.toString()))
+                .andExpect(jsonPath("$.genreId").value(genreId.toString()))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        UUID createdBookId = UUID.fromString(
+                objectMapper.readTree(response).get("id").asString()
+        );
+
+        String savedTitle = jdbcClient.sql(
+                        "SELECT title FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(createdBookId))
+                .query(String.class)
+                .single();
+
+        assertEquals("Test Book", savedTitle);
+
+        String savedStatus = jdbcClient.sql(
+                        "SELECT status FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(createdBookId))
+                .query(String.class)
+                .single();
+
+        assertEquals("AVAILABLE", savedStatus);
+
+        Integer count = jdbcClient.sql(
+                        "SELECT COUNT(*) FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(createdBookId))
+                .query(Integer.class)
+                .single();
+
+        assertEquals(1, count);
     }
 
     @Test
@@ -122,7 +198,20 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.id").value(bookId.toString()))
                 .andExpect(jsonPath("$.title").value("Test Book"))
                 .andExpect(jsonPath("$.description").value("Test description"))
-                .andExpect(jsonPath("$.status").value("AVAILABLE"));
+                .andExpect(jsonPath("$.photoURL").value("photo.jpg"))
+                .andExpect(jsonPath("$.status").value("AVAILABLE"))
+                .andExpect(jsonPath("$.ownerId").value(ownerId.toString()))
+                .andExpect(jsonPath("$.authorId").value(authorId.toString()))
+                .andExpect(jsonPath("$.genreId").value(genreId.toString()));
+
+        String savedTitle = jdbcClient.sql(
+                        "SELECT title FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(bookId))
+                .query(String.class)
+                .single();
+
+        assertEquals("Test Book", savedTitle);
     }
 
     @Test
@@ -155,7 +244,18 @@ class BookControllerTest {
 
         mockMvc.perform(get("/api/v1/books"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2));
+
+        Integer count = jdbcClient.sql(
+                        "SELECT COUNT(*) FROM books WHERE id IN (:id1, :id2)"
+                )
+                .param("id1", uuidToBytes(book1.getId()))
+                .param("id2", uuidToBytes(book2.getId()))
+                .query(Integer.class)
+                .single();
+
+        assertEquals(2, count);
     }
 
     @Test
@@ -185,14 +285,47 @@ class BookControllerTest {
         );
 
         mockMvc.perform(put("/api/v1/books/{id}", bookId)
-                        .principal(new UsernamePasswordAuthenticationToken(user.getEmail(),null))
+                        .principal(
+                                new UsernamePasswordAuthenticationToken(
+                                        user.getEmail(),
+                                        null
+                                )
+                        )
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(bookId.toString()))
                 .andExpect(jsonPath("$.title").value("New Title"))
                 .andExpect(jsonPath("$.description").value("New description"))
+                .andExpect(jsonPath("$.photoURL").value("new.jpg"))
                 .andExpect(jsonPath("$.status").value("AVAILABLE"));
+
+        String savedTitle = jdbcClient.sql(
+                        "SELECT title FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(bookId))
+                .query(String.class)
+                .single();
+
+        assertEquals("New Title", savedTitle);
+
+        String savedDescription = jdbcClient.sql(
+                        "SELECT description FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(bookId))
+                .query(String.class)
+                .single();
+
+        assertEquals("New description", savedDescription);
+
+        String savedPhotoUrl = jdbcClient.sql(
+                        "SELECT photoURL FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(bookId))
+                .query(String.class)
+                .single();
+
+        assertEquals("new.jpg", savedPhotoUrl);
     }
 
     @Test
@@ -211,8 +344,26 @@ class BookControllerTest {
 
         bookRepository.save(book);
 
+        Integer countBefore = jdbcClient.sql(
+                        "SELECT COUNT(*) FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(bookId))
+                .query(Integer.class)
+                .single();
+
+        assertEquals(1, countBefore);
+
         mockMvc.perform(delete("/api/v1/books/{id}", bookId))
                 .andExpect(status().isNoContent());
+
+        Integer countAfter = jdbcClient.sql(
+                        "SELECT COUNT(*) FROM books WHERE id = :id"
+                )
+                .param("id", uuidToBytes(bookId))
+                .query(Integer.class)
+                .single();
+
+        assertEquals(0, countAfter);
     }
 
     @Test
