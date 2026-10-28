@@ -1,5 +1,6 @@
 package com.group.xlibris.notification.controller;
 
+import com.group.xlibris.IntegrationTest;
 import com.group.xlibris.notification.NotificationType;
 import com.group.xlibris.notification.dto.NotificationRequest;
 import com.group.xlibris.notification.internal.Notification;
@@ -24,9 +25,8 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@IntegrationTest
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 @Transactional
 class NotificationControllerTest {
 

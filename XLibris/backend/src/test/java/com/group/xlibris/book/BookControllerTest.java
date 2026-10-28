@@ -124,10 +124,6 @@ class BookControllerTest {
                 .asText();
     }
 
-    /**
-     * MySQL stores UUID values as BINARY(16).
-     * Convert UUID to the corresponding 16-byte representation for JDBC queries.
-     */
     private byte[] uuidToBytes(UUID id) {
         return ByteBuffer.allocate(16)
                 .putLong(id.getMostSignificantBits())

@@ -1,5 +1,6 @@
-package com.group.xlibris;
+package com.group.xlibris.e2e;
 
+import com.group.xlibris.TestcontainersConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.context.annotation.Import;
