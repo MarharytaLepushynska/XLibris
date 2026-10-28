@@ -17,7 +17,6 @@ import java.lang.annotation.Target;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestcontainersConfiguration.class)
-@Sql(scripts = "/sql/reset-data.sql", //TO-DO
-        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(scripts = "/sql/reset-data.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public @interface IntegrationTest {
 }
