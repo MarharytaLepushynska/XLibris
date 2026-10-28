@@ -82,3 +82,11 @@ dependencyManagement {
         mavenBom 'org.springframework.modulith:spring-modulith-bom:2.0.8'
     }
 }
+
+tasks.register('playwrightInstall', JavaExec) {
+    group = 'verification'
+    description = 'Installs Chromium for Playwright tests'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args 'install', 'chromium'
+}
