@@ -36,8 +36,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @IntegrationTest
-@WithMockUser(username="test@test.local", roles="USER")
-@AutoConfigureMockMvc(addFilters = false)
 class BookRequestControllerTest {
 
     @Autowired
@@ -237,7 +235,8 @@ class BookRequestControllerTest {
     void shouldGetRequestById() throws Exception {
         Map<String, Object> row = requestRow(requestId);
 
-        mvc.perform(get("/api/book-requests/{id}", requestId))
+        mvc.perform(get("/api/book-requests/{id}", requestId)
+                        .with(user("anna@gmail.com").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(requestId.toString()))
                 .andExpect(jsonPath("$.bookId").value(bookId.toString()))
@@ -256,7 +255,8 @@ class BookRequestControllerTest {
 
     @Test
     void shouldGetAllRequest() throws Exception {
-        mvc.perform(get("/api/book-requests"))
+        mvc.perform(get("/api/book-requests")
+                        .with(user("anna@gmail.com").roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2));
@@ -265,6 +265,7 @@ class BookRequestControllerTest {
     @Test
     void shouldFilterRequestsByBookId() throws Exception {
         mvc.perform(get("/api/book-requests")
+                        .with(user("anna@gmail.com").roles("USER"))
                 .param("bookId", bookId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -275,6 +276,7 @@ class BookRequestControllerTest {
     @Test
     void shouldFilterRequestsByRequesterId() throws Exception {
         mvc.perform(get("/api/book-requests")
+                        .with(user("anna@gmail.com").roles("USER"))
                         .param("requesterId", requesterId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -285,6 +287,7 @@ class BookRequestControllerTest {
     @Test
     void shouldFilterRequestsByStatus() throws Exception {
         mvc.perform(get("/api/book-requests")
+                        .with(user("anna@gmail.com").roles("USER"))
                         .param("status", "PENDING"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -296,6 +299,7 @@ class BookRequestControllerTest {
     void shouldReturnEmptyList() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440009");
         mvc.perform(get("/api/book-requests")
+                        .with(user("anna@gmail.com").roles("USER"))
                 .param("bookId", id.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -307,6 +311,7 @@ class BookRequestControllerTest {
         BookRequestUpdateStatus request = new BookRequestUpdateStatus(ownerId, BookRequestStatus.APPROVED);
 
         mvc.perform(patch("/api/book-requests/{id}", requestId)
+                        .with(user("anna@gmail.com").roles("USER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -329,7 +334,8 @@ class BookRequestControllerTest {
         long before = countRequests();
         assertThat(countRequest(requestId)).isEqualTo(1);
 
-        mvc.perform(delete("/api/book-requests/{id}", requestId))
+        mvc.perform(delete("/api/book-requests/{id}", requestId)
+                        .with(user("anna@gmail.com").roles("USER")))
                 .andExpect(status().isNoContent());
 
         assertThat(countRequest(requestId)).isZero();
@@ -340,7 +346,8 @@ class BookRequestControllerTest {
     void shouldReturnNotfoundForUnknownId() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440009");
 
-        mvc.perform(get("/api/book-requests/{id}", id))
+        mvc.perform(get("/api/book-requests/{id}", id)
+                        .with(user("anna@gmail.com").roles("USER")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Resource not found"));
     }
@@ -352,6 +359,7 @@ class BookRequestControllerTest {
         BookRequestUpdateStatus request = new BookRequestUpdateStatus(ownerId, BookRequestStatus.APPROVED);
 
         mvc.perform(patch("/api/book-requests/{id}", id)
+                        .with(user("anna@gmail.com").roles("USER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -362,7 +370,8 @@ class BookRequestControllerTest {
     void shouldReturnNotFoundWhenDeletingWithUnknownId() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440009");
 
-        mvc.perform(delete("/api/book-requests/{id}", id))
+        mvc.perform(delete("/api/book-requests/{id}", id)
+                        .with(user("anna@gmail.com").roles("USER")))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.title").value("Resource not found"));
     }
@@ -370,6 +379,7 @@ class BookRequestControllerTest {
     @Test
     void shouldReturnInvalidRequestBodyProblemDetail() throws Exception {
         mvc.perform(post("/api/book-requests/{bookId}", bookId)
+                        .with(user("anna@gmail.com").roles("USER"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{ blablabla }"))
                 .andExpect(status().isBadRequest())
@@ -382,6 +392,7 @@ class BookRequestControllerTest {
         long before = countRequests();
 
         mvc.perform(post("/api/book-requests/{bookId}", bookId)
+                        .with(user("anna@gmail.com").roles("USER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict());
