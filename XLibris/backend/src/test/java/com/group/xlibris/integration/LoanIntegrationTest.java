@@ -4,17 +4,13 @@ import com.group.xlibris.IntegrationTest;
 
 import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookStatus;
-
 import com.group.xlibris.loan.internal.Loan;
-
 import com.group.xlibris.security.jwt.JwtService;
-
 import com.group.xlibris.user.Role;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.internal.UserRepository;
 
 import jakarta.persistence.EntityManager;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,7 +18,6 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
@@ -61,7 +56,6 @@ class LoanIntegrationTest {
     @Autowired
     UserDetailsService userDetailsService;
 
-
     private UUID createUser() {
         UUID id = UUID.randomUUID();
         User user = new User(id, "Loan Test", "Kyiv",
@@ -72,13 +66,11 @@ class LoanIntegrationTest {
         return id;
     }
 
-
     private String generateToken(UUID userId) {
         String email = userId + "@test.local";
         var userDetails = userDetailsService.loadUserByUsername(email);
         return jwtService.generateToken(userDetails);
     }
-
 
     private UUID createBook(UUID ownerId, BookStatus status) {
         User owner = userRepository.findById(ownerId).orElseThrow();
@@ -90,7 +82,6 @@ class LoanIntegrationTest {
         entityManager.flush();
         return book.getId();
     }
-
 
     private UUID createLoan(UUID bookId, UUID ownerId, UUID renterId, Instant expectedReturn, Instant actualReturn) {
         Book book = entityManager.find(Book.class, bookId);
@@ -108,7 +99,6 @@ class LoanIntegrationTest {
         return loan.getId();
     }
 
-
     private String loanJson(UUID bookId, UUID ownerId, UUID renterId, Instant expectedReturn) {
         return """
                 {
@@ -120,7 +110,6 @@ class LoanIntegrationTest {
                 """.formatted(bookId, ownerId, renterId, expectedReturn);
     }
 
-
     private Long countLoansByOwner(UUID ownerId) {
         return jdbc.sql("""
                         SELECT COUNT(*)
@@ -131,7 +120,6 @@ class LoanIntegrationTest {
                 .query(Long.class)
                 .single();
     }
-
 
     @Test
     void createReadFilterLoan_verifyDatabase() throws Exception {
@@ -193,7 +181,6 @@ class LoanIntegrationTest {
                 .andExpect(jsonPath("$[0].id").value(loanId.toString()));
     }
 
-
     @Test
     void filterLoansByStatus_returnsOnlyOverdue() throws Exception {
         UUID ownerId = createUser();
@@ -217,7 +204,6 @@ class LoanIntegrationTest {
 
         assertThat(countLoansByOwner(ownerId)).isEqualTo(2);
     }
-
 
     @Test
     void returnLoan_setsReturnDateAndMakesBookAvailable() throws Exception {
@@ -259,7 +245,6 @@ class LoanIntegrationTest {
         assertThat(bookStatus).isEqualTo("AVAILABLE");
     }
 
-
     @Test
     void returnLoan_whenAlreadyReturned_returns422() throws Exception {
         UUID ownerId = createUser();
@@ -273,7 +258,6 @@ class LoanIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isUnprocessableContent());
     }
-
 
     @Test
     void deleteLoan_removesRowFromDatabase() throws Exception {
@@ -292,7 +276,6 @@ class LoanIntegrationTest {
         entityManager.flush();
         assertThat(countLoansByOwner(ownerId)).isZero();
     }
-
 
     @Test
     void createLoan_withPastReturnDate_returns400() throws Exception {
@@ -313,7 +296,6 @@ class LoanIntegrationTest {
         assertThat(countLoansByOwner(ownerId)).isZero();
     }
 
-
     @Test
     void createLoan_whenOwnerEqualsRenter_returns400() throws Exception {
         UUID ownerId = createUser();
@@ -331,7 +313,6 @@ class LoanIntegrationTest {
         assertThat(countLoansByOwner(ownerId)).isZero();
     }
 
-
     @Test
     void getUnknownLoan_returns404() throws Exception {
         UUID userId = createUser();
@@ -340,7 +321,6 @@ class LoanIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNotFound());
     }
-
 
     @Test
     void getLoans_withoutToken_returns401() throws Exception {
