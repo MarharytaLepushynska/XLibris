@@ -16,6 +16,7 @@ import com.group.xlibris.common.NotFoundException;
 import com.group.xlibris.common.AccessDeniedException;
 import com.group.xlibris.user.User;
 import com.group.xlibris.user.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -103,6 +104,7 @@ public class BookRequestServiceImpl implements BookRequestService {
     }
 
     @Override
+    @Transactional
     public BookRequestResponse updateStatus(UpdateBookRequestCommand command) {
         BookRequestEntity existing = findOrThrow(command.requestId());
         BookRequestStatus previousStatus = existing.getStatus();
