@@ -1,5 +1,6 @@
 package com.group.xlibris.feedback.controller;
 
+import com.group.xlibris.IntegrationTest;
 import com.group.xlibris.book.Book;
 import com.group.xlibris.book.BookRepository;
 import com.group.xlibris.book.BookStatus;
@@ -28,9 +29,8 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@IntegrationTest
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 @Transactional
 class FeedbackControllerTest {
 
