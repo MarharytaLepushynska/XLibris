@@ -1,5 +1,6 @@
 package com.group.xlibris.loan.controller;
 
+import com.group.xlibris.IntegrationTest;
 import com.group.xlibris.author.Author;
 import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
@@ -31,9 +32,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-@SpringBootTest
+@IntegrationTest
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 @Transactional
 public class LoanControllerTest {
     @Autowired

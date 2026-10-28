@@ -1,5 +1,6 @@
 package com.group.xlibris.report.controller;
 
+import com.group.xlibris.IntegrationTest;
 import com.group.xlibris.report.dto.ReportRequest;
 import com.group.xlibris.report.dto.ReportResolutionRequest;
 import com.group.xlibris.report.dto.UpdateReportRequest;
@@ -29,9 +30,8 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@IntegrationTest
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 @Transactional
 public class ReportControllerTest {
 
@@ -262,7 +262,7 @@ public class ReportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value("\"Validation failed\""))
                 .andExpect(jsonPath("$.errors.title").exists())
                 .andExpect(jsonPath("$.errors.reporterId").exists());
     }

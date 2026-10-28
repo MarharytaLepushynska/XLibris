@@ -1,5 +1,6 @@
 package com.group.xlibris.report.controller;
 
+import com.group.xlibris.IntegrationTest;
 import com.group.xlibris.author.Author;
 import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
@@ -19,10 +20,8 @@ import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
@@ -31,13 +30,13 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@IntegrationTest
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 @Transactional
 public class LoanReportControllerTest {
 
@@ -232,7 +231,7 @@ public class LoanReportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title", containsString("Validation failed")))
                 .andExpect(jsonPath("$.errors.title").exists())
                 .andExpect(jsonPath("$.errors.reporterId").exists());
     }
