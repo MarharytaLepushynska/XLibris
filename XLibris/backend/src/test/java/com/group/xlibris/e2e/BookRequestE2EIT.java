@@ -1,6 +1,5 @@
-package com.group.xlibris.bookRequest;
+package com.group.xlibris.e2e;
 
-import com.group.xlibris.E2ETest;
 import com.group.xlibris.author.Author;
 import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
