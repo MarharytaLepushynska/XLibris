@@ -1,5 +1,6 @@
 package com.group.xlibris.bookRequest.controller;
 
+import com.group.xlibris.IntegrationTest;
 import com.group.xlibris.author.Author;
 import com.group.xlibris.author.AuthorRepository;
 import com.group.xlibris.book.Book;
@@ -18,22 +19,25 @@ import com.group.xlibris.user.internal.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+@IntegrationTest
+@WithMockUser(username="test@test.local", roles="USER")
 @AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
 class BookRequestControllerTest {
 
     @Autowired
@@ -57,11 +61,48 @@ class BookRequestControllerTest {
     @Autowired
     private GenreRepository genreRepository;
 
+    @Autowired
+    private JdbcClient jdbc;
+
     private UUID requestId;
     private UUID bookId;
     private UUID requesterId;
     private UUID requesterId2;
     private UUID ownerId;
+
+    private Map<String, Object> requestRow(UUID id) {
+        return jdbc.sql("""
+                    SELECT BIN_TO_UUID(book_id) AS book_id,
+                           BIN_TO_UUID(requester_id) AS requester_id,
+                           BIN_TO_UUID(owner_id) AS owner_id,
+                           desired_duration_days,
+                           status,
+                           created_at,
+                           responded_at
+                    FROM requests
+                    WHERE id = UUID_TO_BIN(:id)
+                    """)
+                .param("id", id.toString())
+                .query()
+                .singleRow();
+    }
+
+    private long countRequests() {
+        return jdbc.sql("SELECT COUNT(*) FROM requests")
+                .query(Long.class)
+                .single();
+    }
+
+    private long countRequest(UUID id) {
+        return jdbc.sql("""
+                    SELECT COUNT(*)
+                    FROM requests
+                    WHERE id = UUID_TO_BIN(:id)
+                    """)
+                .param("id", id.toString())
+                .query(Long.class)
+                .single();
+    }
 
     @BeforeEach
     void resetMap() {
@@ -154,27 +195,63 @@ class BookRequestControllerTest {
     @Test
     void shouldCreateRequest() throws Exception {
         BookRequestCreate request = new BookRequestCreate(requesterId2, 21);
+        long before = countRequests();
 
-        mvc.perform(post("/api/book-requests/{bookId}", bookId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        String response = mvc.perform(
+                        post("/api/book-requests/{bookId}", bookId)
+                                .with(user("ivan@gmail.com").roles("USER"))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request))
+                )
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.bookId").value(bookId.toString()))
-                .andExpect(jsonPath("$.requesterId").value(requesterId2.toString()))
+                .andExpect(
+                        jsonPath("$.requesterId")
+                                .value(requesterId2.toString())
+                )
                 .andExpect(jsonPath("$.desiredDurationDays").value(21))
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        UUID createdId = UUID.fromString(
+                objectMapper.readTree(response).get("id").asString()
+        );
+
+        Map<String, Object> row = requestRow(createdId);
+        assertThat(countRequests()).isEqualTo(before + 1);
+        assertThat(row)
+                .containsEntry("book_id", bookId.toString())
+                .containsEntry("requester_id", requesterId2.toString())
+                .containsEntry("owner_id", ownerId.toString())
+                .containsEntry("desired_duration_days", 21)
+                .containsEntry("status", "PENDING");
+
+        assertThat(row.get("created_at")).isNotNull();
+        assertThat(row.get("responded_at")).isNull();
     }
 
     @Test
     void shouldGetRequestById() throws Exception {
+        Map<String, Object> row = requestRow(requestId);
+
         mvc.perform(get("/api/book-requests/{id}", requestId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(requestId.toString()))
                 .andExpect(jsonPath("$.bookId").value(bookId.toString()))
-                .andExpect(jsonPath("$.requesterId").value(requesterId.toString()))
-                .andExpect(jsonPath("$.desiredDurationDays").value(14))
-                .andExpect(jsonPath("$.status").value("PENDING"));
+                .andExpect(
+                        jsonPath("$.requesterId")
+                                .value(row.get("requester_id"))
+                )
+                .andExpect(
+                        jsonPath("$.desiredDurationDays")
+                                .value(row.get("desired_duration_days"))
+                )
+                .andExpect(jsonPath("$.status").value(row.get("status")));
+
+        assertThat(countRequest(requestId)).isEqualTo(1);
     }
 
     @Test
@@ -235,12 +312,28 @@ class BookRequestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("APPROVED"))
                 .andExpect(jsonPath("$.respondedAt").exists());
+
+        Map<String, Object> row = requestRow(requestId);
+
+        assertThat(row)
+                .containsEntry("status", "APPROVED")
+                .containsEntry("book_id", bookId.toString())
+                .containsEntry("requester_id", requesterId.toString())
+                .containsEntry("owner_id", ownerId.toString());
+
+        assertThat(row.get("responded_at")).isNotNull();
     }
 
     @Test
     void shouldDeleteRequestById() throws Exception {
+        long before = countRequests();
+        assertThat(countRequest(requestId)).isEqualTo(1);
+
         mvc.perform(delete("/api/book-requests/{id}", requestId))
                 .andExpect(status().isNoContent());
+
+        assertThat(countRequest(requestId)).isZero();
+        assertThat(countRequests()).isEqualTo(before - 1);
     }
 
     @Test
@@ -281,5 +374,33 @@ class BookRequestControllerTest {
                 .content("{ blablabla }"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid request body"));
+    }
+
+    @Test
+    void shouldRejectDuplicateRequest() throws Exception {
+        BookRequestCreate request = new BookRequestCreate(requesterId, 14);
+        long before = countRequests();
+
+        mvc.perform(post("/api/book-requests/{bookId}", bookId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
+
+        assertThat(countRequests()).isEqualTo(before);
+        assertThat(requestRow(requestId)).containsEntry("status", "PENDING");
+    }
+
+    @Test
+    void shouldRejectInvalidDuration() throws Exception {
+        BookRequestCreate request = new BookRequestCreate(requesterId2, 0);
+        long before = countRequests();
+
+        mvc.perform(post("/api/book-requests/{bookId}", bookId)
+                        .with(user("ivan@gmail.com").roles("USER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+
+        assertThat(countRequests()).isEqualTo(before);
     }
 }
