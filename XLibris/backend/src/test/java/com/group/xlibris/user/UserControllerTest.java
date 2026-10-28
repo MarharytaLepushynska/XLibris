@@ -151,7 +151,6 @@ class UserControllerTest {
     @Test
     void shouldGetUserContactInfoById() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        UUID id2 = UUID.fromString("550e8400-e29b-41d4-a716-446655440001");
 
         mvc.perform(get("/api/users/{id}/contact", id).with(user("m@gmail.com")))
                 .andExpect(status().isOk())
@@ -177,7 +176,6 @@ class UserControllerTest {
     @Test
     void shouldUpdateUserByAdmin() throws Exception {
         UUID id = UUID.fromString("550e8400-e29b-41d4-a716-446655440000");
-        UUID adminId = UUID.fromString("550e8400-e29b-41d4-a716-446655440002");
         AdminUserUpdateRequest request = new AdminUserUpdateRequest(id,
                 "Ivan", "Toronto",null, "i@gmail.com",
                 "+380997765338", Role.USER,
