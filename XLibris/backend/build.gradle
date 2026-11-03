@@ -92,3 +92,7 @@ tasks.register('playwrightInstall', JavaExec) {
     mainClass = 'com.microsoft.playwright.CLI'
     args 'install', 'chromium'
 }
+
+tasks.named('bootJar') {
+    archiveFileName = 'xlibris.jar'
+}
