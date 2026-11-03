@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 @Component
-@Profile("dev")
+@Profile({"dev", "prod"})
 public class TestUsersInitializer implements ApplicationRunner {
 
     private final UserRepository userRepository;

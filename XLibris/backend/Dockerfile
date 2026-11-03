@@ -3,7 +3,9 @@ FROM eclipse-temurin:25-jre
 WORKDIR /xlibris
 
 RUN groupadd --system xlibrisgroup \
-    && useradd --system --gid xlibrisgroup xlibrisuser
+    && useradd --system --gid xlibrisgroup xlibrisuser \
+    && mkdir -p /xlibris/logs \
+    && chown xlibrisuser:xlibrisgroup /xlibris/logs
 
 COPY --chown=xlibrisuser:xlibrisgroup build/libs/xlibris.jar server.jar
 
